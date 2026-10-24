@@ -1,0 +1,22 @@
+@model TogetherCraft.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Вход";
+}
+<section class="auth-page">
+    <div class="auth-decoration"><span class="decor-square square-one"></span><span class="decor-square square-two"></span><span class="decor-square square-three"></span><div class="auth-brand-ghost">TC</div><p>Твой мир.<br />Твои друзья.</p><small>Мониторинг без доступа к управлению сервером.</small></div>
+    <div class="panel auth-panel">
+        <a class="back-link" asp-controller="Home" asp-action="Index">← На главную</a>
+        <div class="auth-icon">↗</div><div class="small-label">РАДЫ СНОВА ВИДЕТЬ</div><h1>Вход в аккаунт</h1><p class="auth-description">Войди, чтобы проверить заявку или открыть мониторинг.</p>
+        @if (TempData["Success"] is string message) { <div class="form-success">@message</div> }
+        <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+        <form asp-controller="Account" asp-action="Login" method="post" class="auth-form">
+            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+            <label asp-for="Username">Логин</label><input asp-for="Username" autocomplete="username" placeholder="Твой логин" />
+            <span asp-validation-for="Username" class="field-error"></span>
+            <label asp-for="Password">Пароль</label><input asp-for="Password" type="password" autocomplete="current-password" placeholder="Введи пароль" />
+            <span asp-validation-for="Password" class="field-error"></span>
+            <button class="button button-primary button-full" type="submit">Войти в TogetherCraft <span>→</span></button>
+        </form>
+        <p class="auth-bottom">Ещё нет аккаунта? <a asp-controller="Account" asp-action="Register">Оставить заявку</a></p>
+    </div>
+</section>

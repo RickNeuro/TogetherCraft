@@ -1,0 +1,24 @@
+@model TogetherCraft.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Регистрация";
+}
+<section class="auth-page register-page">
+    <div class="auth-decoration"><span class="decor-square square-one"></span><span class="decor-square square-two"></span><span class="decor-square square-three"></span><div class="auth-brand-ghost">TC</div><p>Каждый мир<br />начинается с друзей.</p><small>Ты одобряешь доступ — сайт добавляет игрока в whitelist.</small></div>
+    <div class="panel auth-panel register-panel">
+        <a class="back-link" asp-controller="Home" asp-action="Index">← На главную</a>
+        <div class="auth-icon">✦</div><div class="small-label">ПРИСОЕДИНЯЙСЯ К НАМ</div><h1>Создать аккаунт</h1><p class="auth-description">После регистрации дождись одобрения администратора.</p>
+        <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+        <form asp-controller="Account" asp-action="Register" method="post" class="auth-form">
+            <label asp-for="Username">Логин</label><input asp-for="Username" autocomplete="username" placeholder="Придумай логин" />
+            <span asp-validation-for="Username" class="field-error"></span>
+            <label asp-for="MinecraftUsername">Ник в Minecraft</label><input asp-for="MinecraftUsername" autocomplete="off" placeholder="Например, Steve_21" />
+            <span asp-validation-for="MinecraftUsername" class="field-error"></span>
+            <label asp-for="Password">Пароль</label><input asp-for="Password" autocomplete="new-password" placeholder="Не менее 10 символов" />
+            <span asp-validation-for="Password" class="field-error"></span>
+            <label asp-for="ConfirmPassword">Повтори пароль</label><input asp-for="ConfirmPassword" autocomplete="new-password" placeholder="Введи пароль ещё раз" />
+            <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+            <button class="button button-primary button-full" type="submit">Отправить заявку <span>→</span></button>
+        </form>
+        <p class="auth-bottom">Уже есть аккаунт? <a asp-controller="Account" asp-action="Login">Войти</a></p>
+    </div>
+</section>

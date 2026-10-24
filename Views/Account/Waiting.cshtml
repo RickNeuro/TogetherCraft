@@ -1,0 +1,12 @@
+@{
+    ViewData["Title"] = "Заявка на рассмотрении";
+}
+<div class="narrow-page">
+    <article class="panel state-panel">
+        <div class="state-icon state-pending">◷</div>
+        <span class="small-label">АККАУНТ СОЗДАН</span>
+        <h1>Заявка ожидает одобрения</h1>
+        <p>Когда администратор одобрит заявку, его панель отправит Minecraft-команду добавления твоего ника в whitelist. Если Minecraft временно недоступен, заявка останется ожидающей до успешной попытки. После одобрения выйди из аккаунта и войди снова, чтобы обновить статус доступа.</p>
+        <div class="state-actions"><a class="button button-primary" asp-controller="Home" asp-action="Index">На главную</a><form asp-controller="Account" asp-action="Logout" method="post">@Html.AntiForgeryToken()<button class="button button-ghost" type="submit">Выйти</button></form></div>
+    </article>
+</div>

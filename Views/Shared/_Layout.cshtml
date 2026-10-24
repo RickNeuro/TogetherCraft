@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — TogetherCraft</title>
+    <meta name="theme-color" content="#06110f" />
+    <meta name="description" content="TogetherCraft — мониторинг приватного Minecraft-сервера." />
+    <link rel="icon" type="image/svg+xml" href="~/img/cube.svg" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/refined.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" asp-controller="Home" asp-action="Index" aria-label="TogetherCraft — главная">
+                <span class="brand-cube" aria-hidden="true"><i></i><b></b><em></em></span>
+                <span>Together<span class="brand-accent">Craft</span></span>
+            </a>
+            <nav class="main-nav" aria-label="Основная навигация">
+                <a class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">Главная</a>
+                <a asp-controller="Home" asp-action="Server">Мониторинг</a>
+                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Admin" asp-action="Index">Заявки</a>
+                }
+                else if (User.Identity?.IsAuthenticated != true)
+                {
+                    <a asp-controller="Account" asp-action="Register">Регистрация</a>
+                }
+            </nav>
+            <div class="topbar-actions">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <span class="nav-status"><i class="status-dot"></i>@User.Identity.Name</span>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a class="button button-outline button-small" asp-controller="Admin" asp-action="Index">Админ-панель</a>
+                    }
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
+                        <button class="button button-outline button-small" type="submit">Выйти</button>
+                    </form>
+                }
+                else
+                {
+                    <a class="button button-outline button-small" asp-controller="Account" asp-action="Login">Вход</a>
+                    <a class="button button-primary button-small" asp-controller="Account" asp-action="Register">Регистрация</a>
+                }
+            </div>
+            <button class="mobile-menu-button" type="button" aria-label="Открыть меню" aria-expanded="false" data-menu-toggle>☰</button>
+        </div>
+    </header>
+
+    @if (TempData["Success"] is string successMessage)
+    {
+        <div class="flash flash-success" role="status">@successMessage</div>
+    }
+    @if (TempData["Error"] is string errorMessage)
+    {
+        <div class="flash flash-error" role="alert">@errorMessage</div>
+    }
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <a class="footer-brand" asp-controller="Home" asp-action="Index">
+                <span class="brand-cube brand-cube-small" aria-hidden="true"><i></i><b></b><em></em></span>
+                <span><strong>TogetherCraft</strong><small>Твой мир. Твои друзья.</small></span>
+            </a>
+            <div class="footer-note">Minecraft Fabric · приватный сервер для друзей</div>
+            <div class="footer-version">МОНИТОРИНГ БЕЗ УПРАВЛЕНИЯ СЕРВЕРОМ</div>
+        </div>
+    </footer>
+    <div class="toast" role="status" aria-live="polite" data-toast></div>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,10 @@
+{$PUBLIC_DOMAIN:localhost} {
+    encode zstd gzip
+    reverse_proxy togethercraft-web:8080
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer-when-downgrade
+        X-Frame-Options DENY
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    }
+}

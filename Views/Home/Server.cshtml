@@ -1,0 +1,34 @@
+@{
+    ViewData["Title"] = "Мониторинг";
+}
+<section class="subpage-hero">
+    <div class="subpage-hero-content"><div class="eyebrow"><span class="eyebrow-line"></span> ЗАКРЫТЫЙ РАЗДЕЛ</div><h1>Технический <span>мониторинг</span></h1><p>Доступен только после одобрения аккаунта. Здесь только чтение метрик — без команд управления.</p></div>
+</section>
+<div class="page-shell subpage-shell" data-live-monitor>
+    <div class="setup-notice" role="status"><span class="notice-icon">i</span><p><strong id="source-status">Подключаем сборщик метрик…</strong> <span id="source-message">Данные будут обновляться автоматически.</span><br /><small>Последнее обновление: <span id="last-updated">ожидание</span></small></p></div>
+    <div class="dashboard-grid monitor-grid">
+        <article class="panel metric-card">
+            <div class="metric-top"><span class="metric-icon"><svg viewBox="0 0 48 48"><rect x="12" y="12" width="24" height="24" rx="3"/><path d="M18 18h12v12H18zM17 5v7m7-7v7m7-7v7M17 36v7m7-7v7m7-7v7M5 17h7m-7 7h7m-7 7h7m24-14h7m-7 7h7m-7 7h7"/></svg></span><div><span class="metric-name">Загрузка CPU</span><strong class="metric-value"><span id="cpu-value" class="live-number">—</span><span> %</span></strong></div></div>
+            <div class="meter"><span class="meter-fill" id="cpu-bar"></span></div><div class="metric-empty-line" id="cpu-note">Ожидает данные</div>
+        </article>
+        <article class="panel metric-card">
+            <div class="metric-top"><span class="metric-icon"><svg viewBox="0 0 48 48"><rect x="7" y="13" width="34" height="22" rx="3"/><path d="M12 18h24v12H12zM14 8v5m7-5v5m7-5v5m7-5v5M14 35v5m7-5v5m7-5v5m7-5v5"/></svg></span><div><span class="metric-name">Оперативная память</span><strong class="metric-value"><span id="memory-used" class="live-number">—</span><span> / </span><span id="memory-total" class="live-number">—</span><span> GiB</span></strong></div></div>
+            <div class="meter"><span class="meter-fill" id="memory-bar"></span></div><div class="metric-empty-line" id="memory-note">Ожидает данные</div>
+        </article>
+        <article class="panel metric-card">
+            <div class="metric-top"><span class="metric-icon metric-blue"><svg viewBox="0 0 48 48"><rect x="7" y="9" width="34" height="30" rx="4"/><path d="M12 15h24v18H12zM16 20h4m4 0h4m4 0h2M16 26h5m4 0h5m-14 4h16"/></svg></span><div><span class="metric-name">Системный диск (/)</span><strong class="metric-value"><span id="disk-used" class="live-number">—</span><span> / </span><span id="disk-total" class="live-number">—</span><span> GiB</span></strong></div></div>
+            <div class="meter meter-blue"><span class="meter-fill meter-fill-blue" id="disk-bar"></span></div><div class="metric-empty-line" id="disk-note">Ожидает данные</div>
+        </article>
+        <article class="panel metric-card">
+            <div class="metric-top"><span class="metric-icon"><svg viewBox="0 0 48 48"><path d="M24 7a5 5 0 0 0-5 5v15a9 9 0 1 0 10 0V12a5 5 0 0 0-5-5Z"/><path d="M24 16v18"/></svg></span><div><span class="metric-name">Температура CPU</span><strong class="metric-value"><span id="temperature-value" class="live-number">—</span><span> °C</span></strong></div></div><div class="metric-empty-line" id="temperature-note">Проверяем аппаратный датчик</div>
+        </article>
+        <article class="panel metric-card fan-card">
+            <div class="metric-top"><span class="fan-icon"><svg viewBox="0 0 48 48"><g class="fan-rotor"><circle class="fan-ring" cx="24" cy="24" r="18"/><path class="fan-blade" d="M23 21C15 17 15 10 20 7c6-2 9 6 6 14Z"/><path class="fan-blade" d="M27 23c4-8 11-8 14-3 2 6-6 9-14 6Z"/><path class="fan-blade" d="M25 27c8 4 8 11 3 14-6 2-9-6-6-14Z"/><path class="fan-blade" d="M21 25c-4 8-11 8-14 3-2-6 6-9 14-6Z"/><circle class="fan-hub" cx="24" cy="24" r="4"/></g></svg></span><div><span class="metric-name">Вентиляторы · FAN1</span><strong class="metric-value"><span id="fan-value" class="live-number">—</span><span> RPM</span></strong></div></div><div class="metric-empty-line" id="fan-note">Ожидаем показания</div><div class="fan-secondary">FAN3: <strong id="fan3-value" class="live-number">—</strong> RPM</div>
+        </article>
+        <article class="panel minecraft-card"><div class="minecraft-emblem"><div class="mini-grass-block large"><span></span></div></div><div class="minecraft-info"><span class="small-label">MINECRAFT FABRIC</span><h2>Игровая телеметрия</h2><p>Отдельно подключим состояние игры, TPS, MSPT и число игроков. Уже установленный spark оставим как есть.</p><div class="minecraft-tags"><span>TPS: —</span><span>MSPT: —</span><span>Игроки: —</span></div></div></article>
+    </div>
+    <article class="panel info-panel" style="margin-top:18px"><h2>Доступ и безопасность</h2><div class="info-list"><div><span class="info-ico">✓</span><span><strong>Просмотр без управления</strong><small>Обычные пользователи не получают доступ к командной строке или конфигурации Minecraft.</small></span></div><div><span class="info-ico">⌁</span><span><strong>Метрики с Ubuntu</strong><small>Node Exporter и Prometheus доступны только внутри сервера и localhost; наружу их порты не опубликованы.</small></span></div><div><span class="info-ico">▤</span><span><strong>Whitelist</strong><small>Добавление ника после одобрения — отдельная функция через RCON, настроим её после системных метрик.</small></span></div></div></article>
+</div>
+@section Scripts {
+    <script src="~/js/monitor.js" asp-append-version="true"></script>
+}

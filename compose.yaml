@@ -1,0 +1,119 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: togethercraft-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: togethercraft
+      POSTGRES_USER: togethercraft
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Create .env and set POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U togethercraft -d togethercraft"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  togethercraft-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: togethercraft-web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=togethercraft;Username=togethercraft;Password=${POSTGRES_PASSWORD}
+      Admin__Username: ${ADMIN_USERNAME:-admin}
+      Admin__Password: ${ADMIN_PASSWORD:?Create .env and set a strong ADMIN_PASSWORD}
+      MinecraftRcon__Host: ${RCON_HOST:-host.docker.internal}
+      MinecraftRcon__Port: ${RCON_PORT:-25575}
+      MinecraftRcon__Password: ${RCON_PASSWORD:-}
+      DataProtection__KeysPath: /var/dpkeys
+      Prometheus__BaseUrl: http://prometheus:9090
+    ports:
+      # Only localhost is exposed; the public HTTPS proxy talks to the web container privately.
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - data-protection-keys:/var/dpkeys
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - frontend
+      - backend
+
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    container_name: togethercraft-node-exporter
+    restart: unless-stopped
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+      - --collector.hwmon
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro,rslave
+    ports:
+      - "127.0.0.1:9100:9100"
+    networks:
+      - backend
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    container_name: togethercraft-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    depends_on:
+      - node-exporter
+    networks:
+      - backend
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: togethercraft-caddy
+    restart: unless-stopped
+    profiles: ["public"]
+    depends_on:
+      togethercraft-web:
+        condition: service_healthy
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:-example.com}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - frontend
+
+volumes:
+  postgres-data:
+  caddy-data:
+  caddy-config:
+  data-protection-keys:
+  prometheus-data:
+
+networks:
+  frontend:
+  backend:
+    internal: true

@@ -1,0 +1,32 @@
+@model IReadOnlyList<TogetherCraft.Models.UserAccount>
+@{
+    ViewData["Title"] = "Заявки";
+}
+<div class="page-shell admin-shell">
+    <section class="admin-heading">
+        <div><span class="small-label">ТОЛЬКО ДЛЯ АДМИНИСТРАТОРА</span><h1>Заявки на доступ</h1><p>Одобрение добавляет указанный Minecraft-ник в whitelist через RCON. Если RCON не настроен или Minecraft недоступен, заявка останется ожидающей.</p></div>
+        <span class="pending-count">@Model.Count ожидают решения</span>
+    </section>
+
+    @if (Model.Count == 0)
+    {
+        <article class="panel empty-panel"><div class="state-icon">✓</div><h2>Новых заявок нет</h2><p>Когда кто-то зарегистрируется, его заявка появится здесь.</p></article>
+    }
+    else
+    {
+        <div class="application-list">
+        @foreach (var account in Model)
+        {
+            <article class="panel application-card">
+                <div class="application-avatar">@(account.Username.Substring(0, 1).ToUpperInvariant())</div>
+                <div class="application-info"><h2>@account.Username</h2><p>Minecraft: <strong>@account.MinecraftUsername</strong></p><small>Создана: @account.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small></div>
+                <div class="application-actions">
+                    <form asp-controller="Admin" asp-action="Approve" method="post"><input type="hidden" name="id" value="@account.Id" /><button class="button button-primary" type="submit">Одобрить и добавить в whitelist</button></form>
+                    <form asp-controller="Admin" asp-action="Reject" method="post" onsubmit="return confirm('Отклонить заявку @account.Username?');"><input type="hidden" name="id" value="@account.Id" /><button class="button button-danger" type="submit">Отклонить</button></form>
+                </div>
+            </article>
+        }
+        </div>
+    }
+    <div class="admin-note"><strong>Безопасность:</strong> пароль RCON хранится только в серверном файле `.env`. Порт RCON не публикуется наружу. Не отправляй `.env` в GitHub и не присылай его содержимое в чат.</div>
+</div>

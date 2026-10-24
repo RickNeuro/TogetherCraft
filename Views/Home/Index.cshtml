@@ -1,0 +1,149 @@
+@{
+    ViewData["Title"] = "Главная";
+    var canMonitor = User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.HasClaim("access_status", "Approved"));
+    var isPending = User.Identity?.IsAuthenticated == true && User.HasClaim("access_status", "Pending");
+}
+<section class="hero hero-photo">
+    <div class="hero-ambient" aria-hidden="true"></div>
+    <img class="hero-art" src="~/img/hero-fox.jpg" alt="Оригинальный арт TogetherCraft: лиса в мире Minecraft на тёплом закате" />
+    <div class="hero-shade" aria-hidden="true"></div>
+    <div class="hero-caption">
+        <div class="hero-caption-copy">
+            <span class="eyebrow"><span class="eyebrow-line"></span> ТВОЙ МИР · ТВОИ ДРУЗЬЯ</span>
+            <p>Приватный Minecraft-сервер для друзей.<br /><span>Смотри состояние сервера — без доступа к управлению.</span></p>
+        </div>
+        <div class="hero-actions">
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <a class="button button-primary" asp-controller="Account" asp-action="Register">Создать аккаунт <span aria-hidden="true">↗</span></a>
+                <a class="button button-ghost" asp-controller="Account" asp-action="Login">Войти</a>
+            }
+            else if (User.IsInRole("Admin"))
+            {
+                <a class="button button-primary" asp-controller="Admin" asp-action="Index">Открыть админ-панель <span aria-hidden="true">↗</span></a>
+            }
+            else if (isPending)
+            {
+                <a class="button button-primary" asp-controller="Account" asp-action="Waiting">Статус заявки <span aria-hidden="true">↗</span></a>
+            }
+            else
+            {
+                <a class="button button-primary" asp-controller="Home" asp-action="Server">Открыть мониторинг <span aria-hidden="true">↗</span></a>
+            }
+        </div>
+    </div>
+</section>
+
+<div class="page-shell">
+    <div class="section-heading">
+        <div><span class="small-label">СОСТОЯНИЕ СИСТЕМЫ</span><h1>Мониторинг <span>TogetherCraft</span></h1></div>
+        <span class="connection-pill"><i></i> <span id="source-status">@(canMonitor ? "Подключаем системные метрики…" : "Мониторинг доступен после одобрения")</span></span>
+    </div>
+    <div class="setup-notice">
+        <span class="notice-icon">i</span>
+        <p><strong id="source-message">@(canMonitor ? "Подключаем сборщик метрик Ubuntu…" : "Мониторинг доступен только одобренным аккаунтам.")</strong>@if (canMonitor) { <br /><small>Последнее обновление: <span id="last-updated">ожидание</span></small> }</p>
+    </div>
+
+    <section class="dashboard-grid" aria-label="Обзор TogetherCraft" data-live-monitor="@(canMonitor ? "true" : "false")">
+        <aside class="left-column">
+            <article class="panel server-summary">
+                <div class="panel-title-row">
+                    <div class="server-cube-icon" aria-hidden="true">
+                        <svg viewBox="0 0 48 48"><path d="M24 3 43 13v22L24 45 5 35V13Z" fill="#163d39" stroke="#3ba777" stroke-width="1.5"/><path d="M24 3 43 13 24 23 5 13Z" fill="#6ea94e"/><path d="M5 13 24 23v22L5 35Z" fill="#397a47"/><path d="M43 13 24 23v22l19-10Z" fill="#234b3e"/><path d="M14 17l10 5 10-5M24 23v11" stroke="#b3df79" stroke-width="1.5" fill="none"/></svg>
+                    </div>
+                    <div><div class="small-label">СОСТОЯНИЕ СЕРВЕРА</div><div class="status-heading"><span class="status-dot status-warn"></span> Нет соединения</div></div>
+                </div>
+                <div class="server-detail-list">
+                    <div><span><b>⌘</b> Адрес</span><strong>Не настроен</strong></div>
+                    <div><span><b>⚙</b> Версия</span><strong>Fabric · —</strong></div>
+                    <div><span><b>◴</b> TPS</span><strong>—</strong></div>
+                    <div><span><b>♙</b> Игроки</span><strong>— / —</strong></div>
+                </div>
+                <div class="panel-foot"><span class="pulse-ring"></span> Сначала подключим безопасный источник данных</div>
+            </article>
+
+            <article class="panel about-card">
+                <div class="about-top">
+                    <div class="mini-grass-block" aria-hidden="true"><span></span></div>
+                    <div><h2>Вместе играем, отдельно защищаем</h2><p>Твой небольшой уголок Minecraft.</p></div>
+                </div>
+                <p class="about-copy">После одобрения аккаунта можно смотреть техническое состояние. Команды управления сервером останутся только на Ubuntu.</p>
+                <a class="inline-link" asp-controller="Home" asp-action="Server">Как устроен мониторинг <span>→</span></a>
+            </article>
+        </aside>
+
+        <section class="center-column" aria-label="Ресурсы сервера">
+            <div class="metrics-grid">
+                <article class="panel metric-card">
+                    <div class="metric-top"><span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="12" y="12" width="24" height="24" rx="3"/><path d="M18 18h12v12H18zM17 5v7m7-7v7m7-7v7M17 36v7m7-7v7m7-7v7M5 17h7m-7 7h7m-7 7h7m24-14h7m-7 7h7m-7 7h7"/></svg></span><div><span class="metric-name">Процессор</span><strong class="metric-value"><span id="cpu-value" class="live-number">—</span><span> %</span></strong></div></div>
+                    <div class="meter"><span class="meter-fill" id="cpu-bar"></span></div><div class="metric-empty-line" id="cpu-note">Ожидает данные</div>
+                </article>
+                <article class="panel metric-card">
+                    <div class="metric-top"><span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="7" y="13" width="34" height="22" rx="3"/><path d="M12 18h24v12H12zM14 8v5m7-5v5m7-5v5m7-5v5M14 35v5m7-5v5m7-5v5m7-5v5"/><path d="M17 22h3v4h-3zm6 0h3v4h-3zm6 0h3v4h-3z"/></svg></span><div><span class="metric-name">Оперативная память</span><strong class="metric-value"><span id="memory-used" class="live-number">—</span><span> / </span><span id="memory-total" class="live-number">—</span><span> GiB</span></strong></div></div>
+                    <div class="meter"><span class="meter-fill" id="memory-bar"></span></div><div class="metric-empty-line" id="memory-note">Ожидает данные</div>
+                </article>
+                <article class="panel metric-card">
+                    <div class="metric-top"><span class="metric-icon metric-blue" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="7" y="9" width="34" height="30" rx="4"/><path d="M12 15h24v18H12zM16 20h4m4 0h4m4 0h2M16 26h5m4 0h5m-14 4h16"/><circle cx="34" cy="29" r="1.5" fill="currentColor" stroke="none"/></svg></span><div><span class="metric-name">Системный диск</span><strong class="metric-value"><span id="disk-used" class="live-number">—</span><span> / </span><span id="disk-total" class="live-number">—</span><span> GiB</span></strong></div></div>
+                    <div class="meter meter-blue"><span class="meter-fill meter-fill-blue" id="disk-bar"></span></div><div class="metric-empty-line" id="disk-note">Ожидает данные</div>
+                </article>
+                <article class="panel metric-card">
+                    <div class="metric-top"><span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 7a5 5 0 0 0-5 5v15a9 9 0 1 0 10 0V12a5 5 0 0 0-5-5Z"/><path d="M24 16v18"/><circle cx="24" cy="34" r="3" fill="currentColor" stroke="none"/></svg></span><div><span class="metric-name">Температура CPU</span><strong class="metric-value"><span id="temperature-value" class="live-number">—</span><span> °C</span></strong></div></div>
+                    <div class="metric-empty-line metric-note" id="temperature-note">Проверяем датчик</div>
+                </article>
+                <article class="panel metric-card fan-card">
+                    <div class="metric-top"><span class="fan-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><g class="fan-rotor"><circle class="fan-ring" cx="24" cy="24" r="18"/><path class="fan-blade" d="M23 21C15 17 15 10 20 7c6-2 9 6 6 14Z"/><path class="fan-blade" d="M27 23c4-8 11-8 14-3 2 6-6 9-14 6Z"/><path class="fan-blade" d="M25 27c8 4 8 11 3 14-6 2-9-6-6-14Z"/><path class="fan-blade" d="M21 25c-4 8-11 8-14 3-2-6 6-9 14-6Z"/><circle class="fan-hub" cx="24" cy="24" r="4"/></g></svg></span><div><span class="metric-name">Вентиляторы · FAN1</span><strong class="metric-value"><span id="fan-value" class="live-number">—</span><span> RPM</span></strong></div></div>
+                    <div class="metric-empty-line" id="fan-note">Ожидаем показания</div><div class="fan-secondary">FAN3: <strong id="fan3-value" class="live-number">—</strong> RPM</div>
+                </article>
+            </div>
+
+            <article class="panel chart-panel">
+                <div class="chart-header"><div><div class="chart-title"><span class="chart-icon">⌁</span> История нагрузки CPU</div><p>График начнёт заполняться после подключения телеметрии.</p></div><span class="chart-lock">НЕТ ДАННЫХ</span></div>
+                <div class="chart-empty"><div class="chart-empty-grid"><i></i><i></i><i></i><i></i></div><div class="chart-empty-message"><span class="chart-empty-icon">↗</span><strong>Данных пока нет</strong><span>Не будем рисовать фиктивную нагрузку — подключим реальные показатели с Ubuntu.</span></div><div class="chart-axis"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+            </article>
+
+            <article class="panel minecraft-card">
+                <div class="minecraft-emblem"><div class="mini-grass-block large" aria-hidden="true"><span></span></div></div>
+                <div class="minecraft-info"><span class="small-label">ИГРОВОЙ СЕРВЕР</span><h2>Minecraft Fabric</h2><p>Whitelist будет обновляться после твоего одобрения заявки.</p><div class="minecraft-tags"><span>Fabric</span><span>TPS: —</span><span>Игроки: —</span></div></div>
+                <span class="round-arrow" aria-hidden="true">↗</span>
+            </article>
+        </section>
+
+        <aside class="right-column">
+            <article class="panel access-card">
+                <div class="access-heading"><span class="access-icon">✓</span><h2>Доступ к мониторингу</h2></div>
+                @if (canMonitor)
+                {
+                    <p>Твой доступ подтверждён. Подробная телеметрия станет доступна после подключения источника данных.</p>
+                    <a class="button button-primary button-full" asp-controller="Home" asp-action="Server">Открыть мониторинг</a>
+                }
+                else if (isPending)
+                {
+                    <p>Заявка создана и ожидает решения администратора. После одобрения ник автоматически попадёт в whitelist Minecraft.</p>
+                    <a class="button button-primary button-full" asp-controller="Account" asp-action="Waiting">Проверить заявку</a>
+                }
+                else
+                {
+                    <p>Создай аккаунт и укажи Minecraft-ник. После твоего одобрения сайт добавит его в whitelist сервера.</p>
+                    <div class="steps-list"><div class="step active"><span>1</span><div><strong>Регистрация</strong><small>Логин, пароль и Minecraft-ник</small></div></div><div class="step"><span>2</span><div><strong>Твоё одобрение</strong><small>Заявки поступят администратору</small></div></div><div class="step"><span>3</span><div><strong>Доступ открыт</strong><small>Ник добавлен в whitelist</small></div></div></div>
+                    <a class="button button-primary button-full" asp-controller="Account" asp-action="Register">Оставить заявку</a>
+                }
+            </article>
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <article class="panel login-card">
+                    <div class="access-heading"><span class="access-icon user-icon">↗</span><h2>Уже есть аккаунт?</h2></div>
+                    <p class="form-hint">Войди, чтобы увидеть состояние своей заявки или открыть доступные разделы.</p>
+                    <a class="button button-ghost button-full" asp-controller="Account" asp-action="Login">Войти в аккаунт</a>
+                </article>
+            }
+            else if (User.IsInRole("Admin"))
+            {
+                <article class="panel login-card"><div class="access-heading"><span class="access-icon user-icon">⚙</span><h2>Панель администратора</h2></div><p class="form-hint">Проверяй заявки и добавляй одобренных игроков в whitelist.</p><a class="button button-ghost button-full" asp-controller="Admin" asp-action="Index">Открыть заявки</a></article>
+            }
+        </aside>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/monitor.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,26 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.cache
+
+# .NET build output
+bin/
+obj/
+artifacts/
+
+# Local configuration and secrets
+appsettings.Development.json
+.env
+.env.*
+!.env.example
+secrets.json
+
+# Local database / logs
+*.log
+database-data/
+postgres-data/
+
+# OS files
+.DS_Store
+Thumbs.db

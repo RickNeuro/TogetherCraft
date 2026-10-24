@@ -1,0 +1,11 @@
+@{
+    ViewData["Title"] = "Доступ ограничен";
+}
+<div class="narrow-page">
+    <article class="panel state-panel">
+        <div class="state-icon">🔒</div><span class="small-label">ДОСТУП ОГРАНИЧЕН</span>
+        <h1>Этот раздел пока закрыт</h1>
+        <p>Мониторинг доступен только одобренным аккаунтам. Если ты только что получил одобрение, выйди и войди снова, чтобы обновить статус доступа.</p>
+        <div class="state-actions"><a class="button button-primary" asp-controller="Account" asp-action="Login">Войти снова</a><a class="button button-ghost" asp-controller="Home" asp-action="Index">На главную</a></div>
+    </article>
+</div>

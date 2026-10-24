@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+.vs/
+.git/
+*.user
+*.suo
+.env
+.env.*
+!.env.example
+postgres-data/
+node_modules/
