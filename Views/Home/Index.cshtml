@@ -6,33 +6,33 @@
 <div class="container py-4 py-lg-5">
     <section class="row align-items-center g-4 mb-5">
         <div class="col-lg-6">
-            <p class="text-success text-uppercase small fw-semibold mb-2">Minecraft Fabric · сервер для друзей</p>
+            <p class="text-warning text-uppercase small fw-semibold mb-2">Minecraft Fabric · сервер для друзей</p>
             <h1 class="display-5 fw-bold mb-3">Твой мир. Твои друзья.</h1>
             <p class="fs-5 text-secondary mb-4">TogetherCraft — приватный сервер для друзей. Подай заявку, дождись одобрения и смотри состояние системы.</p>
             <div class="d-flex flex-wrap gap-2">
                 @if (User.Identity?.IsAuthenticated != true)
                 {
-                    <a class="btn btn-success btn-lg" asp-controller="Account" asp-action="Register">Оставить заявку</a>
+                    <a class="btn btn-warning btn-lg" asp-controller="Account" asp-action="Register">Оставить заявку</a>
                     <a class="btn btn-outline-light btn-lg" asp-controller="Account" asp-action="Login">Войти</a>
                 }
                 else if (User.IsInRole("Admin"))
                 {
-                    <a class="btn btn-success btn-lg" asp-controller="Admin" asp-action="Index">Открыть заявки</a>
+                    <a class="btn btn-warning btn-lg" asp-controller="Admin" asp-action="Index">Открыть заявки</a>
                 }
                 else if (isPending)
                 {
-                    <a class="btn btn-success btn-lg" asp-controller="Account" asp-action="Waiting">Моя заявка</a>
+                    <a class="btn btn-warning btn-lg" asp-controller="Account" asp-action="Waiting">Моя заявка</a>
                 }
                 else
                 {
-                    <a class="btn btn-success btn-lg" asp-controller="Home" asp-action="Server">Открыть мониторинг</a>
+                    <a class="btn btn-warning btn-lg" asp-controller="Home" asp-action="Server">Открыть мониторинг</a>
                 }
             </div>
         </div>
-        <div class="col-lg-6"><img class="hero-image" src="~/img/hero-fox.jpg" alt="Лиса в мире Minecraft на закате" /></div>
+        <div class="col-lg-6"><img class="img-fluid rounded-3 w-100" src="~/img/hero-fox.jpg" alt="Лиса в мире Minecraft на закате" /></div>
     </section>
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-2 mb-3">
-        <div><p class="text-success text-uppercase small fw-semibold mb-1">Состояние системы</p><h2 class="h3 mb-0">Мониторинг TogetherCraft</h2></div>
+        <div><p class="text-warning text-uppercase small fw-semibold mb-1">Состояние системы</p><h2 class="h3 mb-0">Мониторинг TogetherCraft</h2></div>
         <span class="badge text-bg-secondary" id="source-status">@(canMonitor ? "Подключаем метрики…" : "Доступ после одобрения")</span>
     </div>
     @if (!canMonitor)
@@ -43,10 +43,10 @@
     {
         <div class="alert alert-secondary" role="status"><strong id="source-message">Подключаем источник метрик Ubuntu…</strong><span class="d-block small mt-1">Последнее обновление: <span id="last-updated">ожидание</span></span></div>
         <section class="row g-3" data-live-monitor="true">
-            <div class="col-12 col-sm-6 col-xl-3"><article class="card h-100"><div class="card-body"><h3 class="h6 text-secondary">Процессор</h3><div class="metric-value"><span id="cpu-value">—</span>%</div><div class="progress mt-3"><div id="cpu-bar" class="progress-bar bg-success" style="width:0%"></div></div><p class="small text-secondary mt-2 mb-0" id="cpu-note">Ожидаем данные</p></div></article></div>
-            <div class="col-12 col-sm-6 col-xl-3"><article class="card h-100"><div class="card-body"><h3 class="h6 text-secondary">Оперативная память</h3><div class="metric-value"><span id="memory-used">—</span> / <span id="memory-total">—</span><span class="fs-6"> GiB</span></div><div class="progress mt-3"><div id="memory-bar" class="progress-bar bg-success" style="width:0%"></div></div><p class="small text-secondary mt-2 mb-0" id="memory-note">Ожидаем данные</p></div></article></div>
-            <div class="col-12 col-sm-6 col-xl-3"><article class="card h-100"><div class="card-body"><h3 class="h6 text-secondary">Системный диск</h3><div class="metric-value"><span id="disk-used">—</span> / <span id="disk-total">—</span><span class="fs-6"> GiB</span></div><div class="progress mt-3"><div id="disk-bar" class="progress-bar bg-info" style="width:0%"></div></div><p class="small text-secondary mt-2 mb-0" id="disk-note">Ожидаем данные</p></div></article></div>
-            <div class="col-12 col-sm-6 col-xl-3"><article class="card h-100"><div class="card-body"><h3 class="h6 text-secondary">Температура CPU</h3><div class="metric-value"><span id="temperature-value">—</span><span class="fs-6"> °C</span></div><p class="small text-secondary mt-2 mb-0" id="temperature-note">Проверяем датчик</p><hr /><h3 class="h6 text-secondary">Вентилятор FAN1</h3><div class="h4 mb-1"><span id="fan-value">—</span> <span class="fs-6">RPM</span></div><p class="small text-secondary mb-0" id="fan-note">Ожидаем показания</p><span class="small text-secondary">FAN3: <span id="fan3-value">—</span> RPM</span></div></article></div>
+            <div class="col-12 col-sm-6 col-xl-3"><article class="card h-100"><div class="card-body"><h3 class="h6 text-secondary">Процессор</h3><div class="fs-3 fw-semibold"><span id="cpu-value">—</span>%</div><div class="progress mt-3"><div id="cpu-bar" class="progress-bar bg-warning" style="width:0%"></div></div><p class="small text-secondary mt-2 mb-0" id="cpu-note">Ожидаем данные</p></div></article></div>
+            <div class="col-12 col-sm-6 col-xl-3"><article class="card h-100"><div class="card-body"><h3 class="h6 text-secondary">Оперативная память</h3><div class="fs-3 fw-semibold"><span id="memory-used">—</span> / <span id="memory-total">—</span><span class="fs-6"> GiB</span></div><div class="progress mt-3"><div id="memory-bar" class="progress-bar bg-warning" style="width:0%"></div></div><p class="small text-secondary mt-2 mb-0" id="memory-note">Ожидаем данные</p></div></article></div>
+            <div class="col-12 col-sm-6 col-xl-3"><article class="card h-100"><div class="card-body"><h3 class="h6 text-secondary">Системный диск</h3><div class="fs-3 fw-semibold"><span id="disk-used">—</span> / <span id="disk-total">—</span><span class="fs-6"> GiB</span></div><div class="progress mt-3"><div id="disk-bar" class="progress-bar bg-info" style="width:0%"></div></div><p class="small text-secondary mt-2 mb-0" id="disk-note">Ожидаем данные</p></div></article></div>
+            <div class="col-12 col-sm-6 col-xl-3"><article class="card h-100"><div class="card-body"><h3 class="h6 text-secondary">Температура CPU</h3><div class="fs-3 fw-semibold"><span id="temperature-value">—</span><span class="fs-6"> °C</span></div><p class="small text-secondary mt-2 mb-0" id="temperature-note">Проверяем датчик</p><hr /><h3 class="h6 text-secondary">Вентилятор FAN1</h3><div class="h4 mb-1"><span id="fan-value">—</span> <span class="fs-6">RPM</span></div><p class="small text-secondary mb-0" id="fan-note">Ожидаем показания</p><span class="small text-secondary">FAN3: <span id="fan3-value">—</span> RPM</span></div></article></div>
         </section>
     }
     <section class="row g-3 mt-3">
