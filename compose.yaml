@@ -40,7 +40,7 @@ services:
       Prometheus__BaseUrl: http://prometheus:9090
     ports:
       # Only localhost is exposed; the public HTTPS proxy talks to the web container privately.
-      - "127.0.0.1:8080:8080"
+      - "8080:8080"
     volumes:
       - data-protection-keys:/var/dpkeys
     extra_hosts:
