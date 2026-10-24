@@ -9,7 +9,7 @@
         <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
         <div class="mb-3"><label asp-for="Username" class="form-label">Логин</label><input asp-for="Username" class="form-control" autocomplete="username" placeholder="Твой логин" /><span asp-validation-for="Username" class="field-validation-error small"></span></div>
         <div class="mb-3"><label asp-for="Password" class="form-label">Пароль</label><input asp-for="Password" type="password" class="form-control" autocomplete="current-password" placeholder="Введи пароль" /><span asp-validation-for="Password" class="field-validation-error small"></span></div>
-        <button class="btn btn-success w-100" type="submit">Войти</button>
+        <button class="btn btn-warning w-100" type="submit">Войти</button>
     </form>
     <p class="text-secondary mt-4 mb-0">Ещё нет аккаунта? <a asp-controller="Account" asp-action="Register">Оставить заявку</a></p>
 </div></div></div></div></div>
