@@ -35,13 +35,13 @@ public sealed class PrometheusMetricsService
             return Empty("Источник метрик Ubuntu пока недоступен.");
         }
 
-        var cpuTask = QueryAsync("100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[1m])))", cancellationToken);
+        // Node Exporter and the browser both refresh every 5 seconds.
+        // A 15-second rate window reacts much faster than the previous 1-minute average.
+        var cpuTask = QueryAsync("100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[15s])))", cancellationToken);
         var memoryTotalTask = QueryAsync("node_memory_MemTotal_bytes", cancellationToken);
         var memoryAvailableTask = QueryAsync("node_memory_MemAvailable_bytes", cancellationToken);
         var diskTotalTask = QueryAsync("node_filesystem_size_bytes{mountpoint=\"/\",fstype!~\"rootfs|tmpfs|overlay|squashfs\"}", cancellationToken);
         var diskAvailableTask = QueryAsync("node_filesystem_avail_bytes{mountpoint=\"/\",fstype!~\"rootfs|tmpfs|overlay|squashfs\"}", cancellationToken);
-        // k10temp is exposed by Node Exporter with a PCI address in the chip label,
-        // not with the literal text "k10temp". Restrict this query to the PCI CPU sensor.
         var temperatureTask = QueryAsync("node_hwmon_temp_celsius{chip=~\"pci.*\",sensor=\"temp1\"}", cancellationToken);
         var fan1Task = QueryAsync("node_hwmon_fan_rpm{sensor=\"fan1\"}", cancellationToken);
         var fan3Task = QueryAsync("node_hwmon_fan_rpm{sensor=\"fan3\"}", cancellationToken);
