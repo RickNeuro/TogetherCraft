@@ -14,7 +14,12 @@
         if (element) element.style.width = value == null ? '0%' : `${Math.max(0, Math.min(100, value))}%`;
     };
 
+    let requestInProgress = false;
+
     async function refreshMetrics() {
+        if (requestInProgress) return;
+        requestInProgress = true;
+
         try {
             const response = await fetch('/api/metrics', {
                 method: 'GET',
@@ -44,7 +49,7 @@
             setText('last-updated', data.updatedAtUtc ? new Date(data.updatedAtUtc).toLocaleTimeString() : 'сейчас');
 
             setText('cpu-value', formatNumber(data.cpuPercent));
-            setText('cpu-note', data.cpuPercent == null ? 'Собираем первые 60 секунд данных' : 'Нагрузка всех ядер CPU');
+            setText('cpu-note', data.cpuPercent == null ? 'Собираем данные CPU' : 'Нагрузка всех ядер CPU');
             setBar('cpu-bar', data.cpuPercent);
 
             setText('memory-used', formatGib(data.memoryUsedBytes));
@@ -58,7 +63,7 @@
             setBar('disk-bar', data.diskPercent);
 
             setText('temperature-value', formatNumber(data.cpuTemperatureCelsius));
-            setText('temperature-note', data.cpuTemperatureCelsius == null ? 'Датчик k10temp не найден экспортером' : 'Датчик процессора AMD');
+            setText('temperature-note', data.cpuTemperatureCelsius == null ? 'Датчик CPU недоступен' : 'Датчик процессора AMD');
             setText('fan-value', data.fan1Rpm == null ? '—' : formatNumber(data.fan1Rpm, 0));
             setText('fan3-value', data.fan3Rpm == null ? '—' : formatNumber(data.fan3Rpm, 0));
 
@@ -72,7 +77,6 @@
                 setText('fan-note', fanStatus.join(' · '));
             }
 
-            // The decorative rotor is animated only when a real non-zero RPM reading exists.
             document.querySelectorAll('.fan-rotor').forEach(rotor => {
                 if (data.fan1Rpm != null && data.fan1Rpm > 0) {
                     const duration = Math.max(0.3, Math.min(1.8, 1800 / data.fan1Rpm));
@@ -84,10 +88,12 @@
             });
         } catch {
             setText('source-status', 'Нет связи с источником метрик');
-            setText('source-message', 'Проверяем подключение автоматически через 10 секунд.');
+            setText('source-message', 'Проверяем подключение автоматически через 5 секунд.');
+        } finally {
+            requestInProgress = false;
         }
     }
 
     refreshMetrics();
-    window.setInterval(refreshMetrics, 10000);
+    window.setInterval(refreshMetrics, 5000);
 })();
