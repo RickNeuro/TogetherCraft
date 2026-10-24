@@ -9,7 +9,7 @@
         <div class="mb-3"><label asp-for="MinecraftUsername" class="form-label">Ник в Minecraft</label><input asp-for="MinecraftUsername" class="form-control" autocomplete="off" placeholder="Например, Steve_21" /><span asp-validation-for="MinecraftUsername" class="field-validation-error small"></span></div>
         <div class="mb-3"><label asp-for="Password" class="form-label">Пароль</label><input asp-for="Password" class="form-control" type="password" autocomplete="new-password" placeholder="Не менее 10 символов" /><span asp-validation-for="Password" class="field-validation-error small"></span></div>
         <div class="mb-3"><label asp-for="ConfirmPassword" class="form-label">Повтори пароль</label><input asp-for="ConfirmPassword" class="form-control" type="password" autocomplete="new-password" placeholder="Введи пароль ещё раз" /><span asp-validation-for="ConfirmPassword" class="field-validation-error small"></span></div>
-        <button class="btn btn-success w-100" type="submit">Отправить заявку</button>
+        <button class="btn btn-warning w-100" type="submit">Отправить заявку</button>
     </form>
     <p class="text-secondary mt-4 mb-0">Уже есть аккаунт? <a asp-controller="Account" asp-action="Login">Войти</a></p>
 </div></div></div></div></div>
