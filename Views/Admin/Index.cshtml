@@ -1,32 +1,25 @@
 @model IReadOnlyList<TogetherCraft.Models.UserAccount>
-@{
-    ViewData["Title"] = "Заявки";
-}
-<div class="page-shell admin-shell">
-    <section class="admin-heading">
-        <div><span class="small-label">ТОЛЬКО ДЛЯ АДМИНИСТРАТОРА</span><h1>Заявки на доступ</h1><p>Одобрение добавляет указанный Minecraft-ник в whitelist через RCON. Если RCON не настроен или Minecraft недоступен, заявка останется ожидающей.</p></div>
-        <span class="pending-count">@Model.Count ожидают решения</span>
-    </section>
-
+@{ ViewData["Title"] = "Заявки"; }
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4"><div><p class="text-success text-uppercase small fw-semibold mb-1">Панель администратора</p><h1 class="h2">Заявки на доступ</h1><p class="text-secondary mb-0">Одобрение отправляет Minecraft-ник в whitelist через RCON.</p></div><div><span class="badge text-bg-secondary fs-6">@Model.Count заявок</span></div></div>
     @if (Model.Count == 0)
     {
-        <article class="panel empty-panel"><div class="state-icon">✓</div><h2>Новых заявок нет</h2><p>Когда кто-то зарегистрируется, его заявка появится здесь.</p></article>
+        <div class="card"><div class="card-body py-5 text-center"><h2 class="h5">Новых заявок нет</h2><p class="text-secondary mb-0">Когда кто-то зарегистрируется, заявка появится здесь.</p></div></div>
     }
     else
     {
-        <div class="application-list">
-        @foreach (var account in Model)
-        {
-            <article class="panel application-card">
-                <div class="application-avatar">@(account.Username.Substring(0, 1).ToUpperInvariant())</div>
-                <div class="application-info"><h2>@account.Username</h2><p>Minecraft: <strong>@account.MinecraftUsername</strong></p><small>Создана: @account.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small></div>
-                <div class="application-actions">
-                    <form asp-controller="Admin" asp-action="Approve" method="post"><input type="hidden" name="id" value="@account.Id" /><button class="button button-primary" type="submit">Одобрить и добавить в whitelist</button></form>
-                    <form asp-controller="Admin" asp-action="Reject" method="post" onsubmit="return confirm('Отклонить заявку @account.Username?');"><input type="hidden" name="id" value="@account.Id" /><button class="button button-danger" type="submit">Отклонить</button></form>
-                </div>
-            </article>
-        }
-        </div>
+        <div class="card"><div class="table-responsive"><table class="table table-dark table-hover align-middle mb-0">
+            <thead><tr><th>Логин</th><th>Minecraft-ник</th><th>Дата</th><th class="text-end">Действия</th></tr></thead>
+            <tbody>
+            @foreach (var account in Model)
+            {
+                <tr><td>@account.Username</td><td>@account.MinecraftUsername</td><td>@account.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td><td><div class="d-flex flex-wrap justify-content-end gap-2">
+                    <form asp-controller="Admin" asp-action="Approve" method="post"><input type="hidden" name="id" value="@account.Id" /><button class="btn btn-success btn-sm" type="submit">Одобрить и добавить в whitelist</button></form>
+                    <form asp-controller="Admin" asp-action="Reject" method="post" onsubmit="return confirm('Отклонить заявку @account.Username?');"><input type="hidden" name="id" value="@account.Id" /><button class="btn btn-outline-danger btn-sm" type="submit">Отклонить</button></form>
+                </div></td></tr>
+            }
+            </tbody>
+        </table></div></div>
     }
-    <div class="admin-note"><strong>Безопасность:</strong> пароль RCON хранится только в серверном файле `.env`. Порт RCON не публикуется наружу. Не отправляй `.env` в GitHub и не присылай его содержимое в чат.</div>
+    <div class="alert alert-secondary mt-4 mb-0"><strong>Безопасность:</strong> пароль RCON хранится в серверном файле <code>.env</code>. Не отправляй его в GitHub или чат.</div>
 </div>
