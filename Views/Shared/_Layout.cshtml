@@ -41,7 +41,7 @@
         <div class="container pt-3">
             @if (TempData["Success"] is string successMessage)
             {
-                <div class="alert alert-success alert-dismissible fade show" role="status">@successMessage<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button></div>
+                <div class="alert alert-warning alert-dismissible fade show" role="status">@successMessage<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button></div>
             }
             @if (TempData["Error"] is string errorMessage)
             {
