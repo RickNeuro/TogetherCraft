@@ -36,13 +36,14 @@ if (!string.IsNullOrWhiteSpace(dataProtectionPath))
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    // Web-Container veröffentlicht Port 8080 nur lokal; externer Zugriff geht über den Reverse-Proxy.
+    // Web-Container публикует порт 8080 только локально; внешний доступ идёт через обратный прокси.
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
 builder.Services.AddSingleton<IPasswordHasher<UserAccount>, PasswordHasher<UserAccount>>();
 builder.Services.AddSingleton<AppDatabase>();
 builder.Services.AddSingleton<MinecraftRconService>();
+builder.Services.AddSingleton<MinecraftServerStatusService>();
 builder.Services.AddHttpClient<PrometheusMetricsService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Prometheus:BaseUrl"] ?? "http://prometheus:9090");
@@ -61,8 +62,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.Events = new CookieAuthenticationEvents
         {
-            // Refresh access claims from PostgreSQL on every authenticated request.
-            // This means an already logged-in pending user sees approval without logging out.
             OnValidatePrincipal = async context =>
             {
                 var idText = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -83,7 +82,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                 {
                     context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
                         .CreateLogger("TogetherCraft.CookieValidation")
-                        .LogWarning(exception, "Could not validate the current account against PostgreSQL; rejecting the session.");
+                        .LogWarning(exception, "Не удалось проверить пользователя в PostgreSQL.");
                     context.RejectPrincipal();
                     await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     return;
