@@ -34,17 +34,25 @@ public sealed class MinecraftStatusMonitorService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var lastSparkUpdate = DateTimeOffset.MinValue;
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 var pingTask = _server.ReadAsync(stoppingToken);
-                var sparkTask = _rcon.ReadSparkMetricsAsync(stoppingToken);
+                var updateSpark = DateTimeOffset.UtcNow - lastSparkUpdate >= TimeSpan.FromMinutes(1);
+                var sparkTask = updateSpark
+                    ? _rcon.ReadSparkMetricsAsync(stoppingToken)
+                    : Task.FromResult(_current.Spark);
 
                 await Task.WhenAll(pingTask, sparkTask);
 
                 var ping = await pingTask;
                 var spark = await sparkTask;
+
+                if (updateSpark)
+                    lastSparkUpdate = DateTimeOffset.UtcNow;
 
                 _current = new MinecraftStatusSnapshot(ping, spark, DateTimeOffset.UtcNow);
             }

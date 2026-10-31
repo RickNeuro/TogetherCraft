@@ -69,6 +69,12 @@ public sealed class MinecraftServerStatusService
             await WritePacketAsync(stream, handshake.ToArray(), timeout.Token);
             await WritePacketAsync(stream, new byte[] { 0 }, timeout.Token);
 
+            // Some vanilla servers wait for the ping packet before sending the status response.
+            var pingPayload = new byte[9];
+            pingPayload[0] = 1;
+            BinaryPrimitives.WriteInt64BigEndian(pingPayload.AsSpan(1), Stopwatch.GetTimestamp());
+            await WritePacketAsync(stream, pingPayload, timeout.Token);
+
             var packetLength = await ReadVarIntAsync(stream, timeout.Token);
             if (packetLength is <= 0 or > 1_048_576)
                 throw new InvalidOperationException("Некорректный размер ответа Minecraft.");
