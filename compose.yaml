@@ -38,6 +38,7 @@ services:
       MinecraftRcon__Password: ${RCON_PASSWORD:-}
       MinecraftServer__Host: ${MC_SERVER_HOST:-fried-newer.tun.ply.gg}
       MinecraftServer__Port: ${MC_SERVER_PORT:-32219}
+      MinecraftServer__Protocol: ${MC_SERVER_PROTOCOL:-776}
       MinecraftServer__DisplayAddress: ${MC_SERVER_DISPLAY_ADDRESS:-fried-newer.tun.ply.gg}
       DataProtection__KeysPath: /var/dpkeys
       Prometheus__BaseUrl: http://prometheus:9090

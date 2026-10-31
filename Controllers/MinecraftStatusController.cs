@@ -9,29 +9,23 @@ namespace TogetherCraft.Controllers;
 [Authorize(Policy = "ApprovedUser")]
 public sealed class MinecraftStatusController : ControllerBase
 {
-    private readonly MinecraftServerStatusService _server;
-    private readonly MinecraftRconService _rcon;
+    private readonly MinecraftStatusMonitorService _monitor;
 
-    public MinecraftStatusController(MinecraftServerStatusService server, MinecraftRconService rcon)
+    public MinecraftStatusController(MinecraftStatusMonitorService monitor)
     {
-        _server = server;
-        _rcon = rcon;
+        _monitor = monitor;
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken)
+    public IActionResult Get()
     {
-        var pingTask = _server.ReadAsync(cancellationToken);
-        var sparkTask = _rcon.ReadSparkMetricsAsync(cancellationToken);
-
-        await Task.WhenAll(pingTask, sparkTask);
-
-        var ping = await pingTask;
-        var spark = await sparkTask;
+        var snapshot = _monitor.Current;
+        var ping = snapshot.Ping;
+        var spark = snapshot.Spark;
 
         return Ok(new
         {
-            address = _server.DisplayAddress,
+            address = _monitor.DisplayAddress,
             isOnline = ping.IsOnline,
             version = ping.Version,
             onlinePlayers = ping.OnlinePlayers,
@@ -42,7 +36,7 @@ public sealed class MinecraftStatusController : ControllerBase
             sparkAvailable = spark.Available,
             message = ping.Message,
             sparkMessage = spark.Message,
-            updatedAtUtc = DateTimeOffset.UtcNow
+            updatedAtUtc = snapshot.UpdatedAtUtc
         });
     }
 }

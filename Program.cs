@@ -44,6 +44,9 @@ builder.Services.AddSingleton<IPasswordHasher<UserAccount>, PasswordHasher<UserA
 builder.Services.AddSingleton<AppDatabase>();
 builder.Services.AddSingleton<MinecraftRconService>();
 builder.Services.AddSingleton<MinecraftServerStatusService>();
+builder.Services.AddSingleton<MinecraftStatusMonitorService>();
+builder.Services.AddHostedService<MinecraftStatusMonitorService>(
+    services => services.GetRequiredService<MinecraftStatusMonitorService>());
 builder.Services.AddHttpClient<PrometheusMetricsService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Prometheus:BaseUrl"] ?? "http://prometheus:9090");

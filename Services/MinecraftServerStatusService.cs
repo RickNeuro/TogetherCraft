@@ -18,22 +18,33 @@ public sealed class MinecraftServerStatusService
 {
     private readonly string _host;
     private readonly int _port;
+    private readonly int _protocol;
+    private readonly ILogger<MinecraftServerStatusService> _logger;
+
     public string DisplayAddress { get; }
 
-    public MinecraftServerStatusService(IConfiguration configuration)
+    public MinecraftServerStatusService(
+        IConfiguration configuration,
+        ILogger<MinecraftServerStatusService> logger)
     {
         _host = configuration["MinecraftServer:Host"] ?? "fried-newer.tun.ply.gg";
         _port = int.TryParse(configuration["MinecraftServer:Port"], out var port) && port is > 0 and <= 65535
             ? port
             : 32219;
+
+        // Java Edition 26.2 protocol number. Can be changed in .env when Minecraft is updated.
+        _protocol = int.TryParse(configuration["MinecraftServer:Protocol"], out var protocol) && protocol >= 0
+            ? protocol
+            : 776;
+
         DisplayAddress = configuration["MinecraftServer:DisplayAddress"] ?? _host;
+        _logger = logger;
     }
 
     public async Task<MinecraftPingResult> ReadAsync(CancellationToken cancellationToken = default)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(4));
-
+        timeout.CancelAfter(TimeSpan.FromSeconds(5));
         var started = Stopwatch.GetTimestamp();
 
         try
@@ -44,7 +55,7 @@ public sealed class MinecraftServerStatusService
 
             using var handshake = new MemoryStream();
             WriteVarInt(handshake, 0);
-            WriteVarInt(handshake, -1);
+            WriteVarInt(handshake, _protocol);
 
             var hostBytes = Encoding.UTF8.GetBytes(_host);
             WriteVarInt(handshake, hostBytes.Length);
@@ -66,8 +77,7 @@ public sealed class MinecraftServerStatusService
             await stream.ReadExactlyAsync(packet.AsMemory(), timeout.Token);
 
             using var packetStream = new MemoryStream(packet);
-            var packetId = ReadVarInt(packetStream);
-            if (packetId != 0)
+            if (ReadVarInt(packetStream) != 0)
                 throw new InvalidOperationException("Minecraft вернул неожиданный пакет.");
 
             var jsonLength = ReadVarInt(packetStream);
@@ -79,18 +89,14 @@ public sealed class MinecraftServerStatusService
 
             using var json = JsonDocument.Parse(jsonBytes);
             var root = json.RootElement;
+            var version = root.TryGetProperty("version", out var versionElement)
+                && versionElement.TryGetProperty("name", out var versionName)
+                && versionName.ValueKind == JsonValueKind.String
+                    ? versionName.GetString()
+                    : null;
 
-            string? version = null;
             int? online = null;
             int? maximum = null;
-
-            if (root.TryGetProperty("version", out var versionElement)
-                && versionElement.TryGetProperty("name", out var versionName)
-                && versionName.ValueKind == JsonValueKind.String)
-            {
-                version = versionName.GetString();
-            }
-
             if (root.TryGetProperty("players", out var players))
             {
                 online = ReadInt(players, "online");
@@ -111,6 +117,7 @@ public sealed class MinecraftServerStatusService
             or InvalidOperationException
             or OperationCanceledException)
         {
+            _logger.LogDebug(exception, "Minecraft Server List Ping failed for {Host}:{Port}.", _host, _port);
             return new MinecraftPingResult(false, null, null, null, null,
                 "Minecraft сейчас не отвечает через Playit.");
         }
@@ -153,7 +160,6 @@ public sealed class MinecraftServerStatusService
             await stream.ReadExactlyAsync(oneByte.AsMemory(), cancellationToken);
             var current = oneByte[0];
             result |= (current & 0x7F) << shift;
-
             if ((current & 0x80) == 0)
                 return result;
         }
@@ -164,7 +170,6 @@ public sealed class MinecraftServerStatusService
     private static int ReadVarInt(Stream stream)
     {
         var result = 0;
-
         for (var shift = 0; shift < 35; shift += 7)
         {
             var current = stream.ReadByte();

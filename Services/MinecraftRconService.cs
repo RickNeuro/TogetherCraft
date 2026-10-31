@@ -25,7 +25,7 @@ public sealed class MinecraftRconService
     {
         if (!Regex.IsMatch(minecraftUsername, "^[A-Za-z0-9_]{3,16}$"))
             throw new InvalidOperationException("Minecraft-ник имеет неверный формат.");
-        if (string.IsNullOrWhiteSpace(_password) || (_password.Contains("replace", StringComparison.OrdinalIgnoreCase) || _password.Contains("change_me", StringComparison.OrdinalIgnoreCase) || _password.Contains("changeme", StringComparison.OrdinalIgnoreCase)))
+        if (string.IsNullOrWhiteSpace(_password) || _password.Contains("replace", StringComparison.OrdinalIgnoreCase) || _password.Contains("change_me", StringComparison.OrdinalIgnoreCase) || _password.Contains("changeme", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("RCON ещё не настроен. Задай RCON_PASSWORD в .env и включи RCON в server.properties.");
         if (_port is < 1 or > 65535)
             throw new InvalidOperationException("Неверный порт RCON.");
@@ -102,11 +102,7 @@ public sealed class MinecraftRconService
             var tps = ParseNumber(tpsMatch.Groups[3].Value);
             var msptP95 = ParseNumber(tickMatch.Groups[7].Value);
 
-            return new SparkMetricsResult(
-                true,
-                tps,
-                msptP95,
-                "TPS и MSPT получены через Spark.");
+            return new SparkMetricsResult(true, tps, msptP95, "TPS и MSPT получены через Spark.");
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -128,9 +124,7 @@ public sealed class MinecraftRconService
 
     private static double? ParseNumber(string value)
     {
-        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
-            ? number
-            : null;
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ? number : null;
     }
 
     private static async Task SendPacketAsync(NetworkStream stream, int id, int type, string body, CancellationToken cancellationToken)
@@ -158,11 +152,10 @@ public sealed class MinecraftRconService
         var content = new byte[length];
         await stream.ReadExactlyAsync(content.AsMemory(), cancellationToken);
         var id = BinaryPrimitives.ReadInt32LittleEndian(content.AsSpan(0, 4));
-        var type = BinaryPrimitives.ReadInt32LittleEndian(content.AsSpan(4, 4));
         var bodyLength = Math.Max(0, length - 10);
         var body = Encoding.UTF8.GetString(content, 8, bodyLength);
-        return new RconPacket(id, type, body);
+        return new RconPacket(id, body);
     }
 
-    private sealed record RconPacket(int Id, int Type, string Body);
+    private sealed record RconPacket(int Id, string Body);
 }
