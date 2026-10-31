@@ -2,7 +2,7 @@
     ViewData["Title"] = "Мониторинг";
 }
 <div class="container py-4">
-    <div class="mb-4"><p class="text-warning text-uppercase small fw-semibold mb-1">Только для одобренных аккаунтов</p><h1 class="display-6 fw-bold">Мониторинг сервера</h1><p class="text-secondary">Реальные показатели Ubuntu. Управлять Minecraft-сервером с этой страницы нельзя.</p></div>
+    <div class="mb-4"><p class="text-warning text-uppercase small fw-semibold mb-1">Только для одобренных аккаунтов</p><h1 class="display-6 fw-bold">Мониторинг сервера</h1><p class="text-secondary">Показатели Ubuntu и Minecraft. Управлять Minecraft-сервером с этой страницы нельзя.</p></div>
     <div class="alert alert-secondary" role="status"><strong id="source-status">Подключаем источник метрик…</strong><span id="source-message" class="d-block">Данные обновляются автоматически.</span><small class="text-secondary">Последнее обновление: <span id="last-updated">ожидание</span></small></div>
     <section class="row g-3" data-live-monitor="true">
         <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6 text-secondary">Загрузка CPU</h2><div class="fs-3 fw-semibold"><span id="cpu-value">—</span>%</div><div class="progress mt-3"><div id="cpu-bar" class="progress-bar bg-warning" style="width:0%"></div></div><p id="cpu-note" class="small text-secondary mt-2 mb-0">Ожидаем данные</p></div></article></div>
@@ -10,8 +10,36 @@
         <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6 text-secondary">Системный диск (/)</h2><div class="fs-3 fw-semibold"><span id="disk-used">—</span> / <span id="disk-total">—</span><span class="fs-6"> GiB</span></div><div class="progress mt-3"><div id="disk-bar" class="progress-bar bg-info" style="width:0%"></div></div><p id="disk-note" class="small text-secondary mt-2 mb-0">Ожидаем данные</p></div></article></div>
         <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6 text-secondary">Температура CPU</h2><div class="fs-3 fw-semibold"><span id="temperature-value">—</span><span class="fs-6"> °C</span></div><p id="temperature-note" class="small text-secondary mt-2 mb-0">Проверяем датчик</p></div></article></div>
         <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6 text-secondary">Вентилятор FAN1</h2><div class="fs-3 fw-semibold"><span id="fan-value">—</span><span class="fs-6"> RPM</span></div><p id="fan-note" class="small text-secondary mt-2 mb-1">Ожидаем показания</p><p class="small text-secondary mb-0">FAN3: <span id="fan3-value">—</span> RPM</p></div></article></div>
-        <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6">Minecraft Fabric</h2><p class="text-secondary">TPS, MSPT и число игроков пока не подключены к сайту.</p><span class="badge text-bg-secondary">В разработке</span></div></article></div>
+        <div class="col-12 col-sm-6 col-lg-4">
+            <article class="card h-100" id="minecraft-server-status-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                        <h2 class="h6 mb-0">Minecraft Fabric</h2>
+                        <span id="minecraft-server-status" class="badge text-bg-secondary">Проверяем…</span>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small text-secondary">Адрес подключения</div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <strong id="minecraft-server-address">fried-newer.tun.ply.gg</strong>
+                            <button id="minecraft-copy-address" class="btn btn-outline-light btn-sm" type="button">Копировать</button>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6"><div class="small text-secondary">Версия</div><strong id="minecraft-server-version">—</strong></div>
+                        <div class="col-6"><div class="small text-secondary">Игроки</div><strong id="minecraft-server-players">—</strong></div>
+                        <div class="col-6"><div class="small text-secondary">TPS (1 мин.)</div><strong id="minecraft-server-tps">—</strong></div>
+                        <div class="col-6"><div class="small text-secondary">MSPT P95</div><strong id="minecraft-server-mspt">—</strong></div>
+                        <div class="col-6"><div class="small text-secondary">Отклик</div><strong id="minecraft-server-ping">—</strong></div>
+                    </div>
+                    <p id="minecraft-server-note" class="small text-secondary mt-3 mb-1">Получаем данные Minecraft.</p>
+                    <small class="text-secondary">Обновлено: <span id="minecraft-server-updated">ожидание</span></small>
+                </div>
+            </article>
+        </div>
     </section>
-    <div class="card mt-4"><div class="card-body"><h2 class="h5">Доступ и безопасность</h2><p class="text-secondary mb-0">Метрики доступны после одобрения аккаунта. Добавление игроков в whitelist выполняется отдельно через RCON; пароль не передаётся браузеру.</p></div></div>
+    <div class="card mt-4"><div class="card-body"><h2 class="h5">Доступ и безопасность</h2><p class="text-secondary mb-0">Метрики доступны после одобрения аккаунта. Данные Minecraft читаются через Server List Ping и серверный RCON; пароль не передаётся браузеру.</p></div></div>
 </div>
-@section Scripts { <script src="~/js/monitor.js" asp-append-version="true"></script> }
+@section Scripts {
+    <script src="~/js/monitor.js" asp-append-version="true"></script>
+    <script src="~/js/minecraft-status.js" asp-append-version="true"></script>
+}
