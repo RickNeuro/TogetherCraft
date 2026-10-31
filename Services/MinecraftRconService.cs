@@ -1,9 +1,12 @@
 using System.Buffers.Binary;
+using System.Globalization;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace TogetherCraft.Services;
+
+public sealed record SparkMetricsResult(bool Available, double? Tps, double? MsptP95, string Message);
 
 public sealed class MinecraftRconService
 {
@@ -34,10 +37,7 @@ public sealed class MinecraftRconService
         {
             await client.ConnectAsync(_host, _port, timeout.Token);
             await using var stream = client.GetStream();
-            await SendPacketAsync(stream, 1, 3, _password, timeout.Token);
-            var auth = await ReadPacketAsync(stream, timeout.Token);
-            if (auth.Id == -1 || auth.Id != 1)
-                throw new InvalidOperationException("Minecraft отклонил авторизацию RCON. Проверь пароль в .env и server.properties.");
+            await AuthenticateAsync(stream, timeout.Token);
 
             await SendPacketAsync(stream, 2, 2, $"whitelist add {minecraftUsername}", timeout.Token);
             var response = await ReadPacketAsync(stream, timeout.Token);
@@ -58,6 +58,79 @@ public sealed class MinecraftRconService
         {
             throw new InvalidOperationException("Не удалось подключиться к Minecraft RCON. Проверь RCON_HOST, порт, firewall и server.properties.");
         }
+    }
+
+    public async Task<SparkMetricsResult> ReadSparkMetricsAsync(CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(_password)
+            || _password.Contains("change_me", StringComparison.OrdinalIgnoreCase)
+            || _password.Contains("changeme", StringComparison.OrdinalIgnoreCase)
+            || _port is < 1 or > 65535)
+        {
+            return new SparkMetricsResult(false, null, null, "Для TPS/MSPT нужно настроить RCON на сервере.");
+        }
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(3));
+
+        try
+        {
+            using var client = new TcpClient();
+            await client.ConnectAsync(_host, _port, timeout.Token);
+            await using var stream = client.GetStream();
+
+            await AuthenticateAsync(stream, timeout.Token);
+            await SendPacketAsync(stream, 2, 2, "spark tps", timeout.Token);
+
+            var response = await ReadPacketAsync(stream, timeout.Token);
+            if (response.Id != 2 || string.IsNullOrWhiteSpace(response.Body))
+                return new SparkMetricsResult(false, null, null, "RCON доступен, но Spark не вернул данные.");
+
+            var tpsMatch = Regex.Match(
+                response.Body,
+                @"TPS from last 5s,\s*10s,\s*1m,\s*5m,\s*15m:\s*([0-9]+(?:\.[0-9]+)?),\s*([0-9]+(?:\.[0-9]+)?),\s*([0-9]+(?:\.[0-9]+)?),\s*([0-9]+(?:\.[0-9]+)?),\s*([0-9]+(?:\.[0-9]+)?)",
+                RegexOptions.IgnoreCase);
+
+            var tickMatch = Regex.Match(
+                response.Body,
+                @"Tick durations.*?:\s*([0-9]+(?:\.[0-9]+)?)/([0-9]+(?:\.[0-9]+)?)/([0-9]+(?:\.[0-9]+)?)/([0-9]+(?:\.[0-9]+)?)\s*;\s*([0-9]+(?:\.[0-9]+)?)/([0-9]+(?:\.[0-9]+)?)/([0-9]+(?:\.[0-9]+)?)/([0-9]+(?:\.[0-9]+)?)",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            if (!tpsMatch.Success || !tickMatch.Success)
+                return new SparkMetricsResult(false, null, null, "Spark ответил, но формат данных не распознан.");
+
+            var tps = ParseNumber(tpsMatch.Groups[3].Value);
+            var msptP95 = ParseNumber(tickMatch.Groups[7].Value);
+
+            return new SparkMetricsResult(
+                true,
+                tps,
+                msptP95,
+                "TPS и MSPT получены через Spark.");
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return new SparkMetricsResult(false, null, null, "RCON/Spark не ответил за 3 секунды.");
+        }
+        catch (Exception exception) when (exception is SocketException or IOException or InvalidOperationException)
+        {
+            return new SparkMetricsResult(false, null, null, "Не удалось получить TPS/MSPT через RCON. Проверь RCON и Spark.");
+        }
+    }
+
+    private async Task AuthenticateAsync(NetworkStream stream, CancellationToken cancellationToken)
+    {
+        await SendPacketAsync(stream, 1, 3, _password, cancellationToken);
+        var auth = await ReadPacketAsync(stream, cancellationToken);
+        if (auth.Id == -1 || auth.Id != 1)
+            throw new InvalidOperationException("Minecraft отклонил авторизацию RCON. Проверь пароль в .env и server.properties.");
+    }
+
+    private static double? ParseNumber(string value)
+    {
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+            ? number
+            : null;
     }
 
     private static async Task SendPacketAsync(NetworkStream stream, int id, int type, string body, CancellationToken cancellationToken)
