@@ -11,8 +11,34 @@
     const formatNumber = (value, digits = 1) => value == null ? '—' : Number(value).toFixed(digits);
     const setBar = (id, value) => {
         const element = byId(id);
-        if (element) element.style.width = value == null ? '0%' : `${Math.max(0, Math.min(100, value))}%`;
+        if (element) element.style.width = value == null ? '0%' : Math.max(0, Math.min(100, value)) + '%';
     };
+
+    function updateFan(name, rpm) {
+        const hasReading = typeof rpm === 'number' && Number.isFinite(rpm);
+        const isSpinning = hasReading && rpm > 0;
+        const numberId = name + '-value';
+        const stateId = name + '-state';
+        const rotor = byId(name + '-rotor');
+        const state = byId(stateId);
+
+        setText(numberId, hasReading ? formatNumber(rpm, 0) : '—');
+
+        if (state) {
+            state.textContent = !hasReading ? 'Нет данных' : isSpinning ? 'Работает' : 'Остановлен';
+            state.classList.toggle('is-active', isSpinning);
+        }
+
+        if (rotor) {
+            if (isSpinning) {
+                const duration = Math.max(0.28, Math.min(1.5, 1800 / rpm));
+                rotor.style.animationDuration = duration + 's';
+                rotor.style.animationPlayState = 'running';
+            } else {
+                rotor.style.animationPlayState = 'paused';
+            }
+        }
+    }
 
     let requestInProgress = false;
 
@@ -54,38 +80,19 @@
 
             setText('memory-used', formatGib(data.memoryUsedBytes));
             setText('memory-total', formatGib(data.memoryTotalBytes));
-            setText('memory-note', data.memoryPercent == null ? 'Нет данных о памяти' : `${formatNumber(data.memoryPercent)}% использовано`);
+            setText('memory-note', data.memoryPercent == null ? 'Нет данных о памяти' : formatNumber(data.memoryPercent) + '% использовано');
             setBar('memory-bar', data.memoryPercent);
 
             setText('disk-used', formatGib(data.diskUsedBytes));
             setText('disk-total', formatGib(data.diskTotalBytes));
-            setText('disk-note', data.diskPercent == null ? 'Нет данных о системном разделе' : `${formatNumber(data.diskPercent)}% занято`);
+            setText('disk-note', data.diskPercent == null ? 'Нет данных о системном разделе' : formatNumber(data.diskPercent) + '% занято');
             setBar('disk-bar', data.diskPercent);
 
             setText('temperature-value', formatNumber(data.cpuTemperatureCelsius));
             setText('temperature-note', data.cpuTemperatureCelsius == null ? 'Датчик CPU недоступен' : 'Датчик процессора AMD');
-            setText('fan-value', data.fan1Rpm == null ? '—' : formatNumber(data.fan1Rpm, 0));
-            setText('fan3-value', data.fan3Rpm == null ? '—' : formatNumber(data.fan3Rpm, 0));
 
-            if (data.fan1Rpm == null && data.fan3Rpm == null) {
-                setText('fan-note', 'Linux не предоставляет обороты вентилятора');
-            } else {
-                const fanStatus = [
-                    data.fan1Rpm == null ? 'FAN1: нет данных' : 'FAN1: датчик активен',
-                    data.fan3Rpm == null ? 'FAN3: нет данных' : 'FAN3: датчик активен'
-                ];
-                setText('fan-note', fanStatus.join(' · '));
-            }
-
-            document.querySelectorAll('.fan-rotor').forEach(rotor => {
-                if (data.fan1Rpm != null && data.fan1Rpm > 0) {
-                    const duration = Math.max(0.3, Math.min(1.8, 1800 / data.fan1Rpm));
-                    rotor.style.animationDuration = `${duration}s`;
-                    rotor.style.animationPlayState = 'running';
-                } else {
-                    rotor.style.animationPlayState = 'paused';
-                }
-            });
+            updateFan('fan1', data.fan1Rpm);
+            updateFan('fan3', data.fan3Rpm);
         } catch {
             setText('source-status', 'Нет связи с источником метрик');
             setText('source-message', 'Проверяем подключение автоматически через 5 секунд.');

@@ -21,7 +21,6 @@ public sealed class MinecraftStatusController : ControllerBase
     {
         var snapshot = _monitor.Current;
         var ping = snapshot.Ping;
-        var spark = snapshot.Spark;
 
         return Ok(new
         {
@@ -31,11 +30,7 @@ public sealed class MinecraftStatusController : ControllerBase
             onlinePlayers = ping.OnlinePlayers,
             maxPlayers = ping.MaxPlayers,
             pingMs = ping.PingMs,
-            tps = spark.Tps,
-            msptP95 = spark.MsptP95,
-            sparkAvailable = spark.Available,
             message = ping.Message,
-            sparkMessage = spark.Message,
             updatedAtUtc = snapshot.UpdatedAtUtc
         });
     }

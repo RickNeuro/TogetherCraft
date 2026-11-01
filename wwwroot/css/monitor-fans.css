@@ -1,0 +1,140 @@
+.fan-card .card-body {
+    padding: 18px;
+}
+
+.fan-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.fan-unit {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px 10px;
+    border: 1px solid #3b4249;
+    border-radius: 8px;
+    background: #1c2024;
+}
+
+.fan-unit-heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    color: #c5cdd4;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.fan-state {
+    color: #89939c;
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.fan-state.is-active {
+    color: #9cc8b8;
+}
+
+.fan-visual {
+    display: block;
+    width: min(100%, 124px);
+    aspect-ratio: 1;
+    margin: 8px auto 5px;
+}
+
+.fan-frame {
+    fill: #171b1f;
+    stroke: #58636d;
+    stroke-width: 1.5;
+}
+
+.fan-screw {
+    fill: #88949e;
+}
+
+.fan-guard {
+    fill: #242a30;
+    stroke: #83909a;
+    stroke-width: 1.6;
+}
+
+.fan-inner-ring {
+    fill: none;
+    stroke: #596771;
+    stroke-width: 1;
+}
+
+.fan-blade {
+    fill: #9eabb5;
+    stroke: #cbd4da;
+    stroke-width: .65;
+    stroke-linejoin: round;
+}
+
+.fan-hub {
+    fill: #5e6c77;
+    stroke: #c0cbd3;
+    stroke-width: 1.5;
+}
+
+.fan-hub-center {
+    fill: #cbd4da;
+}
+
+.fan-rotor {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: fan-rotor-spin 1s linear infinite;
+    animation-play-state: paused;
+}
+
+@keyframes fan-rotor-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.fan-rpm {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    color: #929da6;
+    font-size: 10px;
+}
+
+.fan-rpm strong {
+    color: #f1f3f5;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 650;
+    letter-spacing: -.4px;
+}
+
+@media (max-width: 390px) {
+    .fan-pair {
+        gap: 9px;
+    }
+
+    .fan-unit {
+        padding: 10px 5px 9px;
+    }
+
+    .fan-visual {
+        width: min(100%, 112px);
+    }
+
+    .fan-rpm strong {
+        font-size: 18px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fan-rotor {
+        animation: none !important;
+    }
+}

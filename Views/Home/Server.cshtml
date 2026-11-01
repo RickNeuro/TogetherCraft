@@ -2,14 +2,127 @@
     ViewData["Title"] = "Мониторинг";
 }
 <div class="container py-4">
-    <div class="mb-4"><p class="text-warning text-uppercase small fw-semibold mb-1">Только для одобренных аккаунтов</p><h1 class="display-6 fw-bold">Мониторинг сервера</h1><p class="text-secondary">Показатели Ubuntu и Minecraft. Управлять Minecraft-сервером с этой страницы нельзя.</p></div>
-    <div class="alert alert-secondary" role="status"><strong id="source-status">Подключаем источник метрик…</strong><span id="source-message" class="d-block">Данные обновляются автоматически.</span><small class="text-secondary">Последнее обновление: <span id="last-updated">ожидание</span></small></div>
+    <div class="mb-4">
+        <p class="text-warning text-uppercase small fw-semibold mb-1">Только для одобренных аккаунтов</p>
+        <h1 class="display-6 fw-bold">Мониторинг сервера</h1>
+        <p class="text-secondary">Показатели Ubuntu и Minecraft. Управлять Minecraft-сервером с этой страницы нельзя.</p>
+    </div>
+
+    <div class="alert alert-secondary" role="status">
+        <strong id="source-status">Подключаем источник метрик…</strong>
+        <span id="source-message" class="d-block">Данные обновляются автоматически.</span>
+        <small class="text-secondary">Последнее обновление: <span id="last-updated">ожидание</span></small>
+    </div>
+
     <section class="row g-3" data-live-monitor="true">
-        <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6 text-secondary">Загрузка CPU</h2><div class="fs-3 fw-semibold"><span id="cpu-value">—</span>%</div><div class="progress mt-3"><div id="cpu-bar" class="progress-bar bg-warning" style="width:0%"></div></div><p id="cpu-note" class="small text-secondary mt-2 mb-0">Ожидаем данные</p></div></article></div>
-        <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6 text-secondary">Оперативная память</h2><div class="fs-3 fw-semibold"><span id="memory-used">—</span> / <span id="memory-total">—</span><span class="fs-6"> GiB</span></div><div class="progress mt-3"><div id="memory-bar" class="progress-bar bg-warning" style="width:0%"></div></div><p id="memory-note" class="small text-secondary mt-2 mb-0">Ожидаем данные</p></div></article></div>
-        <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6 text-secondary">Системный диск (/)</h2><div class="fs-3 fw-semibold"><span id="disk-used">—</span> / <span id="disk-total">—</span><span class="fs-6"> GiB</span></div><div class="progress mt-3"><div id="disk-bar" class="progress-bar bg-info" style="width:0%"></div></div><p id="disk-note" class="small text-secondary mt-2 mb-0">Ожидаем данные</p></div></article></div>
-        <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6 text-secondary">Температура CPU</h2><div class="fs-3 fw-semibold"><span id="temperature-value">—</span><span class="fs-6"> °C</span></div><p id="temperature-note" class="small text-secondary mt-2 mb-0">Проверяем датчик</p></div></article></div>
-        <div class="col-12 col-sm-6 col-lg-4"><article class="card h-100"><div class="card-body"><h2 class="h6 text-secondary">Вентилятор FAN1</h2><div class="fs-3 fw-semibold"><span id="fan-value">—</span><span class="fs-6"> RPM</span></div><p id="fan-note" class="small text-secondary mt-2 mb-1">Ожидаем показания</p><p class="small text-secondary mb-0">FAN3: <span id="fan3-value">—</span> RPM</p></div></article></div>
+        <div class="col-12 col-sm-6 col-lg-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <h2 class="h6 text-secondary">Загрузка CPU</h2>
+                    <div class="fs-3 fw-semibold"><span id="cpu-value">—</span>%</div>
+                    <div class="progress mt-3"><div id="cpu-bar" class="progress-bar bg-warning" style="width:0%"></div></div>
+                    <p id="cpu-note" class="small text-secondary mt-2 mb-0">Ожидаем данные</p>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <h2 class="h6 text-secondary">Оперативная память</h2>
+                    <div class="fs-3 fw-semibold"><span id="memory-used">—</span> / <span id="memory-total">—</span><span class="fs-6"> GiB</span></div>
+                    <div class="progress mt-3"><div id="memory-bar" class="progress-bar bg-warning" style="width:0%"></div></div>
+                    <p id="memory-note" class="small text-secondary mt-2 mb-0">Ожидаем данные</p>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <h2 class="h6 text-secondary">Системный диск (/)</h2>
+                    <div class="fs-3 fw-semibold"><span id="disk-used">—</span> / <span id="disk-total">—</span><span class="fs-6"> GiB</span></div>
+                    <div class="progress mt-3"><div id="disk-bar" class="progress-bar bg-info" style="width:0%"></div></div>
+                    <p id="disk-note" class="small text-secondary mt-2 mb-0">Ожидаем данные</p>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <h2 class="h6 text-secondary">Температура CPU</h2>
+                    <div class="fs-3 fw-semibold"><span id="temperature-value">—</span><span class="fs-6"> °C</span></div>
+                    <p id="temperature-note" class="small text-secondary mt-2 mb-0">Проверяем датчик</p>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4">
+            <article class="card h-100 fan-card">
+                <div class="card-body">
+                    <h2 class="h6 text-secondary mb-3">Вентиляторы</h2>
+                    <div class="fan-pair">
+                        <div class="fan-unit" data-fan-unit="fan1">
+                            <div class="fan-unit-heading">
+                                <span>FAN1</span>
+                                <span id="fan1-state" class="fan-state">Нет данных</span>
+                            </div>
+                            <svg class="fan-visual" viewBox="0 0 100 100" role="img" aria-label="Анимированный вентилятор FAN1">
+                                <rect class="fan-frame" x="2" y="2" width="96" height="96" rx="9" />
+                                <circle class="fan-screw" cx="11" cy="11" r="3" />
+                                <circle class="fan-screw" cx="89" cy="11" r="3" />
+                                <circle class="fan-screw" cx="11" cy="89" r="3" />
+                                <circle class="fan-screw" cx="89" cy="89" r="3" />
+                                <circle class="fan-guard" cx="50" cy="50" r="41" />
+                                <circle class="fan-inner-ring" cx="50" cy="50" r="36" />
+                                <g id="fan1-rotor" class="fan-rotor">
+                                    <path class="fan-blade" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(51.43 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(102.86 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(154.29 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(205.71 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(257.14 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(308.57 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <circle class="fan-hub" cx="50" cy="50" r="11" />
+                                    <circle class="fan-hub-center" cx="50" cy="50" r="4" />
+                                </g>
+                            </svg>
+                            <div class="fan-rpm"><strong id="fan1-value">—</strong><span>RPM</span></div>
+                        </div>
+
+                        <div class="fan-unit" data-fan-unit="fan3">
+                            <div class="fan-unit-heading">
+                                <span>FAN3</span>
+                                <span id="fan3-state" class="fan-state">Нет данных</span>
+                            </div>
+                            <svg class="fan-visual" viewBox="0 0 100 100" role="img" aria-label="Анимированный вентилятор FAN3">
+                                <rect class="fan-frame" x="2" y="2" width="96" height="96" rx="9" />
+                                <circle class="fan-screw" cx="11" cy="11" r="3" />
+                                <circle class="fan-screw" cx="89" cy="11" r="3" />
+                                <circle class="fan-screw" cx="11" cy="89" r="3" />
+                                <circle class="fan-screw" cx="89" cy="89" r="3" />
+                                <circle class="fan-guard" cx="50" cy="50" r="41" />
+                                <circle class="fan-inner-ring" cx="50" cy="50" r="36" />
+                                <g id="fan3-rotor" class="fan-rotor">
+                                    <path class="fan-blade" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(51.43 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(102.86 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(154.29 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(205.71 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(257.14 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <path class="fan-blade" transform="rotate(308.57 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
+                                    <circle class="fan-hub" cx="50" cy="50" r="11" />
+                                    <circle class="fan-hub-center" cx="50" cy="50" r="4" />
+                                </g>
+                            </svg>
+                            <div class="fan-rpm"><strong id="fan3-value">—</strong><span>RPM</span></div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
         <div class="col-12 col-sm-6 col-lg-4">
             <article class="card h-100" id="minecraft-server-status-card">
                 <div class="card-body">
@@ -27,8 +140,6 @@
                     <div class="row g-2">
                         <div class="col-6"><div class="small text-secondary">Версия</div><strong id="minecraft-server-version">—</strong></div>
                         <div class="col-6"><div class="small text-secondary">Игроки</div><strong id="minecraft-server-players">—</strong></div>
-                        <div class="col-6"><div class="small text-secondary">TPS (1 мин.)</div><strong id="minecraft-server-tps">—</strong></div>
-                        <div class="col-6"><div class="small text-secondary">MSPT P95</div><strong id="minecraft-server-mspt">—</strong></div>
                         <div class="col-6"><div class="small text-secondary">Отклик</div><strong id="minecraft-server-ping">—</strong></div>
                     </div>
                     <p id="minecraft-server-note" class="small text-secondary mt-3 mb-1">Получаем данные Minecraft.</p>
@@ -37,8 +148,19 @@
             </article>
         </div>
     </section>
-    <div class="card mt-4"><div class="card-body"><h2 class="h5">Доступ и безопасность</h2><p class="text-secondary mb-0">Метрики доступны после одобрения аккаунта. Данные Minecraft читаются через Server List Ping и серверный RCON; пароль не передаётся браузеру.</p></div></div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h2 class="h5">Доступ и безопасность</h2>
+            <p class="text-secondary mb-0">Метрики Ubuntu и статус Minecraft доступны после одобрения аккаунта. Minecraft проверяется через Server List Ping. RCON используется только сервером для добавления одобренных игроков в whitelist; пароль не передаётся браузеру.</p>
+        </div>
+    </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/monitor-fans.css" asp-append-version="true" />
+}
+
 @section Scripts {
     <script src="~/js/monitor.js" asp-append-version="true"></script>
     <script src="~/js/minecraft-status.js" asp-append-version="true"></script>

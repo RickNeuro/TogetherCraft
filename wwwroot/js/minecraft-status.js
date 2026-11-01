@@ -5,8 +5,6 @@
     const addressElement = document.getElementById("minecraft-server-address");
     const versionElement = document.getElementById("minecraft-server-version");
     const playersElement = document.getElementById("minecraft-server-players");
-    const tpsElement = document.getElementById("minecraft-server-tps");
-    const msptElement = document.getElementById("minecraft-server-mspt");
     const pingElement = document.getElementById("minecraft-server-ping");
     const noteElement = document.getElementById("minecraft-server-note");
     const updatedElement = document.getElementById("minecraft-server-updated");
@@ -14,12 +12,6 @@
 
     function showValue(element, value) {
         if (element) element.textContent = value;
-    }
-
-    function formatNumber(value, digits = 1) {
-        return typeof value === "number" && Number.isFinite(value)
-            ? value.toFixed(digits)
-            : "—";
     }
 
     async function updateMinecraftStatus() {
@@ -40,20 +32,13 @@
                 Number.isInteger(data.onlinePlayers) && Number.isInteger(data.maxPlayers)
                     ? data.onlinePlayers + " / " + data.maxPlayers
                     : "—");
-            showValue(tpsElement,
-                typeof data.tps === "number" ? formatNumber(data.tps) + " (1 мин.)" : "—");
-            showValue(msptElement,
-                typeof data.msptP95 === "number" ? formatNumber(data.msptP95) + " ms" : "—");
             showValue(pingElement,
                 typeof data.pingMs === "number" ? Math.round(data.pingMs) + " ms" : "—");
 
             if (data.isOnline) {
                 showValue(statusElement, "Онлайн");
                 statusElement.className = "badge text-bg-success";
-                showValue(noteElement,
-                    data.sparkAvailable
-                        ? "Minecraft отвечает. Показатели Spark обновлены."
-                        : "Minecraft отвечает. TPS/MSPT пока недоступны: проверь RCON и Spark.");
+                showValue(noteElement, "Minecraft отвечает. Статус обновляется автоматически.");
             } else {
                 showValue(statusElement, "Оффлайн");
                 statusElement.className = "badge text-bg-danger";
@@ -66,8 +51,7 @@
             showValue(statusElement, "Нет связи");
             statusElement.className = "badge text-bg-secondary";
             showValue(noteElement, error.message || "Не удалось обновить данные Minecraft.");
-            showValue(tpsElement, "—");
-            showValue(msptElement, "—");
+            showValue(pingElement, "—");
         }
     }
 
