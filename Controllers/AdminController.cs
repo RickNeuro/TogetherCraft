@@ -46,15 +46,16 @@ public sealed class AdminController : Controller
 
         try
         {
-            // Сначала добавляем ник в Minecraft; только при подтверждении меняем статус заявки.
+            // Ник должен попасть в оба whitelist. Повторная команда для уже добавленного ника безопасна.
             await _rcon.AddToWhitelistAsync(account.MinecraftUsername, cancellationToken);
+            await _rcon.AddToCreateWhitelistAsync(account.MinecraftUsername, cancellationToken);
             if (!await _database.SetStatusAsync(account.Id, "Approved", cancellationToken))
             {
-                TempData["Error"] = "Minecraft подтвердил добавление, но статус заявки изменился. Обнови список и проверь заявку.";
+                TempData["Error"] = "Оба сервера подтвердили добавление, но статус заявки изменился. Обнови список и проверь заявку.";
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["Success"] = $"{account.Username} одобрен, ник {account.MinecraftUsername} добавлен в whitelist Minecraft.";
+            TempData["Success"] = $"{account.Username} одобрен, ник {account.MinecraftUsername} добавлен в whitelist Fabric и Create.";
         }
         catch (Exception exception)
         {

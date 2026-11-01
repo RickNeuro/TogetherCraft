@@ -25,19 +25,18 @@ public sealed class MinecraftServerStatusService
 
     public MinecraftServerStatusService(
         IConfiguration configuration,
-        ILogger<MinecraftServerStatusService> logger)
+        ILogger<MinecraftServerStatusService> logger,
+        string sectionName = "MinecraftServer")
     {
-        _host = configuration["MinecraftServer:Host"] ?? "fried-newer.tun.ply.gg";
-        _port = int.TryParse(configuration["MinecraftServer:Port"], out var port) && port is > 0 and <= 65535
+        var settings = configuration.GetSection(sectionName);
+        _host = settings["Host"] ?? "fried-newer.tun.ply.gg";
+        _port = int.TryParse(settings["Port"], out var port) && port is > 0 and <= 65535
             ? port
             : 32219;
-
-        // Java Edition 26.2 protocol number. Can be changed in .env when Minecraft is updated.
-        _protocol = int.TryParse(configuration["MinecraftServer:Protocol"], out var protocol) && protocol >= 0
+        _protocol = int.TryParse(settings["Protocol"], out var protocol) && protocol >= 0
             ? protocol
             : 776;
-
-        DisplayAddress = configuration["MinecraftServer:DisplayAddress"] ?? _host;
+        DisplayAddress = settings["DisplayAddress"] ?? _host;
         _logger = logger;
     }
 
@@ -56,11 +55,9 @@ public sealed class MinecraftServerStatusService
             using var handshake = new MemoryStream();
             WriteVarInt(handshake, 0);
             WriteVarInt(handshake, _protocol);
-
             var hostBytes = Encoding.UTF8.GetBytes(_host);
             WriteVarInt(handshake, hostBytes.Length);
             handshake.Write(hostBytes);
-
             var portBytes = new byte[2];
             BinaryPrimitives.WriteUInt16BigEndian(portBytes, (ushort)_port);
             handshake.Write(portBytes);
@@ -69,7 +66,6 @@ public sealed class MinecraftServerStatusService
             await WritePacketAsync(stream, handshake.ToArray(), timeout.Token);
             await WritePacketAsync(stream, new byte[] { 0 }, timeout.Token);
 
-            // Some vanilla servers wait for the ping packet before sending the status response.
             var pingPayload = new byte[9];
             pingPayload[0] = 1;
             BinaryPrimitives.WriteInt64BigEndian(pingPayload.AsSpan(1), Stopwatch.GetTimestamp());
@@ -81,7 +77,6 @@ public sealed class MinecraftServerStatusService
 
             var packet = new byte[packetLength];
             await stream.ReadExactlyAsync(packet.AsMemory(), timeout.Token);
-
             using var packetStream = new MemoryStream(packet);
             if (ReadVarInt(packetStream) != 0)
                 throw new InvalidOperationException("Minecraft вернул неожиданный пакет.");
@@ -92,7 +87,6 @@ public sealed class MinecraftServerStatusService
 
             var jsonBytes = new byte[jsonLength];
             await packetStream.ReadExactlyAsync(jsonBytes.AsMemory(), timeout.Token);
-
             using var json = JsonDocument.Parse(jsonBytes);
             var root = json.RootElement;
             var version = root.TryGetProperty("version", out var versionElement)
@@ -109,23 +103,20 @@ public sealed class MinecraftServerStatusService
                 maximum = ReadInt(players, "max");
             }
 
-            var ping = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
-            return new MinecraftPingResult(true, version, online, maximum, ping, "Minecraft отвечает.");
+            return new MinecraftPingResult(true, version, online, maximum,
+                Stopwatch.GetElapsedTime(started).TotalMilliseconds, "Minecraft отвечает.");
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
         }
         catch (Exception exception) when (
-            exception is SocketException
-            or IOException
-            or JsonException
-            or InvalidOperationException
-            or OperationCanceledException)
+            exception is SocketException or IOException or JsonException
+            or InvalidOperationException or OperationCanceledException)
         {
             _logger.LogDebug(exception, "Minecraft Server List Ping failed for {Host}:{Port}.", _host, _port);
             return new MinecraftPingResult(false, null, null, null, null,
-                "Minecraft сейчас не отвечает через Playit.");
+                "Minecraft сейчас не отвечает.");
         }
     }
 
@@ -152,7 +143,6 @@ public sealed class MinecraftServerStatusService
             stream.WriteByte((byte)((remaining & 0x7F) | 0x80));
             remaining >>= 7;
         }
-
         stream.WriteByte((byte)remaining);
     }
 
@@ -160,7 +150,6 @@ public sealed class MinecraftServerStatusService
     {
         var result = 0;
         var oneByte = new byte[1];
-
         for (var shift = 0; shift < 35; shift += 7)
         {
             await stream.ReadExactlyAsync(oneByte.AsMemory(), cancellationToken);
@@ -169,7 +158,6 @@ public sealed class MinecraftServerStatusService
             if ((current & 0x80) == 0)
                 return result;
         }
-
         throw new InvalidOperationException("Некорректный VarInt от Minecraft.");
     }
 
@@ -181,12 +169,10 @@ public sealed class MinecraftServerStatusService
             var current = stream.ReadByte();
             if (current < 0)
                 throw new EndOfStreamException();
-
             result |= (current & 0x7F) << shift;
             if ((current & 0x80) == 0)
                 return result;
         }
-
         throw new InvalidOperationException("Некорректный VarInt в ответе Minecraft.");
     }
 }

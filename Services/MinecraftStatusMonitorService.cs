@@ -8,22 +8,35 @@ public sealed record MinecraftStatusSnapshot(
 
 public sealed class MinecraftStatusMonitorService : BackgroundService
 {
-    private readonly MinecraftServerStatusService _server;
+    private readonly MinecraftServerStatusService _fabricServer;
+    private readonly MinecraftServerStatusService _createServer;
     private readonly ILogger<MinecraftStatusMonitorService> _logger;
     private MinecraftStatusSnapshot _current;
+    private MinecraftStatusSnapshot _createCurrent;
 
     public MinecraftStatusSnapshot Current => _current;
-    public string DisplayAddress => _server.DisplayAddress;
+    public MinecraftStatusSnapshot CreateCurrent => _createCurrent;
+    public string DisplayAddress => _fabricServer.DisplayAddress;
+    public string CreateDisplayAddress => _createServer.DisplayAddress;
 
     public MinecraftStatusMonitorService(
-        MinecraftServerStatusService server,
+        MinecraftServerStatusService fabricServer,
+        IConfiguration configuration,
+        ILoggerFactory loggerFactory,
         ILogger<MinecraftStatusMonitorService> logger)
     {
-        _server = server;
+        _fabricServer = fabricServer;
+        _createServer = new MinecraftServerStatusService(
+            configuration,
+            loggerFactory.CreateLogger<MinecraftServerStatusService>(),
+            "MinecraftCreateServer");
         _logger = logger;
 
         _current = new MinecraftStatusSnapshot(
-            new MinecraftPingResult(false, null, null, null, null, "Проверяем Minecraft…"),
+            new MinecraftPingResult(false, null, null, null, null, "Проверяем Fabric…"),
+            DateTimeOffset.UtcNow);
+        _createCurrent = new MinecraftStatusSnapshot(
+            new MinecraftPingResult(false, null, null, null, null, "Проверяем Create…"),
             DateTimeOffset.UtcNow);
     }
 
@@ -33,8 +46,14 @@ public sealed class MinecraftStatusMonitorService : BackgroundService
         {
             try
             {
-                var ping = await _server.ReadAsync(stoppingToken);
-                _current = new MinecraftStatusSnapshot(ping, DateTimeOffset.UtcNow);
+                // Ping both worlds independently so one slow tunnel does not delay the other.
+                var fabricTask = _fabricServer.ReadAsync(stoppingToken);
+                var createTask = _createServer.ReadAsync(stoppingToken);
+                await Task.WhenAll(fabricTask, createTask);
+
+                var now = DateTimeOffset.UtcNow;
+                _current = new MinecraftStatusSnapshot(await fabricTask, now);
+                _createCurrent = new MinecraftStatusSnapshot(await createTask, now);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -42,7 +61,7 @@ public sealed class MinecraftStatusMonitorService : BackgroundService
             }
             catch (Exception exception)
             {
-                _logger.LogWarning(exception, "Не удалось обновить данные Minecraft.");
+                _logger.LogWarning(exception, "Не удалось обновить данные игровых серверов Minecraft.");
             }
 
             try

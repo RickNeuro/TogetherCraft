@@ -1,7 +1,7 @@
 @model IReadOnlyList<TogetherCraft.Models.UserAccount>
 @{ ViewData["Title"] = "Заявки"; }
 <div class="container py-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4"><div><p class="text-warning text-uppercase small fw-semibold mb-1">Панель администратора</p><h1 class="h2">Заявки на доступ</h1><p class="text-secondary mb-0">Одобрение отправляет Minecraft-ник в whitelist через RCON.</p></div><div><span class="badge text-bg-secondary fs-6">@Model.Count заявок</span></div></div>
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4"><div><p class="text-warning text-uppercase small fw-semibold mb-1">Панель администратора</p><h1 class="h2">Заявки на доступ</h1><p class="text-secondary mb-0">Одобрение добавляет Minecraft-ник в whitelist Fabric и Create через отдельные RCON-подключения.</p></div><div><span class="badge text-bg-secondary fs-6">@Model.Count заявок</span></div></div>
     @if (Model.Count == 0)
     {
         <div class="card"><div class="card-body py-5 text-center"><h2 class="h5">Новых заявок нет</h2><p class="text-secondary mb-0">Когда кто-то зарегистрируется, заявка появится здесь.</p></div></div>
@@ -14,12 +14,12 @@
             @foreach (var account in Model)
             {
                 <tr><td>@account.Username</td><td>@account.MinecraftUsername</td><td>@account.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td><td><div class="d-flex flex-wrap justify-content-end gap-2">
-                    <form asp-controller="Admin" asp-action="Approve" method="post"><input type="hidden" name="id" value="@account.Id" /><button class="btn btn-warning btn-sm" type="submit">Одобрить и добавить в whitelist</button></form>
+                    <form asp-controller="Admin" asp-action="Approve" method="post"><input type="hidden" name="id" value="@account.Id" /><button class="btn btn-warning btn-sm" type="submit">Одобрить для двух серверов</button></form>
                     <form asp-controller="Admin" asp-action="Reject" method="post" onsubmit="return confirm('Отклонить заявку @account.Username?');"><input type="hidden" name="id" value="@account.Id" /><button class="btn btn-outline-danger btn-sm" type="submit">Отклонить</button></form>
                 </div></td></tr>
             }
             </tbody>
         </table></div></div>
     }
-    <div class="alert alert-secondary mt-4 mb-0"><strong>Безопасность:</strong> пароль RCON хранится в серверном файле <code>.env</code>. Не отправляй его в GitHub или чат.</div>
+    <div class="alert alert-secondary mt-4 mb-0"><strong>Безопасность:</strong> пароли обоих RCON хранятся в серверном файле .env. Не отправляй их в GitHub или чат и не открывай RCON-порты в интернет.</div>
 </div>

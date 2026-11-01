@@ -36,10 +36,17 @@ services:
       MinecraftRcon__Host: ${RCON_HOST:-host.docker.internal}
       MinecraftRcon__Port: ${RCON_PORT:-25575}
       MinecraftRcon__Password: ${RCON_PASSWORD:-}
+      MinecraftCreateRcon__Host: ${RCON_CREATE_HOST:-host.docker.internal}
+      MinecraftCreateRcon__Port: ${RCON_CREATE_PORT:-25576}
+      MinecraftCreateRcon__Password: ${RCON_CREATE_PASSWORD:-}
       MinecraftServer__Host: ${MC_SERVER_HOST:-fried-newer.tun.ply.gg}
       MinecraftServer__Port: ${MC_SERVER_PORT:-32219}
       MinecraftServer__Protocol: ${MC_SERVER_PROTOCOL:-776}
       MinecraftServer__DisplayAddress: ${MC_SERVER_DISPLAY_ADDRESS:-fried-newer.tun.ply.gg}
+      MinecraftCreateServer__Host: ${MC_CREATE_SERVER_HOST:-host.docker.internal}
+      MinecraftCreateServer__Port: ${MC_CREATE_SERVER_PORT:-25566}
+      MinecraftCreateServer__Protocol: ${MC_CREATE_SERVER_PROTOCOL:-767}
+      MinecraftCreateServer__DisplayAddress: ${MC_CREATE_SERVER_DISPLAY_ADDRESS:-shrimp-crafts.tun.ply.gg}
       DataProtection__KeysPath: /var/dpkeys
       Prometheus__BaseUrl: http://prometheus:9090
     ports:

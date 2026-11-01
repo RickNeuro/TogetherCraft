@@ -40,6 +40,13 @@ ADMIN_PASSWORD=${ADMIN_PASSWORD}
 RCON_HOST=host.docker.internal
 RCON_PORT=25575
 RCON_PASSWORD=
+RCON_CREATE_HOST=host.docker.internal
+RCON_CREATE_PORT=25576
+RCON_CREATE_PASSWORD=
+MC_CREATE_SERVER_HOST=host.docker.internal
+MC_CREATE_SERVER_PORT=25566
+MC_CREATE_SERVER_PROTOCOL=767
+MC_CREATE_SERVER_DISPLAY_ADDRESS=shrimp-crafts.tun.ply.gg
 PUBLIC_DOMAIN=CHANGE_ME.example.com
 ENV
 chmod 600 .env
@@ -55,5 +62,6 @@ echo "Состояние контейнеров:"
 "${DOCKER[@]}" compose ps
 echo
 echo "Локальный адрес: http://127.0.0.1:8080"
-echo "Whitelist пока не подключён: включи RCON по инструкции docs/WHITELIST.md, затем добавь RCON_PASSWORD в .env."
+echo "Для одобрения заявок настрой RCON отдельно на Fabric (25575) и Create (25576)."
+echo "Подробности: docs/WHITELIST.md"
 echo "Публичный HTTPS не включён: он требует домена и настройки доступности портов/туннеля."

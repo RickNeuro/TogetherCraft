@@ -7,59 +7,83 @@ namespace TogetherCraft.Services;
 
 public sealed class MinecraftRconService
 {
-    private readonly string _host;
-    private readonly int _port;
-    private readonly string _password;
+    private readonly RconConnection _fabric;
+    private readonly RconConnection _create;
 
     public MinecraftRconService(IConfiguration configuration)
     {
-        _host = configuration["MinecraftRcon:Host"] ?? "host.docker.internal";
-        _port = int.TryParse(configuration["MinecraftRcon:Port"], out var port) ? port : 25575;
-        _password = configuration["MinecraftRcon:Password"] ?? "";
+        _fabric = ReadConnection(configuration, "MinecraftRcon", 25575);
+        _create = ReadConnection(configuration, "MinecraftCreateRcon", 25576);
     }
 
-    public async Task AddToWhitelistAsync(string minecraftUsername, CancellationToken cancellationToken = default)
+    public Task AddToWhitelistAsync(string minecraftUsername, CancellationToken cancellationToken = default)
+    {
+        return AddToWhitelistAsync(_fabric, "Fabric", minecraftUsername, cancellationToken);
+    }
+
+    public Task AddToCreateWhitelistAsync(string minecraftUsername, CancellationToken cancellationToken = default)
+    {
+        return AddToWhitelistAsync(_create, "Create", minecraftUsername, cancellationToken);
+    }
+
+    private static RconConnection ReadConnection(IConfiguration configuration, string section, int defaultPort)
+    {
+        var settings = configuration.GetSection(section);
+        var host = settings["Host"] ?? "host.docker.internal";
+        var port = int.TryParse(settings["Port"], out var configuredPort) ? configuredPort : defaultPort;
+        var password = settings["Password"] ?? "";
+        return new RconConnection(host, port, password);
+    }
+
+    private static async Task AddToWhitelistAsync(
+        RconConnection connection,
+        string serverName,
+        string minecraftUsername,
+        CancellationToken cancellationToken)
     {
         if (!Regex.IsMatch(minecraftUsername, "^[A-Za-z0-9_]{3,16}$"))
             throw new InvalidOperationException("Minecraft-ник имеет неверный формат.");
-        if (string.IsNullOrWhiteSpace(_password) || _password.Contains("replace", StringComparison.OrdinalIgnoreCase) || _password.Contains("change_me", StringComparison.OrdinalIgnoreCase) || _password.Contains("changeme", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("RCON ещё не настроен. Задай RCON_PASSWORD в .env и включи RCON в server.properties.");
-        if (_port is < 1 or > 65535)
-            throw new InvalidOperationException("Неверный порт RCON.");
+        if (string.IsNullOrWhiteSpace(connection.Password)
+            || connection.Password.Contains("replace", StringComparison.OrdinalIgnoreCase)
+            || connection.Password.Contains("change_me", StringComparison.OrdinalIgnoreCase)
+            || connection.Password.Contains("changeme", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"RCON сервера {serverName} ещё не настроен. Задай пароль в .env и включи RCON в server.properties.");
+        if (connection.Port is < 1 or > 65535)
+            throw new InvalidOperationException($"Неверный порт RCON сервера {serverName}.");
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(6));
         using var client = new TcpClient();
         try
         {
-            await client.ConnectAsync(_host, _port, timeout.Token);
+            await client.ConnectAsync(connection.Host, connection.Port, timeout.Token);
             await using var stream = client.GetStream();
-            await AuthenticateAsync(stream, timeout.Token);
+            await AuthenticateAsync(stream, connection.Password, timeout.Token);
 
             await SendPacketAsync(stream, 2, 2, $"whitelist add {minecraftUsername}", timeout.Token);
             var response = await ReadPacketAsync(stream, timeout.Token);
             if (response.Id != 2)
-                throw new InvalidOperationException("Minecraft не подтвердил команду добавления в whitelist.");
+                throw new InvalidOperationException($"Сервер {serverName} не подтвердил команду whitelist.");
 
             var message = response.Body.Trim();
             if (!message.Contains("added", StringComparison.OrdinalIgnoreCase)
                 && !message.Contains("already", StringComparison.OrdinalIgnoreCase)
                 && !message.Contains("добавлен", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException($"Minecraft не подтвердил добавление ника. Ответ сервера: {message}");
+                throw new InvalidOperationException($"Сервер {serverName} не подтвердил добавление ника. Ответ: {message}");
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new InvalidOperationException("Minecraft RCON не ответил за 6 секунд. Проверь службу сервера, порт и доступ из Docker.");
+            throw new InvalidOperationException($"RCON сервера {serverName} не ответил за 6 секунд. Проверь службу, порт и доступ из Docker.");
         }
         catch (SocketException)
         {
-            throw new InvalidOperationException("Не удалось подключиться к Minecraft RCON. Проверь RCON_HOST, порт, firewall и server.properties.");
+            throw new InvalidOperationException($"Не удалось подключиться к RCON сервера {serverName}. Проверь host, порт, firewall и server.properties.");
         }
     }
 
-    private async Task AuthenticateAsync(NetworkStream stream, CancellationToken cancellationToken)
+    private static async Task AuthenticateAsync(NetworkStream stream, string password, CancellationToken cancellationToken)
     {
-        await SendPacketAsync(stream, 1, 3, _password, cancellationToken);
+        await SendPacketAsync(stream, 1, 3, password, cancellationToken);
         var auth = await ReadPacketAsync(stream, cancellationToken);
         if (auth.Id == -1 || auth.Id != 1)
             throw new InvalidOperationException("Minecraft отклонил авторизацию RCON. Проверь пароль в .env и server.properties.");
@@ -95,5 +119,6 @@ public sealed class MinecraftRconService
         return new RconPacket(id, body);
     }
 
+    private sealed record RconConnection(string Host, int Port, string Password);
     private sealed record RconPacket(int Id, string Body);
 }
