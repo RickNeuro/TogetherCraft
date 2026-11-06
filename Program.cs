@@ -36,9 +36,6 @@ if (!string.IsNullOrWhiteSpace(dataProtectionPath))
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    // Web-Container публикует порт 8080 только локально; внешний доступ идёт через обратный прокси.
-    options.KnownNetworks.Clear();
-    options.KnownProxies.Clear();
 });
 builder.Services.AddSingleton<IPasswordHasher<UserAccount>, PasswordHasher<UserAccount>>();
 builder.Services.AddSingleton<AppDatabase>();

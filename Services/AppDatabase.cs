@@ -21,24 +21,6 @@ public sealed class AppDatabase
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync(cancellationToken);
 
-        const string createTableSql = """
-            CREATE TABLE IF NOT EXISTS tc_users (
-                id BIGSERIAL PRIMARY KEY,
-                username VARCHAR(32) NOT NULL,
-                username_normalized VARCHAR(32) NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                minecraft_username VARCHAR(16) NOT NULL,
-                account_role VARCHAR(16) NOT NULL DEFAULT 'User',
-                account_status VARCHAR(16) NOT NULL DEFAULT 'Pending',
-                created_at_utc TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                approved_at_utc TIMESTAMPTZ NULL
-            );
-            """;
-        await using (var command = new NpgsqlCommand(createTableSql, connection))
-            await command.ExecuteNonQueryAsync(cancellationToken);
-        await using (var command = new NpgsqlCommand("CREATE INDEX IF NOT EXISTS ix_tc_users_status_created ON tc_users (account_status, created_at_utc);", connection))
-            await command.ExecuteNonQueryAsync(cancellationToken);
-
         if (string.IsNullOrWhiteSpace(adminUsername) || string.IsNullOrWhiteSpace(adminPassword))
             return;
 
@@ -104,8 +86,8 @@ public sealed class AppDatabase
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
-            INSERT INTO tc_users (username, username_normalized, password_hash, minecraft_username, account_role, account_status)
-            VALUES (@username, @normalized, @hash, @minecraft, 'User', 'Pending')
+            INSERT INTO tc_users (username, username_normalized, password_hash, minecraft_username)
+            VALUES (@username, @normalized, @hash, @minecraft)
             ON CONFLICT (username_normalized) DO NOTHING
             RETURNING id;
             """, connection);
