@@ -192,6 +192,9 @@ public sealed class AccountController : Controller
             }
 
             TempData["Success"] = $"Профиль Minecraft подтверждён: {minecraftUsername}.";
+            var updatedAccount = await _database.FindByIdAsync(accountId.Value, cancellationToken);
+            if (updatedAccount?.Status == "Approved")
+                return RedirectToAction("Server", "Home");
             return RedirectToAction(nameof(Waiting));
         }
         catch (Exception exception)
