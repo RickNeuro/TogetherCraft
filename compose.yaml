@@ -30,6 +30,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
+      MicrosoftMinecraft__ClientId: ${MICROSOFT_CLIENT_ID:-}
+      MicrosoftMinecraft__ClientSecret: ${MICROSOFT_CLIENT_SECRET:-}
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=togethercraft;Username=tc_app;Password=${APP_DB_PASSWORD:?Create .env and set APP_DB_PASSWORD}
       Admin__Username: ${ADMIN_USERNAME:-admin}
       Admin__Password: ${ADMIN_PASSWORD:?Create .env and set a strong ADMIN_PASSWORD}
