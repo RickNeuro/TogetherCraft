@@ -2,14 +2,23 @@
 @{ ViewData["Title"] = "Регистрация"; }
 <div class="container py-5"><div class="row justify-content-center"><div class="col-12 col-md-8 col-lg-6"><div class="card"><div class="card-body p-4 p-md-5">
     <a asp-controller="Home" asp-action="Index" class="small">← На главную</a>
-    <h1 class="h2 mt-3">Создать аккаунт</h1><p class="text-secondary">Укажи логин и Minecraft-ник. После регистрации дождись одобрения администратора.</p>
+    <h1 class="h2 mt-3">Создать аккаунт</h1>
+    <p class="text-secondary">Придумай логин и пароль TogetherCraft, выбери игровые миры и подтверди Minecraft Java через Microsoft.</p>
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <form asp-controller="Account" asp-action="Register" method="post">
-        <div class="mb-3"><label asp-for="Username" class="form-label">Логин</label><input asp-for="Username" class="form-control" autocomplete="username" placeholder="Придумай логин" /><span asp-validation-for="Username" class="field-validation-error small"></span></div>
-        <div class="mb-3"><label asp-for="MinecraftUsername" class="form-label">Ник в Minecraft</label><input asp-for="MinecraftUsername" class="form-control" autocomplete="off" placeholder="Например, Steve_21" /><span asp-validation-for="MinecraftUsername" class="field-validation-error small"></span></div>
-        <div class="mb-3"><label asp-for="Password" class="form-label">Пароль</label><input asp-for="Password" class="form-control" type="password" autocomplete="new-password" placeholder="Не менее 10 символов" /><span asp-validation-for="Password" class="field-validation-error small"></span></div>
-        <div class="mb-3"><label asp-for="ConfirmPassword" class="form-label">Повтори пароль</label><input asp-for="ConfirmPassword" class="form-control" type="password" autocomplete="new-password" placeholder="Введи пароль ещё раз" /><span asp-validation-for="ConfirmPassword" class="field-validation-error small"></span></div>
-        <button class="btn btn-warning w-100" type="submit">Отправить заявку</button>
+        <div class="mb-3"><label asp-for="Username" class="form-label">Логин TogetherCraft</label><input asp-for="Username" class="form-control" autocomplete="username" placeholder="Придумай логин" /><span asp-validation-for="Username" class="field-validation-error small"></span></div>
+        <div class="mb-3"><label asp-for="Email" class="form-label">Email</label><input asp-for="Email" class="form-control" type="email" autocomplete="email" placeholder="name@example.com" /><span asp-validation-for="Email" class="field-validation-error small"></span></div>
+        <div class="mb-3"><label asp-for="Password" class="form-label">Пароль TogetherCraft</label><input asp-for="Password" class="form-control" type="password" autocomplete="new-password" placeholder="Не менее 10 символов" /><span asp-validation-for="Password" class="field-validation-error small"></span></div>
+        <div class="mb-4"><label asp-for="ConfirmPassword" class="form-label">Повтори пароль</label><input asp-for="ConfirmPassword" class="form-control" type="password" autocomplete="new-password" placeholder="Введи пароль ещё раз" /><span asp-validation-for="ConfirmPassword" class="field-validation-error small"></span></div>
+        <fieldset class="mb-4">
+            <legend class="form-label">В какие миры хочешь попасть?</legend>
+            <div class="form-check mb-2"><input asp-for="WantsFabric" class="form-check-input" /><label asp-for="WantsFabric" class="form-check-label">Fabric — выживание, строительство и исследование</label></div>
+            <div class="form-check"><input asp-for="WantsCreate" class="form-check-input" /><label asp-for="WantsCreate" class="form-check-label">Create — механизмы, поезда и автоматизация</label></div>
+            <span asp-validation-for="WantsFabric" class="field-validation-error small"></span>
+            <span asp-validation-for="WantsCreate" class="field-validation-error small"></span>
+        </fieldset>
+        <button class="btn btn-warning w-100" type="submit">Продолжить с Microsoft</button>
     </form>
-    <p class="text-secondary mt-4 mb-0">Уже есть аккаунт? <a asp-controller="Account" asp-action="Login">Войти</a></p>
+    <p class="text-secondary mt-4 mb-0">Пароль Microsoft вводится только на сайте Microsoft. TogetherCraft его не получает.</p>
+    <p class="text-secondary mt-2 mb-0">Уже есть аккаунт? <a asp-controller="Account" asp-action="Login">Войти</a></p>
 </div></div></div></div></div>
