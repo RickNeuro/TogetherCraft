@@ -73,7 +73,8 @@ public sealed class AppDatabase
         await connection.OpenAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT id, username, username_normalized, password_hash, minecraft_username,
-                   account_role, account_status, created_at_utc, approved_at_utc
+                   account_role, account_status, created_at_utc, approved_at_utc,
+                   email, minecraft_uuid, wants_fabric, wants_create
             FROM tc_users WHERE username_normalized = @username LIMIT 1;
             """, connection);
         command.Parameters.AddWithValue("username", username.Trim().ToUpperInvariant());
@@ -86,20 +87,42 @@ public sealed class AppDatabase
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
-            INSERT INTO tc_users (username, username_normalized, password_hash, minecraft_username)
-            VALUES (@username, @normalized, @hash, @minecraft)
-            ON CONFLICT (username_normalized) DO NOTHING
+            INSERT INTO tc_users
+                (username, username_normalized, password_hash, minecraft_username, email, wants_fabric, wants_create)
+            VALUES
+                (@username, @normalized, @hash, NULL, @email, @wantsFabric, @wantsCreate)
+            ON CONFLICT DO NOTHING
             RETURNING id;
             """, connection);
         command.Parameters.AddWithValue("username", user.Username.Trim());
         command.Parameters.AddWithValue("normalized", user.Username.Trim().ToUpperInvariant());
         command.Parameters.AddWithValue("hash", user.PasswordHash);
-        command.Parameters.AddWithValue("minecraft", user.MinecraftUsername.Trim());
+        command.Parameters.AddWithValue("email", (user.Email ?? "").Trim().ToLowerInvariant());
+        command.Parameters.AddWithValue("wantsFabric", user.WantsFabric);
+        command.Parameters.AddWithValue("wantsCreate", user.WantsCreate);
         var id = await command.ExecuteScalarAsync(cancellationToken);
         if (id is null)
             return false;
         user.Id = Convert.ToInt64(id);
         return true;
+    }
+
+    public async Task<bool> SetMinecraftProfileAsync(long id, Guid uuid, string username, CancellationToken cancellationToken = default)
+    {
+        await using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            UPDATE tc_users
+            SET minecraft_uuid = @uuid, minecraft_username = @username
+            WHERE id = @id
+              AND account_role = 'User'
+              AND account_status = 'Pending'
+              AND (minecraft_uuid IS NULL OR minecraft_uuid = @uuid);
+            """, connection);
+        command.Parameters.AddWithValue("uuid", uuid);
+        command.Parameters.AddWithValue("username", username);
+        command.Parameters.AddWithValue("id", id);
+        return await command.ExecuteNonQueryAsync(cancellationToken) == 1;
     }
 
     public async Task<IReadOnlyList<UserAccount>> GetPendingUsersAsync(CancellationToken cancellationToken = default)
@@ -109,7 +132,8 @@ public sealed class AppDatabase
         await connection.OpenAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT id, username, username_normalized, password_hash, minecraft_username,
-                   account_role, account_status, created_at_utc, approved_at_utc
+                   account_role, account_status, created_at_utc, approved_at_utc,
+                   email, minecraft_uuid, wants_fabric, wants_create
             FROM tc_users WHERE account_status = 'Pending' ORDER BY created_at_utc ASC;
             """, connection);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -124,7 +148,8 @@ public sealed class AppDatabase
         await connection.OpenAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT id, username, username_normalized, password_hash, minecraft_username,
-                   account_role, account_status, created_at_utc, approved_at_utc
+                   account_role, account_status, created_at_utc, approved_at_utc,
+                   email, minecraft_uuid, wants_fabric, wants_create
             FROM tc_users WHERE id = @id LIMIT 1;
             """, connection);
         command.Parameters.AddWithValue("id", id);
@@ -153,10 +178,14 @@ public sealed class AppDatabase
         Username = reader.GetString(1),
         UsernameNormalized = reader.GetString(2),
         PasswordHash = reader.GetString(3),
-        MinecraftUsername = reader.GetString(4),
+        MinecraftUsername = reader.IsDBNull(4) ? null : reader.GetString(4),
         Role = reader.GetString(5),
         Status = reader.GetString(6),
         CreatedAtUtc = reader.GetDateTime(7),
-        ApprovedAtUtc = reader.IsDBNull(8) ? null : reader.GetDateTime(8)
+        ApprovedAtUtc = reader.IsDBNull(8) ? null : reader.GetDateTime(8),
+        Email = reader.IsDBNull(9) ? null : reader.GetString(9),
+        MinecraftUuid = reader.IsDBNull(10) ? null : reader.GetGuid(10),
+        WantsFabric = reader.GetBoolean(11),
+        WantsCreate = reader.GetBoolean(12)
     };
 }
