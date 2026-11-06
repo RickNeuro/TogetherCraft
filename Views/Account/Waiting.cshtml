@@ -1,7 +1,9 @@
 @{ ViewData["Title"] = "Заявка на рассмотрении"; }
 <div class="container py-5"><div class="row justify-content-center"><div class="col-12 col-lg-8"><div class="card"><div class="card-body p-4 p-md-5">
-    <span class="badge text-bg-warning mb-3">Ожидает решения</span><h1 class="h2">Заявка отправлена</h1>
-    <p class="text-secondary">Когда администратор одобрит заявку, сайт отправит Minecraft-команду добавления ника в whitelist. Если Minecraft временно недоступен, заявка останется ожидающей до успешной попытки.</p>
-    <p class="text-secondary">После одобрения обнови страницу или войди заново, чтобы увидеть доступ к мониторингу.</p>
+    @if (TempData["Success"] is string success) { <div class="alert alert-success">@success</div> }
+    @if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
+    <span class="badge text-bg-warning mb-3">Ожидает решения</span>
+    <h1 class="h2">Заявка отправлена</h1>
+    <p class="text-secondary">Minecraft-профиль подтверждён. Теперь администратор проверит заявку и добавит тебя только в выбранные игровые миры.</p>
     <div class="d-flex flex-wrap gap-2"><a class="btn btn-warning" asp-controller="Home" asp-action="Index">На главную</a><form asp-controller="Account" asp-action="Logout" method="post">@Html.AntiForgeryToken()<button class="btn btn-outline-light" type="submit">Выйти</button></form></div>
 </div></div></div></div></div>
