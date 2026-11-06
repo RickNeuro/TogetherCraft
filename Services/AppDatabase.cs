@@ -116,7 +116,7 @@ public sealed class AppDatabase
             SET minecraft_uuid = @uuid, minecraft_username = @username
             WHERE id = @id
               AND account_role = 'User'
-              AND account_status = 'Pending'
+              AND account_status IN ('Pending', 'Approved')
               AND (minecraft_uuid IS NULL OR minecraft_uuid = @uuid);
             """, connection);
         command.Parameters.AddWithValue("uuid", uuid);
