@@ -38,6 +38,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 builder.Services.AddSingleton<IPasswordHasher<UserAccount>, PasswordHasher<UserAccount>>();
+builder.Services.AddHttpClient<MinecraftMicrosoftAuthService>();
 builder.Services.AddSingleton<AppDatabase>();
 builder.Services.AddSingleton<MinecraftRconService>();
 builder.Services.AddSingleton<MinecraftServerStatusService>();
@@ -112,6 +113,46 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                 context.ReplacePrincipal(new ClaimsPrincipal(identity));
                 context.ShouldRenew = true;
             }
+        };
+    })
+    .AddCookie("External", options =>
+    {
+        options.Cookie.Name = "TogetherCraft.External";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+    })
+    .AddOAuth("MicrosoftMinecraft", options =>
+    {
+        options.SignInScheme = "External";
+        options.ClientId = builder.Configuration["MicrosoftMinecraft:ClientId"] ?? "";
+        options.ClientSecret = builder.Configuration["MicrosoftMinecraft:ClientSecret"] ?? "";
+        options.CallbackPath = "/signin-microsoft-minecraft";
+        options.AuthorizationEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
+        options.TokenEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
+        options.UserInformationEndpoint = string.Empty;
+        options.UsePkce = true;
+        options.SaveTokens = false;
+        options.Scope.Add("XboxLive.signin");
+        options.Scope.Add("offline_access");
+
+        options.Events.OnCreatingTicket = async context =>
+        {
+            var minecraftAuth = context.HttpContext.RequestServices
+                .GetRequiredService<MinecraftMicrosoftAuthService>();
+            var profile = await minecraftAuth.GetProfileAsync(
+                context.AccessToken ?? "",
+                context.HttpContext.RequestAborted);
+
+            context.Identity!.AddClaim(new Claim("minecraft_uuid", profile.Uuid.ToString()));
+            context.Identity.AddClaim(new Claim("minecraft_username", profile.Username));
+        };
+
+        options.Events.OnRemoteFailure = context =>
+        {
+            context.HandleResponse();
+            context.Response.Redirect("/Account/MinecraftFailed");
+            return Task.CompletedTask;
         };
     });
 builder.Services.AddAuthorization(options =>
