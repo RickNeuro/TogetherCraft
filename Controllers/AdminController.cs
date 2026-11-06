@@ -44,23 +44,40 @@ public sealed class AdminController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        if (account.MinecraftUuid is null || string.IsNullOrWhiteSpace(account.MinecraftUsername))
+        {
+            TempData["Error"] = "Сначала пользователь должен подтвердить Minecraft Java через Microsoft.";
+            return RedirectToAction(nameof(Index));
+        }
+
         try
         {
-            // Ник должен попасть в оба whitelist. Повторная команда для уже добавленного ника безопасна.
-            await _rcon.AddToWhitelistAsync(account.MinecraftUsername, cancellationToken);
-            await _rcon.AddToCreateWhitelistAsync(account.MinecraftUsername, cancellationToken);
+            var addedServers = new List<string>();
+
+            if (account.WantsFabric)
+            {
+                await _rcon.AddToWhitelistAsync(account.MinecraftUsername, cancellationToken);
+                addedServers.Add("Fabric");
+            }
+
+            if (account.WantsCreate)
+            {
+                await _rcon.AddToCreateWhitelistAsync(account.MinecraftUsername, cancellationToken);
+                addedServers.Add("Create");
+            }
+
             if (!await _database.SetStatusAsync(account.Id, "Approved", cancellationToken))
             {
-                TempData["Error"] = "Оба сервера подтвердили добавление, но статус заявки изменился. Обнови список и проверь заявку.";
+                TempData["Error"] = "Игровые серверы подтвердили добавление, но статус заявки изменился. Проверь её перед повторным действием.";
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["Success"] = $"{account.Username} одобрен, ник {account.MinecraftUsername} добавлен в whitelist Fabric и Create.";
+            TempData["Success"] = $"{account.Username} одобрен. Whitelist обновлён: {string.Join(", ", addedServers)}.";
         }
         catch (Exception exception)
         {
             _logger.LogWarning(exception, "Не удалось одобрить заявку {AccountId}.", account.Id);
-            TempData["Error"] = exception.Message + " Заявка осталась ожидающей — после настройки можно попробовать снова.";
+            TempData["Error"] = exception.Message + " Заявка осталась ожидающей. Повторное добавление в whitelist безопасно.";
         }
         return RedirectToAction(nameof(Index));
     }
