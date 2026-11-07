@@ -1,0 +1,160 @@
+name: TogetherCraft CI/CD
+
+on:
+  push:
+    branches:
+      - feature/home-v4-two-servers
+      - automation/ci-cd
+      - main
+  pull_request:
+    branches:
+      - feature/home-v4-two-servers
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: togethercraft-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Build and integration checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore TogetherCraft.csproj
+
+      - name: Build application
+        run: dotnet build TogetherCraft.csproj --configuration Release --no-restore
+
+      - name: Install Node.js for browser tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright test runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.65.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Create disposable CI environment
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/togethercraft-ci.env" <<'EOF'
+          POSTGRES_PASSWORD=CI_ONLY_POSTGRES_PASSWORD_2026
+          APP_DB_PASSWORD=CI_ONLY_APP_PASSWORD_2026
+          ADMIN_USERNAME=ci-admin
+          ADMIN_PASSWORD=CI-Only-Admin-Password-2026!
+          MICROSOFT_CLIENT_ID=00000000-0000-0000-0000-000000000001
+          MICROSOFT_CLIENT_SECRET=CI_ONLY_NOT_A_REAL_SECRET
+          RCON_HOST=host.docker.internal
+          RCON_PORT=25575
+          RCON_PASSWORD=ci-not-used
+          RCON_CREATE_HOST=host.docker.internal
+          RCON_CREATE_PORT=25576
+          RCON_CREATE_PASSWORD=ci-not-used
+          MC_SERVER_HOST=127.0.0.1
+          MC_SERVER_PORT=25565
+          MC_SERVER_PROTOCOL=776
+          MC_SERVER_DISPLAY_ADDRESS=127.0.0.1
+          MC_CREATE_SERVER_HOST=127.0.0.1
+          MC_CREATE_SERVER_PORT=25566
+          MC_CREATE_SERVER_PROTOCOL=767
+          MC_CREATE_SERVER_DISPLAY_ADDRESS=127.0.0.1
+          PUBLIC_DOMAIN=localhost
+          EOF
+          chmod 600 "$RUNNER_TEMP/togethercraft-ci.env"
+          echo "COMPOSE_ENV_FILE=$RUNNER_TEMP/togethercraft-ci.env" >> "$GITHUB_ENV"
+
+      - name: Validate Docker Compose configuration
+        run: docker compose --env-file "$COMPOSE_ENV_FILE" config --quiet
+
+      - name: Start app and disposable PostgreSQL
+        run: docker compose --env-file "$COMPOSE_ENV_FILE" up --detach --build togethercraft-web
+
+      - name: Wait for application health
+        run: |
+          for attempt in $(seq 1 35); do
+            if curl --fail --silent http://127.0.0.1:8080/healthz >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose --env-file "$COMPOSE_ENV_FILE" logs --no-color togethercraft-web postgres db-migrate
+          exit 1
+
+      - name: Verify database role permissions
+        run: |
+          docker compose --env-file "$COMPOSE_ENV_FILE" exec --no-TTY \
+            -e PGPASSWORD=CI_ONLY_APP_PASSWORD_2026 postgres \
+            psql --host 127.0.0.1 --username tc_app --dbname togethercraft \
+            --set ON_ERROR_STOP=1 --command \
+            "BEGIN; INSERT INTO tc_users (username, username_normalized, password_hash, minecraft_username, email, wants_fabric, wants_create) VALUES ('ci-probe', 'CI_PROBE', 'test-hash', NULL, 'ci-probe@example.invalid', TRUE, FALSE); UPDATE tc_users SET account_status='Approved', approved_at_utc=NOW() WHERE username_normalized='CI-ADMIN'; UPDATE tc_users SET minecraft_username='CIPlayer', minecraft_uuid='00000000-0000-0000-0000-000000000001' WHERE username_normalized='CI-ADMIN'; ROLLBACK;"
+
+      - name: Check backend, database and frontend assets
+        run: bash scripts/ci-smoke.sh http://127.0.0.1:8080
+        env:
+          CI_ADMIN_USERNAME: ci-admin
+          CI_ADMIN_PASSWORD: CI-Only-Admin-Password-2026!
+
+      - name: Run Chromium browser tests
+        run: npx playwright test
+        env:
+          BASE_URL: http://127.0.0.1:8080
+
+      - name: Upload browser test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Collect container logs on failure
+        if: failure()
+        run: docker compose --env-file "$COMPOSE_ENV_FILE" logs --no-color
+
+      - name: Stop disposable CI stack
+        if: always()
+        run: |
+          if [[ -n "${COMPOSE_ENV_FILE:-}" && -f "$COMPOSE_ENV_FILE" ]]; then
+            docker compose --env-file "$COMPOSE_ENV_FILE" down --volumes --remove-orphans
+          fi
+
+  deploy:
+    name: Deploy to Ubuntu server
+    needs: verify
+    if: >-
+      github.event_name == 'push' &&
+      vars.DEPLOY_ENABLED == 'true' &&
+      github.ref == 'refs/heads/feature/home-v4-two-servers'
+    runs-on: [self-hosted, linux, x64, togethercraft-deploy]
+    timeout-minutes: 20
+    concurrency:
+      group: togethercraft-production
+      cancel-in-progress: false
+    steps:
+      - name: Checkout tested commit
+        uses: actions/checkout@v4
+
+      - name: Deploy and verify health
+        run: bash scripts/deploy.sh
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          TOGETHERCRAFT_DEPLOY_DIR: ${{ vars.DEPLOY_PATH }}

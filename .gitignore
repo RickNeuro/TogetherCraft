@@ -9,6 +9,11 @@ bin/
 obj/
 artifacts/
 
+# Node and browser test output
+node_modules/
+test-results/
+playwright-report/
+
 # Local configuration and secrets
 appsettings.Development.json
 .env
@@ -24,3 +29,6 @@ postgres-data/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Private production database dumps
+backups/

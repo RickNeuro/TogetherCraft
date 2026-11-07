@@ -18,7 +18,27 @@ services:
       retries: 20
       start_period: 10s
 
+  db-migrate:
+    image: postgres:16-alpine
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_DB: togethercraft
+      POSTGRES_USER: togethercraft
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Create .env and set POSTGRES_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Create .env and set APP_DB_PASSWORD}
+      POSTGRES_HOST: postgres
+    volumes:
+      - ./db/migrations:/migrations:ro
+      - ./scripts/db-migrate.sh:/scripts/db-migrate.sh:ro
+    entrypoint: ["/bin/sh", "/scripts/db-migrate.sh"]
+    networks:
+      - backend
+
   togethercraft-web:
+    image: togethercraft-web:${APP_VERSION:-latest}
     build:
       context: .
       dockerfile: Dockerfile
@@ -27,6 +47,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
