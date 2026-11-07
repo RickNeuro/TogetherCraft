@@ -24,3 +24,6 @@ postgres-data/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Private production database dumps
+backups/
