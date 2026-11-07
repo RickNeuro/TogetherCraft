@@ -27,14 +27,17 @@ fi
 
 if [[ -e .env ]]; then
     echo "Файл .env уже существует — не перезаписываю его и не трогаю текущие секреты."
-    echo "Проверь его вручную и запусти: docker compose up --build -d"
+    echo "Для старой установки один раз запусти: bash scripts/ensure-app-db-password.sh"
+    echo "Затем выполни: docker compose up --build -d"
     exit 1
 fi
 
 POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+APP_DB_PASSWORD="$(openssl rand -hex 32)"
 ADMIN_PASSWORD="$(openssl rand -hex 32)"
 cat > .env <<ENV
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+APP_DB_PASSWORD=${APP_DB_PASSWORD}
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
 MICROSOFT_CLIENT_ID=
@@ -53,7 +56,10 @@ PUBLIC_DOMAIN=CHANGE_ME.example.com
 ENV
 chmod 600 .env
 
-echo "Создан .env с уникальными секретами и правами 600."
+# Keep the application DB password private; the migration job reads it from .env.
+unset APP_DB_PASSWORD
+
+echo "Создан .env с отдельными секретами PostgreSQL, приложения и администратора."
 echo "Логин администратора: admin"
 echo "Временный пароль администратора: ${ADMIN_PASSWORD}"
 echo "Сохрани этот пароль. Не отправляй .env в GitHub и не публикуй пароль."
