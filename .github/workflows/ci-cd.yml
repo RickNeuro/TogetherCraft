@@ -23,7 +23,7 @@ jobs:
   verify:
     name: Build and integration checks
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -38,6 +38,17 @@ jobs:
 
       - name: Build application
         run: dotnet build TogetherCraft.csproj --configuration Release --no-restore
+
+      - name: Install Node.js for browser tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright test runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.65.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Create disposable CI environment
         shell: bash
@@ -98,6 +109,22 @@ jobs:
         env:
           CI_ADMIN_USERNAME: ci-admin
           CI_ADMIN_PASSWORD: CI-Only-Admin-Password-2026!
+
+      - name: Run Chromium browser tests
+        run: npx playwright test
+        env:
+          BASE_URL: http://127.0.0.1:8080
+
+      - name: Upload browser test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Collect container logs on failure
         if: failure()
