@@ -111,7 +111,7 @@ request = Request(login_url, data=payload, headers={"Content-Type": "application
 with opener.open(request, timeout=10) as response:
     final_path = urlparse(response.geturl()).path
     body = response.read().decode("utf-8", errors="replace")
-    if response.status != 200 or final_path.rstrip("/") != "/Admin/Index":
+    if response.status != 200 or final_path.rstrip("/") not in ("/Admin", "/Admin/Index"):
         raise SystemExit(f"Admin login failed: HTTP {response.status}, final path {final_path}")
     if "Заявки на доступ" not in body:
         raise SystemExit("Admin page did not render its expected content")
