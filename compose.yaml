@@ -18,6 +18,28 @@ services:
       retries: 20
       start_period: 10s
 
+  db-bootstrap:
+    image: postgres:16-alpine
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-bootstrap:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: togethercraft
+      POSTGRES_USER: togethercraft
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Create .env and set POSTGRES_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Create .env and set APP_DB_PASSWORD}
+    volumes:
+      - ./db:/db:ro
+      - ./scripts/bootstrap-db.sh:/scripts/bootstrap-db.sh:ro
+    entrypoint: ["/bin/sh", "/scripts/bootstrap-db.sh"]
+    networks:
+      - backend
+
   togethercraft-web:
     build:
       context: .
@@ -33,6 +55,7 @@ services:
       MicrosoftMinecraft__ClientId: ${MICROSOFT_CLIENT_ID:-}
       MicrosoftMinecraft__ClientSecret: ${MICROSOFT_CLIENT_SECRET:-}
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=togethercraft;Username=tc_app;Password=${APP_DB_PASSWORD:?Create .env and set APP_DB_PASSWORD}
+      ForwardedHeaders__KnownProxy: 172.30.0.10
       Admin__Username: ${ADMIN_USERNAME:-admin}
       Admin__Password: ${ADMIN_PASSWORD:?Create .env and set a strong ADMIN_PASSWORD}
       MinecraftRcon__Host: ${RCON_HOST:-host.docker.internal}
@@ -116,7 +139,8 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     networks:
-      - frontend
+      frontend:
+        ipv4_address: 172.30.0.10
 
 volumes:
   postgres-data:
@@ -127,5 +151,10 @@ volumes:
 
 networks:
   frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
   backend:
+    driver: bridge
     internal: true

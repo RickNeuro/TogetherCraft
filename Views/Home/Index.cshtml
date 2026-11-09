@@ -129,13 +129,13 @@
         </div>
         <p class="section-desc">Выбирай мир и подключайся к друзьям.</p>
     </div>
-    <div class="server-grid" data-server-status="@(canMonitor ? "true" : "false")" aria-label="Игровые серверы TogetherCraft">
+    <div class="server-grid" data-server-status="true" aria-label="Игровые серверы TogetherCraft">
         <article class="server-card">
             <div class="server-card-top">
                 <div><div class="server-kicker">Игровой мир 01</div><h3 class="server-title">TogetherCraft · Fabric</h3></div>
                 <span class="server-tag">FABRIC</span>
             </div>
-            <div class="server-state-row"><span id="fabric-status" class="server-state">@(canMonitor ? "Проверяем…" : "После одобрения")</span><span class="server-status-updated" id="fabric-updated">—</span></div>
+            <div class="server-state-row"><span id="fabric-status" class="server-state">Проверяем…</span><span class="server-status-updated" id="fabric-updated">—</span></div>
             <div class="server-address-label">Адрес подключения</div>
             <div class="server-address-row"><strong class="server-address">fried-newer.tun.ply.gg</strong><button class="copy-button" data-copy-address="fried-newer.tun.ply.gg" type="button">Копировать</button></div>
             <div class="server-specs">
@@ -151,7 +151,7 @@
                 <div><div class="server-kicker">Игровой мир 02</div><h3 class="server-title">TogetherCraft · Create</h3></div>
                 <span class="server-tag">NEOFORGE</span>
             </div>
-            <div class="server-state-row"><span id="create-status" class="server-state">@(canMonitor ? "Проверяем…" : "После одобрения")</span><span class="server-status-updated" id="create-updated">—</span></div>
+            <div class="server-state-row"><span id="create-status" class="server-state">Проверяем…</span><span class="server-status-updated" id="create-updated">—</span></div>
             <div class="server-address-label">Адрес подключения</div>
             <div class="server-address-row"><strong class="server-address">shrimp-crafts.tun.ply.gg</strong><button class="copy-button" data-copy-address="shrimp-crafts.tun.ply.gg" type="button">Копировать</button></div>
             <div class="server-specs">
@@ -163,10 +163,6 @@
             <div class="server-footer-note" id="create-note">Отдельный мир с Create, механизмами, поездами и автоматизацией.</div>
         </article>
     </div>
-    @if (!canMonitor)
-    {
-        <p class="servers-access-note">Подробный статус серверов доступен после входа и одобрения аккаунта.</p>
-    }
 </section>
 
 <section class="faq" id="faq">

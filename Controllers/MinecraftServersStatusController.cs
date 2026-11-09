@@ -6,7 +6,7 @@ namespace TogetherCraft.Controllers;
 
 [ApiController]
 [Route("api/minecraft/servers")]
-[Authorize(Policy = "ApprovedUser")]
+[AllowAnonymous]
 public sealed class MinecraftServersStatusController : ControllerBase
 {
     private readonly MinecraftStatusMonitorService _monitor;
