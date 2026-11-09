@@ -24,8 +24,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      db-bootstrap:
-        condition: service_completed_successfully
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -49,6 +47,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      db-bootstrap:
+        condition: service_completed_successfully
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080

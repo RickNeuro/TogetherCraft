@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: togethercraft-ci-\${{ github.ref }}
+  group: togethercraft-ci-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
