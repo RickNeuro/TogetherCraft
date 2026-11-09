@@ -1,0 +1,28 @@
+name: TogetherCraft deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: togethercraft-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy tested main to Ubuntu
+    if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, x64, togethercraft-deploy]
+    timeout-minutes: 25
+    steps:
+      - name: Checkout tested commit
+        uses: actions/checkout@v4
+      - name: Deploy and verify health
+        run: bash scripts/deploy.sh
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          TOGETHERCRAFT_DEPLOY_DIR: ${{ vars.DEPLOY_PATH }}

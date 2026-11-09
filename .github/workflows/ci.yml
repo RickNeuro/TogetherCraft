@@ -3,12 +3,9 @@ name: TogetherCraft CI
 on:
   push:
     branches:
-      - feature/home-v4-two-servers
-      - fix/repository-bootstrap-and-runtime
       - main
   pull_request:
     branches:
-      - feature/home-v4-two-servers
       - main
   workflow_dispatch:
 
