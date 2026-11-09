@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+cd "$(dirname "$0")/.."
 
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
-
-if ! command -v docker >/dev/null 2>&1; then
-    echo "Docker не найден. Сначала установи Docker Engine и плагин Docker Compose."
+if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
+    echo "Нужны Docker Engine и Docker Compose v2."
     exit 1
 fi
-if ! docker compose version >/dev/null 2>&1; then
-    echo "Не найден Docker Compose v2. Установи docker-compose-plugin."
-    exit 1
-fi
+
 DOCKER=(docker)
 if ! docker info >/dev/null 2>&1; then
     if command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1; then
@@ -20,50 +16,93 @@ if ! docker info >/dev/null 2>&1; then
         exit 1
     fi
 fi
+
 if ! command -v openssl >/dev/null 2>&1; then
-    echo "Не найден openssl. Установи его командой: sudo apt install openssl"
+    echo "Не найден openssl. Установи: sudo apt install openssl"
     exit 1
 fi
 
-if [[ -e .env ]]; then
-    echo "Файл .env уже существует — не перезаписываю его и не трогаю текущие секреты."
-    echo "Проверь его вручную и запусти: docker compose up --build -d"
-    exit 1
+created_env=0
+if [[ ! -f .env ]]; then
+    cp .env.example .env
+    created_env=1
 fi
 
-POSTGRES_PASSWORD="$(openssl rand -hex 32)"
-ADMIN_PASSWORD="$(openssl rand -hex 32)"
-cat > .env <<ENV
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=${ADMIN_PASSWORD}
-MICROSOFT_CLIENT_ID=
-MICROSOFT_CLIENT_SECRET=
-RCON_HOST=host.docker.internal
-RCON_PORT=25575
-RCON_PASSWORD=
-RCON_CREATE_HOST=host.docker.internal
-RCON_CREATE_PORT=25576
-RCON_CREATE_PASSWORD=
-MC_CREATE_SERVER_HOST=host.docker.internal
-MC_CREATE_SERVER_PORT=25566
-MC_CREATE_SERVER_PROTOCOL=767
-MC_CREATE_SERVER_DISPLAY_ADDRESS=shrimp-crafts.tun.ply.gg
-PUBLIC_DOMAIN=CHANGE_ME.example.com
-ENV
+replace_env_value() {
+    local key="$1"
+    local value="$2"
+    if grep -q "^${key}=" .env; then
+        sed -i "/^${key}=/d" .env
+    fi
+    printf '%s=%s\n' "$key" "$value" >> .env
+}
+
+is_placeholder() {
+    local key="$1"
+    local value
+    value="$(grep -E "^${key}=" .env | tail -n 1 | cut -d= -f2- || true)"
+    case "$value" in
+        ""|CHANGE_ME*|change_me*|REPLACE*|replace*|CHANGEME*|changeme*|example*)
+            return 0 ;;
+        *)
+            return 1 ;;
+    esac
+}
+
+ensure_secret() {
+    local key="$1"
+    if is_placeholder "$key"; then
+        replace_env_value "$key" "$(openssl rand -hex 32)"
+        return 0
+    fi
+    return 1
+}
+
+admin_password_generated=0
+if [[ "$created_env" -eq 1 ]]; then
+    ensure_secret POSTGRES_PASSWORD || true
+    ensure_secret APP_DB_PASSWORD || true
+    if ensure_secret ADMIN_PASSWORD; then
+        admin_password_generated=1
+    fi
+else
+    if is_placeholder POSTGRES_PASSWORD; then
+        echo "В существующем .env нет рабочего POSTGRES_PASSWORD. Укажи пароль текущей базы вручную."
+        exit 1
+    fi
+    if is_placeholder ADMIN_PASSWORD; then
+        echo "В существующем .env нет рабочего ADMIN_PASSWORD. Укажи пароль текущего администратора вручную."
+        exit 1
+    fi
+    ensure_secret APP_DB_PASSWORD || true
+fi
+
 chmod 600 .env
+admin_password="$(grep -E '^ADMIN_PASSWORD=' .env | tail -n 1 | cut -d= -f2-)"
+if [[ "$(printf '%s' "$admin_password" | wc -c)" -lt 14 ]]; then
+    echo "ADMIN_PASSWORD должен содержать не менее 14 символов."
+    exit 1
+fi
 
-echo "Создан .env с уникальными секретами и правами 600."
-echo "Логин администратора: admin"
-echo "Временный пароль администратора: ${ADMIN_PASSWORD}"
-echo "Сохрани этот пароль. Не отправляй .env в GitHub и не публикуй пароль."
-echo
+echo "Проверяю конфигурацию Docker Compose..."
+"${DOCKER[@]}" compose config --quiet
+
+echo "Запускаю PostgreSQL, настройку схемы и TogetherCraft..."
 "${DOCKER[@]}" compose up --build -d
+
 echo
-echo "Состояние контейнеров:"
 "${DOCKER[@]}" compose ps
 echo
 echo "Локальный адрес: http://127.0.0.1:8080"
-echo "Для одобрения заявок настрой RCON отдельно на Fabric (25575) и Create (25576)."
-echo "Подробности: docs/WHITELIST.md"
-echo "Публичный HTTPS не включён: он требует домена и настройки доступности портов/туннеля."
+if [[ "$admin_password_generated" -eq 1 ]]; then
+    admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
+    echo "Логин администратора: $admin_username"
+    echo "Временный пароль администратора (сохрани его сейчас):"
+    echo "$admin_password"
+else
+    echo "Учётные данные администратора сохранены в существующем .env."
+fi
+echo
+echo "Для регистрации заполни MICROSOFT_CLIENT_ID и MICROSOFT_CLIENT_SECRET."
+echo "Для whitelist настрой оба RCON-подключения в .env."
+echo "Публичный HTTPS через Caddy настраивается отдельно. См. README.md."

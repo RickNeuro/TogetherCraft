@@ -1,7 +1,7 @@
 (() => {
     const root = document.querySelector("[data-server-status]");
 
-    // The approved homepage shows both game worlds.
+    // The homepage shows both game worlds.
     if (root) {
         function setText(id, value) {
             const element = document.getElementById(id);
@@ -28,6 +28,10 @@
                     : "—");
             setText(prefix + "-ping", typeof server.pingMs === "number" ? Math.round(server.pingMs) + " ms" : "—");
             setText(prefix + "-note", server.message || "Статус обновляется автоматически.");
+            const address = server.address || (prefix === "fabric" ? "fried-newer.tun.ply.gg" : "shrimp-crafts.tun.ply.gg");
+            setText(prefix + "-address", address);
+            const copyButton = document.getElementById("copy-" + prefix + "-address");
+            if (copyButton) copyButton.dataset.copyAddress = address;
             setText(prefix + "-updated", server.updatedAtUtc
                 ? new Date(server.updatedAtUtc).toLocaleTimeString("ru-RU")
                 : "—");

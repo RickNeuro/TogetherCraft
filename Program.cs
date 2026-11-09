@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using System.Security.Claims;
+using System.Net;
 using TogetherCraft.Models;
 using TogetherCraft.Services;
 
@@ -33,9 +34,14 @@ if (!string.IsNullOrWhiteSpace(dataProtectionPath))
         .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath))
         .SetApplicationName("TogetherCraft");
 }
+var trustedProxyAddress = builder.Configuration["ForwardedHeaders:KnownProxy"];
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = 1;
+
+    if (IPAddress.TryParse(trustedProxyAddress, out var trustedProxy) && trustedProxy is not null)
+        options.KnownProxies.Add(trustedProxy);
 });
 builder.Services.AddSingleton<IPasswordHasher<UserAccount>, PasswordHasher<UserAccount>>();
 builder.Services.AddHttpClient<MinecraftMicrosoftAuthService>();

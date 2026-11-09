@@ -5,5 +5,8 @@
     @if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
     <div class="alert alert-secondary">TogetherCraft не получает пароль Microsoft и не сохраняет токены Microsoft. После проверки мы сохраним только UUID и актуальный ник Minecraft.</div>
     <p class="text-secondary mb-0">Сейчас вход Microsoft не настроен на сервере. Администратору нужно добавить Client ID и Client Secret приложения Microsoft в закрытый файл .env.</p>
-    <a class="btn btn-outline-light mt-4" asp-controller="Account" asp-action="Logout">Выйти</a>
+    <form asp-controller="Account" asp-action="Logout" method="post" class="mt-4">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-outline-light" type="submit">Выйти</button>
+    </form>
 </div></div></div></div></div>

@@ -1,69 +1,113 @@
 # TogetherCraft
 
-TogetherCraft — сайт сообщества с двумя отдельными Minecraft-мирами: Fabric для совместного выживания и Create с техникой, поездами и автоматизацией.
+Сайт сообщества с двумя Minecraft-мирами: Fabric для совместного выживания и Create с техникой, поездами и автоматизацией.
 
-## Что есть в проекте
+## Возможности
 
-- Главная страница в стиле TogetherCraft v4: тёмный графитовый фон, жёлтый акцент, исходный арт с лисой, FAQ и ссылки сообщества.
-- Два игровых сервера с отдельными адресами и статусами:
-  - Fabric — Minecraft 26.2, адрес fried-newer.tun.ply.gg.
-  - Create — Minecraft 1.21.1, NeoForge 21.1.248, адрес shrimp-crafts.tun.ply.gg.
-- Статус каждого игрового мира, версия, онлайн-игроки и время ответа запрашиваются через Minecraft Server List Ping. Проверки выполняются независимо и обновляются автоматически.
-- Системные метрики Ubuntu: CPU, RAM, системный диск, температура CPU и каналы вентиляторов FAN1/FAN3 через Prometheus и Node Exporter.
-- Регистрация, защищённая авторизация, заявки на доступ и административное одобрение в PostgreSQL.
-- При одобрении сайт добавляет Minecraft-ник в whitelist Fabric и Create через два отдельных локальных RCON-подключения. Статус пользователя меняется на Approved только после подтверждения обоих серверов.
-- Мониторинг доступен только одобренным аккаунтам. Команд управления игровыми серверами с сайта нет.
+- Главная страница, два игровых мира, FAQ и ссылки сообщества.
+- Публичный read-only статус Fabric и Create: доступность, версия, игроки и отклик.
+- Системные метрики Ubuntu (CPU, RAM, диск, температура, FAN1/FAN3) только для одобренных аккаунтов.
+- Регистрация, вход, подтверждение Minecraft Java через Microsoft и административное одобрение.
+- Автоматический whitelist выбранных игровых миров через два отдельных RCON.
+- PostgreSQL, Prometheus и Node Exporter. Сайт не отправляет команды управления игровыми серверами.
 
-## Конфигурация серверов
+## Требования
 
-Публичные адреса отображаются без портов. Внутренние адреса и порты для проверок задаются в .env:
+- Docker Engine и Docker Compose v2.
+- OpenSSL для генерации секретов.
+- Для локальной сборки: .NET 8 SDK; для Visual Studio — Visual Studio 2022 17.8 или новее.
 
-- Fabric status check: MC_SERVER_HOST / MC_SERVER_PORT / MC_SERVER_PROTOCOL.
-- Create status check: MC_CREATE_SERVER_HOST / MC_CREATE_SERVER_PORT / MC_CREATE_SERVER_PROTOCOL. По умолчанию это host.docker.internal:25566, то есть локальный порт Create на Ubuntu.
-- Fabric RCON: RCON_HOST / RCON_PORT / RCON_PASSWORD.
-- Create RCON: RCON_CREATE_HOST / RCON_CREATE_PORT / RCON_CREATE_PASSWORD.
+## Первый запуск
 
-У Create должен быть включён whitelist и отдельный RCON на порту 25576. Подробная инструкция находится в docs/WHITELIST.md. Не открывай RCON-порты наружу и никогда не коммить локальный .env.
+Из корня репозитория запусти:
 
-## Запуск через Docker
+~~~bash
+bash scripts/first-start.sh
+~~~
 
-Нужен Docker Engine с Docker Compose v2.
+Скрипт создаст .env из .env.example, сгенерирует уникальные секреты для PostgreSQL, роли приложения и администратора, выставит права файла 600 и запустит контейнеры.
 
-1. Скопируй .env.example в .env.
-2. Замени секреты базы и администратора на длинные случайные значения.
-3. Заполни оба RCON-пароля и выставь соответствующие значения в server.properties Fabric и Create.
-4. Запусти контейнеры:
+При старте Compose сначала ждёт PostgreSQL, затем отдельный db-bootstrap:
+1. создаёт роль tc_app;
+2. создаёт исходную таблицу tc_users, если её ещё нет;
+3. применяет db/migrations/002-registration-worlds.sql;
+4. выдаёт приложению необходимые права на таблицу и последовательность.
 
-   bash scripts/first-start.sh
+Bootstrap повторяемый и не удаляет существующие данные. При повторном запуске first-start.sh существующие пароли PostgreSQL и администратора не заменяются. Если в старом .env отсутствует APP_DB_PASSWORD, скрипт добавит его, после чего bootstrap синхронизирует пароль роли tc_app. Если в существующем .env нет действующего POSTGRES_PASSWORD или ADMIN_PASSWORD, скрипт остановится и попросит указать правильные значения.
 
-   Либо вручную:
+При первом запуске сгенерированный пароль администратора выводится в терминал один раз. Сохрани его. Не публикуй .env и не отправляй его в GitHub.
 
-   docker compose up --build -d
+## Microsoft и регистрация
 
-5. Открой http://127.0.0.1:8080 и войди под учётной записью администратора из .env.
+Для подтверждения Minecraft Java Edition создай приложение Microsoft для личных аккаунтов и добавь callback URI вида:
 
-После изменений кода можно пересобрать веб-контейнер:
+~~~text
+https://YOUR_DOMAIN/signin-microsoft-minecraft
+~~~
 
-   bash scripts/rebuild.sh
+Укажи MICROSOFT_CLIENT_ID и MICROSOFT_CLIENT_SECRET в локальном .env. Без них регистрация с подтверждением профиля не завершится; главная страница, публичный статус игровых серверов и вход существующих пользователей остаются доступны.
 
-Скрипт не удаляет PostgreSQL volume. Не используй docker compose down -v, если не хочешь удалить данные базы.
+После изменения .env пересоздай веб-контейнер:
 
-## Полезные команды
+~~~bash
+bash scripts/rebuild.sh
+~~~
 
-   docker compose ps
-   docker compose logs -f togethercraft-web
-   docker compose logs -f postgres
+## Игровые серверы и RCON
 
-PostgreSQL работает в отдельном контейнере и хранится в именованном volume. Порт базы не опубликован наружу. Prometheus и Node Exporter находятся во внутренней сети Docker.
+Настройки проверок Minecraft находятся в .env:
+
+- Fabric: MC_SERVER_HOST, MC_SERVER_PORT, MC_SERVER_PROTOCOL, MC_SERVER_DISPLAY_ADDRESS.
+- Create: MC_CREATE_SERVER_HOST, MC_CREATE_SERVER_PORT, MC_CREATE_SERVER_PROTOCOL, MC_CREATE_SERVER_DISPLAY_ADDRESS.
+
+Whitelist настраивается отдельно для двух серверов:
+
+- Fabric: RCON_HOST, RCON_PORT, RCON_PASSWORD.
+- Create: RCON_CREATE_HOST, RCON_CREATE_PORT, RCON_CREATE_PASSWORD.
+
+В server.properties обоих серверов включи enable-rcon=true и white-list=true. Используй разные уникальные пароли и порты (Fabric 25575, Create 25576 по умолчанию). Не открывай RCON в интернет.
+
+Подробная инструкция: docs/WHITELIST.md.
+
+## Обновление
+
+После переключения на обновлённую ветку запусти:
+
+~~~bash
+bash scripts/rebuild.sh
+~~~
+
+Скрипт сначала проверит конфигурацию, применит bootstrap базы, затем пересоберёт веб-контейнер. Именованный volume PostgreSQL не удаляется.
+
+Полезные команды:
+
+~~~bash
+docker compose ps
+docker compose logs -f togethercraft-web
+docker compose logs -f postgres
+docker compose logs -f db-bootstrap
+~~~
+
+Не используй docker compose down -v для обычного обновления: эта команда удаляет именованные тома, в том числе базу и историю Prometheus.
 
 ## HTTPS
 
-Для публичного HTTPS предусмотрен Caddy. Для его включения нужен домен и возможность принимать входящие соединения на 80/443 либо отдельно настроенный туннель. Укажи PUBLIC_DOMAIN в .env и выполни:
+Публичный HTTPS предусмотрен через Caddy. Нужен домен и доступность портов 80/443 либо правильно настроенный туннель.
 
-   docker compose --profile public up --build -d
+Укажи реальный PUBLIC_DOMAIN в .env и запусти:
 
-Не публикуй наружу PostgreSQL или RCON.
+~~~bash
+docker compose --profile public up --build -d
+~~~
 
-## Совместимость и сборка
+Caddy закреплён за IP 172.30.0.10. Приложение принимает X-Forwarded-For и X-Forwarded-Proto только от этого прокси. Если подсеть 172.30.0.0/24 уже занята в Docker, измени сеть и IP согласованно в compose.yaml и ForwardedHeaders:KnownProxy.
 
-Проект использует .NET 8 и Npgsql 8.0.7. Код нужно собирать и запускать с установленным .NET SDK и Docker. Сборка и runtime-проверка должны выполняться перед выкладкой на рабочий сервер. В Visual Studio открой TogetherCraft.sln.
+Не публикуй PostgreSQL, Prometheus, Node Exporter или RCON наружу.
+
+## Проверки
+
+GitHub Actions выполняет restore и Release-сборку .NET, проверку Docker Compose, запуск временной PostgreSQL, проверку прав tc_app, smoke-проверки API/авторизации/локальных ресурсов и браузерные проверки Chromium на ширинах 360, 390 и 1440 px. В этом CI нет выкладки на рабочий сервер.
+
+## Версии
+
+Приложение остаётся на .NET 8 ради совместимости с текущей средой Visual Studio 2022. Поддержка .NET 8 заканчивается 10 ноября 2026 года; переход на .NET 10 требует обновления SDK и среды разработки одновременно. Сейчас используется Npgsql 8.0.9.

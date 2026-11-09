@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
-set -e
-
-# Run this script from any directory; it moves to the project root.
+set -Eeuo pipefail
 cd "$(dirname "$0")/.."
 
-echo "Rebuilding TogetherCraft web container..."
-sudo docker compose up -d --build --force-recreate togethercraft-web
+DOCKER=(docker)
+if ! docker info >/dev/null 2>&1; then
+    if command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1; then
+        DOCKER=(sudo docker)
+    else
+        echo "Docker daemon недоступен. Проверь systemctl status docker и права пользователя."
+        exit 1
+    fi
+fi
 
-echo
-echo "Container status:"
-sudo docker compose ps
+"${DOCKER[@]}" compose config --quiet
+"${DOCKER[@]}" compose run --rm db-bootstrap
+"${DOCKER[@]}" compose up -d --build --force-recreate togethercraft-web
+"${DOCKER[@]}" compose ps
+echo "PostgreSQL volume не удалялся."
