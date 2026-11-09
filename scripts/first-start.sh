@@ -31,8 +31,8 @@ fi
 replace_env_value() {
     local key="$1"
     local value="$2"
-    if grep -q "^\${key}=" .env; then
-        sed -i "/^\${key}=/d" .env
+    if grep -q "^${key}=" .env; then
+        sed -i "/^${key}=/d" .env
     fi
     printf '%s=%s\n' "$key" "$value" >> .env
 }
@@ -40,7 +40,7 @@ replace_env_value() {
 is_placeholder() {
     local key="$1"
     local value
-    value="$(grep -E "^\${key}=" .env | tail -n 1 | cut -d= -f2- || true)"
+    value="$(grep -E "^${key}=" .env | tail -n 1 | cut -d= -f2- || true)"
     case "$value" in
         ""|CHANGE_ME*|change_me*|REPLACE*|replace*|CHANGEME*|changeme*|example*)
             return 0 ;;

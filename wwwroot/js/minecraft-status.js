@@ -28,6 +28,11 @@
                     : "—");
             setText(prefix + "-ping", typeof server.pingMs === "number" ? Math.round(server.pingMs) + " ms" : "—");
             setText(prefix + "-note", server.message || "Статус обновляется автоматически.");
+            const address = server.address || (prefix === "fabric" ? "fried-newer.tun.ply.gg" : "shrimp-crafts.tun.ply.gg");
+            setText(prefix + "-address", address);
+            const fallbackAddress = prefix === "fabric" ? "fried-newer.tun.ply.gg" : "shrimp-crafts.tun.ply.gg";
+            const copyButton = root.querySelector('[data-copy-address="' + fallbackAddress + '"]');
+            if (copyButton) copyButton.dataset.copyAddress = address;
             setText(prefix + "-updated", server.updatedAtUtc
                 ? new Date(server.updatedAtUtc).toLocaleTimeString("ru-RU")
                 : "—");
