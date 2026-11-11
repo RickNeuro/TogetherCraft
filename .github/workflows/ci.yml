@@ -122,3 +122,16 @@ jobs:
           if [ -f "$RUNNER_TEMP/togethercraft-ci.env" ]; then
             docker compose --env-file "$RUNNER_TEMP/togethercraft-ci.env" down --volumes --remove-orphans
           fi
+
+      - name: Package tested source snapshot
+        if: success()
+        run: git archive --format=zip --prefix=TogetherCraft/ HEAD -o "$RUNNER_TEMP/TogetherCraft-test-${GITHUB_SHA::7}.zip"
+
+      - name: Upload Windows test package
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TogetherCraft-test-${{ github.sha }}
+          path: ${{ runner.temp }}/TogetherCraft-test-${{ github.sha }}.zip
+          if-no-files-found: error
+          retention-days: 7
