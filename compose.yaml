@@ -56,8 +56,8 @@ services:
       MicrosoftMinecraft__ClientSecret: ${MICROSOFT_CLIENT_SECRET:-}
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=togethercraft;Username=tc_app;Password=${APP_DB_PASSWORD:?Create .env and set APP_DB_PASSWORD}
       ForwardedHeaders__KnownProxy: 172.30.0.10
-      Admin__Username: ${ADMIN_USERNAME:-admin}
-      Admin__Password: ${ADMIN_PASSWORD:?Create .env and set a strong ADMIN_PASSWORD}
+      Admin__Username: ${ADMIN_USERNAME:-}
+      Admin__Password: ${ADMIN_PASSWORD:-}
       MinecraftRcon__Host: ${RCON_HOST:-host.docker.internal}
       MinecraftRcon__Port: ${RCON_PORT:-25575}
       MinecraftRcon__Password: ${RCON_PASSWORD:-}
