@@ -22,18 +22,43 @@ public sealed class AppDatabase
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync(cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(adminUsername) || string.IsNullOrWhiteSpace(adminPassword))
+        if (string.IsNullOrWhiteSpace(adminUsername))
             return;
+
+        var normalized = adminUsername.Trim().ToUpperInvariant();
+        long? existingId = null;
+        string? existingStatus = null;
+        await using (var check = new NpgsqlCommand(
+            "SELECT id, account_status FROM tc_users WHERE username_normalized = @username LIMIT 1;",
+            connection))
+        {
+            check.Parameters.AddWithValue("username", normalized);
+            await using var reader = await check.ExecuteReaderAsync(cancellationToken);
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                existingId = reader.GetInt64(0);
+                existingStatus = reader.GetString(1);
+            }
+        }
+
+        if (existingId is not null)
+        {
+            if (existingStatus == "Rejected")
+                throw new InvalidOperationException("Нельзя назначить администратором аккаунт с отклонённой заявкой.");
+
+            await using var promote = new NpgsqlCommand(
+                "UPDATE tc_users SET account_role = 'Admin' WHERE id = @id;",
+                connection);
+            promote.Parameters.AddWithValue("id", existingId.Value);
+            await promote.ExecuteNonQueryAsync(cancellationToken);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(adminPassword))
+            throw new InvalidOperationException("Для создания отдельной bootstrap-учётной записи задай ADMIN_PASSWORD. Для существующего аккаунта пароль не требуется.");
 
         if (adminPassword.Length < 14 || (adminPassword.Contains("replace", StringComparison.OrdinalIgnoreCase) || adminPassword.Contains("change_me", StringComparison.OrdinalIgnoreCase) || adminPassword.Contains("changeme", StringComparison.OrdinalIgnoreCase) || adminPassword.Contains("example", StringComparison.OrdinalIgnoreCase)))
             throw new InvalidOperationException("ADMIN_PASSWORD должен быть заменён на уникальный пароль длиной не менее 14 символов.");
-
-        var normalized = adminUsername.Trim().ToUpperInvariant();
-        await using var check = new NpgsqlCommand("SELECT id FROM tc_users WHERE username_normalized = @username", connection);
-        check.Parameters.AddWithValue("username", normalized);
-        var existing = await check.ExecuteScalarAsync(cancellationToken);
-        if (existing is not null)
-            return;
 
         var admin = new UserAccount
         {
