@@ -8,3 +8,25 @@
 .faq{padding:2px 0 48px}.faq h2{font-size:27px;margin:3px 0 0}.faq-intro{color:var(--tc-muted);font-size:13px;margin:8px 0 20px}.faq-list{border-top:1px solid var(--tc-line)}.faq details{border-bottom:1px solid var(--tc-line);padding:0}.faq summary{list-style:none;cursor:pointer;padding:17px 3px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:650}.faq summary::-webkit-details-marker{display:none}.faq summary:after{content:"+";font-size:21px;color:var(--tc-accent);font-weight:400}.faq details[open] summary:after{content:"−"}.faq-answer{color:#aab3ba;font-size:13px;max-width:850px;padding:0 24px 17px 3px}.footer{border-top:1px solid #3b4248;background:#1c2024;padding:24px 0 18px}.footer-main{display:flex;align-items:center;justify-content:space-between;gap:20px}.footer-brand strong{font-size:15px}.footer-brand span{display:block;color:#85919a;font-size:11px;margin-top:3px}.footer-social{display:flex;align-items:center;gap:10px}.social-link{width:38px;height:38px;border:1px solid #4a535b;border-radius:8px;color:#dce1e5;display:grid;place-items:center;text-decoration:none;background:#252b30;transition:.15s}.social-link:hover{border-color:#9da8b0;background:#30373d;color:#fff}.social-link svg{width:19px;height:19px;fill:currentColor}.social-caption{font-size:10px;color:#85919a;margin-right:4px}.footer-bottom{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #343b41;margin-top:19px;padding-top:13px;color:#72808a;font-size:10px}
 @media(max-width:900px){.hero{gap:24px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{min-height:0}}@media(max-width:650px){.wrap{width:min(100% - 30px,560px)}.nav{flex-wrap:wrap;gap:8px;padding:12px 0}.navlinks{order:3;flex-basis:100%;margin:3px 0 0;gap:18px}.navlinks a{font-size:12px}.nav-actions{gap:12px}.nav-actions>a:not(.cta){display:none}.nav-user{display:none}.hero{grid-template-columns:1fr;gap:20px;padding:34px 0}.hero h1{font-size:39px}.hero-copy{font-size:15px}.hero-image{order:-1}.section-head{align-items:flex-start;flex-direction:column;gap:9px}.section-head h2{font-size:24px}.dashboard{padding:13px}.metrics{gap:9px}.metric{padding:12px}.metric-value{font-size:23px}.fans{gap:6px}.fan-unit{padding:8px 4px}.fan-head{font-size:9px;gap:5px}.fan-status{font-size:8px}.fan-svg{width:min(100%,100px)}.fan-rpm strong{font-size:16px}.server-grid{grid-template-columns:1fr}.server-card{padding:14px}.server-card-top{margin-bottom:12px}.faq{padding-bottom:35px}.footer-main{align-items:flex-start}.footer-bottom{flex-direction:column;gap:4px}}@media(prefers-reduced-motion:reduce){.fan-rotor{animation:none!important}.tc-btn,.social-link{transition:none}}
 :focus-visible{outline:2px solid var(--tc-accent);outline-offset:3px}
+/* Public game direction cards */
+.worlds-section{margin:0 0 48px}
+.world-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.world-card{overflow:hidden;border:1px solid #3d454c;background:#20252a;border-radius:8px;min-width:0}
+.world-art{height:auto;aspect-ratio:16/9;position:relative;display:flex;align-items:flex-end;justify-content:space-between;padding:15px}
+.world-art-fabric{background:linear-gradient(135deg,#374c3b,#202a27 70%,#171c1d)}
+.world-art-create{background:linear-gradient(135deg,#66502c,#302a22 70%,#1d1d1c)}
+.world-art-factorio{background:linear-gradient(135deg,#684126,#382b22 70%,#1d1b19)}
+.world-art-label{font-size:12px;letter-spacing:1.5px;font-weight:800;color:#fff}
+.world-art-number{font-size:12px;color:#c7cdd1}
+.world-content{padding:18px}
+.world-kicker{font-size:9px;color:#c4a15b;letter-spacing:1px;font-weight:750}
+.world-content h2,.world-content h3{font-size:18px;margin:7px 0 8px}
+.world-content p{color:#a6b0b8;font-size:13px;margin:0 0 12px}
+.world-detail{font-size:11px;color:#c6cdd2}
+.worlds-access-note{color:var(--tc-muted);font-size:11px;margin:12px 2px 0}
+.connection-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.connection-address-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+.connection-address{font-size:16px;color:#f2d38b;overflow-wrap:anywhere}
+.copy-address{font-size:12px}
+@media(max-width:900px){.world-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.world-grid,.connection-grid{grid-template-columns:1fr}.world-content{padding:15px}}
