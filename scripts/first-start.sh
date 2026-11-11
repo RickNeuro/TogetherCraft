@@ -83,11 +83,12 @@ echo
 echo
 echo "Локальный адрес: http://127.0.0.1:8080"
 if [[ -n "$admin_username" ]]; then
-    if [[ -n "$admin_password" ]]; then
-        echo "Bootstrap-аккаунт $admin_username настроен."
+    echo "Логин bootstrap: $admin_username"
+    if [[ -z "$admin_password" ]]; then
+        echo "Если такой аккаунт уже есть, он будет назначен Admin с прежним паролем."
+        echo "Если аккаунта нет, задай сильный ADMIN_PASSWORD в .env (не менее 14 символов) и перезапусти."
     else
-        echo "Если аккаунт $admin_username уже существует, он будет назначен Admin без смены пароля."
-        echo "Если такого аккаунта нет, задай для него сильный ADMIN_PASSWORD (не менее 14 символов)."
+        echo "Если аккаунт уже существует, будет сохранён его прежний пароль; иначе он будет создан с ADMIN_PASSWORD."
     fi
     echo "После проверки очисти ADMIN_USERNAME в .env, чтобы bootstrap-настройка не влияла на дальнейшие изменения ролей."
 else
