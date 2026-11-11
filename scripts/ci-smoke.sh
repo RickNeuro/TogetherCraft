@@ -24,7 +24,9 @@ for route in "/" "/Account/Login" "/Account/Register"; do
         grep -q "Minecraft · Fabric" "$TMP_HTML" || fail "homepage does not render the Fabric direction"
         grep -q "Minecraft · Create" "$TMP_HTML" || fail "homepage does not render the Create direction"
         grep -q "Factorio" "$TMP_HTML" || fail "homepage does not render the Factorio direction"
-        ! grep -q "127.0.0.1" "$TMP_HTML" || fail "homepage exposes a connection address"
+        for address in "127.0.0.1" "fried-newer.tun.ply.gg" "shrimp-crafts.tun.ply.gg" "25565" "25566"; do
+            ! grep -q "$address" "$TMP_HTML" || fail "homepage exposes a connection address: $address"
+        done
         cp "$TMP_HTML" "${TMP_HTML}.homepage"
     fi
 done
@@ -139,7 +141,7 @@ echo "Smoke tests passed: PostgreSQL health/permissions, backend routes/authenti
 
 
 # Game addresses, technical status and host metrics must not be available anonymously.
-for route in "/Home/Play" "/api/minecraft/servers" "/api/minecraft/status" "/api/metrics"; do
+for route in "/Home/Play" "/Home/Server" "/Admin" "/Admin/Users" "/api/minecraft/servers" "/api/minecraft/status" "/api/metrics"; do
     status_code="$(curl --silent --show-error --output "$TMP_HTML" --write-out '%{http_code}' "$BASE_URL$route")" \
         || fail "request failed for $route"
     [[ "$status_code" == "302" ]] || fail "$route should redirect anonymous users to login, got HTTP $status_code"
