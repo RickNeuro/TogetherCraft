@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TogetherCraft.Services;
@@ -31,6 +32,54 @@ public sealed class AdminController : Controller
             TempData["Error"] = "Не удалось прочитать заявки из PostgreSQL.";
             return View(Array.Empty<TogetherCraft.Models.UserAccount>());
         }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Users(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return View(await _database.GetUsersAsync(cancellationToken));
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Не удалось загрузить список пользователей.");
+            TempData["Error"] = "Не удалось загрузить пользователей из PostgreSQL.";
+            return View(Array.Empty<TogetherCraft.Models.AdminUserViewModel>());
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetRole(long id, string role, CancellationToken cancellationToken = default)
+    {
+        if (role is not ("Admin" or "User"))
+        {
+            TempData["Error"] = "Неизвестная роль пользователя.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        var currentIdText = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (long.TryParse(currentIdText, out var currentId) && currentId == id && role == "User")
+        {
+            TempData["Error"] = "Нельзя снять административную роль со своей текущей учётной записи здесь.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        try
+        {
+            var changed = await _database.SetUserRoleAsync(id, role, cancellationToken);
+            TempData[changed ? "Success" : "Error"] = changed
+                ? (role == "Admin" ? "Пользователь назначен администратором." : "Административная роль снята.")
+                : "Не удалось изменить роль. Нельзя снять роль у последнего администратора, а отклонённые аккаунты нельзя назначить администраторами.";
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Не удалось изменить роль пользователя {AccountId}.", id);
+            TempData["Error"] = "Не удалось изменить роль пользователя.";
+        }
+
+        return RedirectToAction(nameof(Users));
     }
 
     [HttpPost]
