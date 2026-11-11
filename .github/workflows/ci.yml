@@ -99,7 +99,7 @@ jobs:
             -e PGPASSWORD=CI_ONLY_APP_PASSWORD_2026 postgres \
             psql --host 127.0.0.1 --username tc_app --dbname togethercraft \
             --set ON_ERROR_STOP=1 --command \
-            "BEGIN; INSERT INTO tc_users (username, username_normalized, password_hash, minecraft_username, email, wants_fabric, wants_create) VALUES ('ci-probe', 'CI_PROBE', 'test-hash', NULL, 'ci-probe@example.invalid', TRUE, FALSE); UPDATE tc_users SET minecraft_username='CIPlayer', minecraft_uuid='00000000-0000-0000-0000-000000000001' WHERE username_normalized='CI-ADMIN'; ROLLBACK;"
+            "BEGIN; INSERT INTO tc_users (username, username_normalized, password_hash, minecraft_username, email, wants_fabric, wants_create) VALUES ('ci-probe', 'CI_PROBE', 'test-hash', NULL, 'ci-probe@example.invalid', TRUE, FALSE); UPDATE tc_users SET minecraft_username='CIPlayer', minecraft_uuid='00000000-0000-0000-0000-000000000001' WHERE username_normalized='CI-ADMIN'; UPDATE tc_users SET account_role='Admin' WHERE username_normalized='CI-ADMIN'; ROLLBACK;"
 
       - name: Check backend, database and frontend assets
         run: bash scripts/ci-smoke.sh http://127.0.0.1:8080
