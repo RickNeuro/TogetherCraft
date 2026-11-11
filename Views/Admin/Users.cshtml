@@ -9,15 +9,6 @@
         <p class="text-secondary">Здесь можно назначать доверенных участников администраторами и снимать административную роль.</p>
     </div>
 
-    @if (TempData["Success"] is string success)
-    {
-        <div class="site-alert site-alert-success" role="status">@success</div>
-    }
-    @if (TempData["Error"] is string error)
-    {
-        <div class="site-alert site-alert-error" role="alert">@error</div>
-    }
-
     @if (Model.Count == 0)
     {
         <div class="world-card"><div class="world-content"><h2 class="h5">Пользователей пока нет</h2></div></div>
