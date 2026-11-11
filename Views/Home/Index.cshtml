@@ -3,182 +3,111 @@
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
     var isAdmin = isAuthenticated && User.IsInRole("Admin");
     var isPending = isAuthenticated && User.HasClaim("access_status", "Pending");
-    var canMonitor = isAdmin || (isAuthenticated && User.HasClaim("access_status", "Approved"));
+    var canPlay = isAdmin || (isAuthenticated && User.HasClaim("access_status", "Approved"));
 }
 <div class="wrap">
-<section class="hero" id="about">
-    <div class="hero-copy-block">
-        <p class="eyebrow">Minecraft · два игровых мира</p>
-        <h1>Твой мир. Твои друзья.</h1>
-        <p class="hero-copy">Строим вместе, исследуем мир и создаём свои истории. Выбирай один из двух миров — спокойное выживание или Create с техникой и автоматизацией.</p>
-        <div class="hero-actions" id="apply">
-            @if (!isAuthenticated)
-            {
-                <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Register">Создать аккаунт</a>
-                <a class="tc-btn" asp-controller="Account" asp-action="Login">Войти</a>
-            }
-            else if (isAdmin)
-            {
-                <a class="tc-btn tc-btn-primary" asp-controller="Admin" asp-action="Index">Открыть заявки</a>
-                <a class="tc-btn" asp-controller="Home" asp-action="Server">Мониторинг</a>
-            }
-            else if (isPending)
-            {
-                <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Waiting">Моя заявка</a>
-            }
-            else
-            {
-                <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Server">Мониторинг</a>
-            }
-        </div>
-    </div>
-    <img class="hero-image" src="~/img/hero-fox.jpg" alt="Лиса в мире Minecraft на закате" />
-</section>
-
-<section id="monitoring" class="monitor-section">
-    <div class="section-head">
-        <div>
-            <div class="section-label">Состояние системы</div>
-            <h2>Мониторинг TogetherCraft</h2>
-        </div>
-        <span class="demo-pill" id="source-status">@(canMonitor ? "ПОДКЛЮЧАЕМ МЕТРИКИ" : "ПОСЛЕ ОДОБРЕНИЯ")</span>
-    </div>
-
-    <div class="dashboard" data-live-monitor="@(canMonitor ? "true" : "false")">
-        <div class="dashboard-top">
-            <div>
-                <strong>Системные метрики Ubuntu</strong>
-                <small id="source-message">@(canMonitor ? "Получаем реальные показатели сервера." : "Данные доступны после одобрения аккаунта.")</small>
+    <section class="hero" id="about">
+        <div class="hero-copy-block">
+            <p class="eyebrow">Minecraft · Factorio · совместная игра</p>
+            <h1>Играем вместе. Создаём больше.</h1>
+            <p class="hero-copy">Строим миры, исследуем неизведанное и автоматизируем производство. TogetherCraft объединяет разные игровые проекты и людей, которым интересно создавать что-то вместе.</p>
+            <div class="hero-actions" id="apply">
+                @if (!isAuthenticated)
+                {
+                    <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Register">Стать участником</a>
+                    <a class="tc-btn" asp-controller="Account" asp-action="Login">Войти</a>
+                }
+                else if (isAdmin)
+                {
+                    <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Play">Адреса игровых миров</a>
+                    <a class="tc-btn" asp-controller="Admin" asp-action="Index">Заявки</a>
+                }
+                else if (isPending)
+                {
+                    <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Waiting">Моя заявка</a>
+                }
+                else if (canPlay)
+                {
+                    <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Play">Адреса игровых миров</a>
+                }
             </div>
-            <span class="updated-label">Обновлено: <span id="last-updated">—</span></span>
         </div>
-        <div class="metrics">
-            <article class="metric">
-                <div class="metric-title">Процессор</div>
-                <div class="metric-value"><span id="cpu-value">—</span><small>%</small></div>
-                <div class="bar"><div id="cpu-bar" class="fill" style="width:0%"></div></div>
-                <div class="metric-note" id="cpu-note">@(canMonitor ? "Ожидаем данные" : "После одобрения")</div>
+        <img class="hero-image" src="~/img/hero-fox.jpg" alt="Лиса в мире Minecraft на закате" />
+    </section>
+
+    <section class="worlds-section" id="worlds">
+        <div class="section-head">
+            <div>
+                <div class="section-label">Игровые направления</div>
+                <h2>Выбирай свой мир</h2>
+            </div>
+            <p class="section-desc">Разные игры — одно сообщество.</p>
+        </div>
+
+        <div class="world-grid">
+            <article class="world-card">
+                <div class="world-art world-art-fabric" role="img" aria-label="Иллюстрация мира Minecraft Fabric">
+                    <span class="world-art-label">MINECRAFT</span>
+                    <span class="world-art-number">01</span>
+                </div>
+                <div class="world-content">
+                    <span class="world-kicker">ВЫЖИВАНИЕ И ИССЛЕДОВАНИЕ</span>
+                    <h3>Minecraft · Fabric</h3>
+                    <p>Совместное выживание, строительство, исследование мира и собственные проекты.</p>
+                    <span class="world-detail">Основной игровой мир</span>
+                </div>
             </article>
-            <article class="metric">
-                <div class="metric-title">Оперативная память</div>
-                <div class="metric-value"><span id="memory-used">—</span><small> / <span id="memory-total">—</span> GiB</small></div>
-                <div class="bar"><div id="memory-bar" class="fill" style="width:0%"></div></div>
-                <div class="metric-note" id="memory-note">@(canMonitor ? "Ожидаем данные" : "После одобрения")</div>
+
+            <article class="world-card">
+                <div class="world-art world-art-create" role="img" aria-label="Иллюстрация мира Minecraft Create">
+                    <span class="world-art-label">CREATE</span>
+                    <span class="world-art-number">02</span>
+                </div>
+                <div class="world-content">
+                    <span class="world-kicker">МЕХАНИЗМЫ И АВТОМАТИЗАЦИЯ</span>
+                    <h3>Minecraft · Create</h3>
+                    <p>Механизмы, поезда, производственные цепочки и большие инженерные проекты.</p>
+                    <span class="world-detail">Технический игровой мир</span>
+                </div>
             </article>
-            <article class="metric">
-                <div class="metric-title">Системный диск</div>
-                <div class="metric-value"><span id="disk-used">—</span><small> / <span id="disk-total">—</span> GiB</small></div>
-                <div class="bar"><div id="disk-bar" class="fill blue" style="width:0%"></div></div>
-                <div class="metric-note" id="disk-note">@(canMonitor ? "Ожидаем данные" : "После одобрения")</div>
-            </article>
-            <article class="metric temperature-metric">
-                <div class="metric-title">Температура CPU</div>
-                <div class="temperature-row"><div class="temp-value"><span id="temperature-value">—</span><small> °C</small></div></div>
-                <div class="metric-note" id="temperature-note">@(canMonitor ? "Ожидаем данные датчика" : "После одобрения")</div>
-                <div class="fans">
-                    <div class="fan-unit">
-                        <div class="fan-head">FAN1 <span id="fan1-state" class="fan-status">Нет данных</span></div>
-                        <svg class="fan-svg" viewBox="0 0 120 120" role="img" aria-label="Вентилятор FAN1">
-                            <rect class="fan-frame" x="2" y="2" width="116" height="116" rx="11" />
-                            <circle class="fan-screw" cx="14" cy="14" r="4" /><circle class="fan-screw" cx="106" cy="14" r="4" /><circle class="fan-screw" cx="14" cy="106" r="4" /><circle class="fan-screw" cx="106" cy="106" r="4" />
-                            <circle class="fan-ring" cx="60" cy="60" r="47" /><circle class="fan-inner" cx="60" cy="60" r="41" />
-                            <g id="fan1-rotor" class="fan-rotor">
-                                <path class="fan-blade" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(51.428 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(102.856 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(154.284 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(205.712 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(257.14 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(308.568 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <circle class="fan-hub" cx="60" cy="60" r="13" /><circle class="fan-core" cx="60" cy="60" r="4.2" />
-                            </g>
-                        </svg>
-                        <div class="fan-rpm"><strong id="fan1-value">—</strong> RPM</div>
-                    </div>
-                    <div class="fan-unit">
-                        <div class="fan-head">FAN3 <span id="fan3-state" class="fan-status">Нет данных</span></div>
-                        <svg class="fan-svg" viewBox="0 0 120 120" role="img" aria-label="Вентилятор FAN3">
-                            <rect class="fan-frame" x="2" y="2" width="116" height="116" rx="11" />
-                            <circle class="fan-screw" cx="14" cy="14" r="4" /><circle class="fan-screw" cx="106" cy="14" r="4" /><circle class="fan-screw" cx="14" cy="106" r="4" /><circle class="fan-screw" cx="106" cy="106" r="4" />
-                            <circle class="fan-ring" cx="60" cy="60" r="47" /><circle class="fan-inner" cx="60" cy="60" r="41" />
-                            <g id="fan3-rotor" class="fan-rotor">
-                                <path class="fan-blade" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(51.428 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(102.856 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(154.284 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(205.712 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(257.14 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <path class="fan-blade" transform="rotate(308.568 60 60)" d="M60 55 C50 49 39 34 43 20 C47 7 61 7 67 19 C71 31 67 47 63 55Z" />
-                                <circle class="fan-hub" cx="60" cy="60" r="13" /><circle class="fan-core" cx="60" cy="60" r="4.2" />
-                            </g>
-                        </svg>
-                        <div class="fan-rpm"><strong id="fan3-value">—</strong> RPM</div>
-                    </div>
+
+            <article class="world-card">
+                <div class="world-art world-art-factorio" role="img" aria-label="Иллюстрация Factorio">
+                    <span class="world-art-label">FACTORIO</span>
+                    <span class="world-art-number">03</span>
+                </div>
+                <div class="world-content">
+                    <span class="world-kicker">ФАБРИКИ И ЛОГИСТИКА</span>
+                    <h3>Factorio</h3>
+                    <p>Развиваем производство, строим конвейерные сети и вместе оптимизируем фабрики.</p>
+                    <span class="world-detail">Новое направление TogetherCraft</span>
                 </div>
             </article>
         </div>
-    </div>
-    <div class="dashboard-footnote">Показатели обновляются автоматически. Здесь нет команд управления игровыми серверами.</div>
-</section>
+        <p class="worlds-access-note">Адреса подключения доступны только после одобрения заявки.</p>
+    </section>
 
-<section class="servers-section" id="servers">
-    <div class="section-head">
-        <div>
-            <div class="section-label">Два отдельных мира</div>
-            <h2>Игровые серверы</h2>
+    <section class="faq" id="faq">
+        <div class="section-label">FAQ</div>
+        <h2>Частые вопросы</h2>
+        <p class="faq-intro">Коротко о том, как устроен TogetherCraft.</p>
+        <div class="faq-list">
+            <details open>
+                <summary>Как попасть в сообщество?</summary>
+                <div class="faq-answer">Создай аккаунт, подтверди профиль Minecraft через Microsoft и отправь заявку. После проверки администратор откроет доступ к выбранным игровым мирам.</div>
+            </details>
+            <details>
+                <summary>Какие игровые направления есть?</summary>
+                <div class="faq-answer">Сейчас доступны два направления Minecraft: Fabric и Create. Factorio — новое направление, которое мы готовим к запуску.</div>
+            </details>
+            <details>
+                <summary>Когда я получу адреса подключения?</summary>
+                <div class="faq-answer">После одобрения заявки адреса доступных игровых миров появятся в личном разделе «Подключение».</div>
+            </details>
+            <details>
+                <summary>Можно ли строить собственные проекты?</summary>
+                <div class="faq-answer">Да. TogetherCraft создан для совместной игры: можно строить, исследовать, объединяться в команды и развивать общие проекты.</div>
+            </details>
         </div>
-        <p class="section-desc">Выбирай мир и подключайся к друзьям.</p>
-    </div>
-    <div class="server-grid" data-server-status="true" aria-label="Игровые серверы TogetherCraft">
-        <article class="server-card">
-            <div class="server-card-top">
-                <div><div class="server-kicker">Игровой мир 01</div><h3 class="server-title">TogetherCraft · Fabric</h3></div>
-                <span class="server-tag">FABRIC</span>
-            </div>
-            <div class="server-state-row"><span id="fabric-status" class="server-state">Проверяем…</span><span class="server-status-updated" id="fabric-updated">—</span></div>
-            <div class="server-address-label">Адрес подключения</div>
-            <div class="server-address-row"><strong class="server-address" id="fabric-address">fried-newer.tun.ply.gg</strong><button class="copy-button" id="copy-fabric-address" data-copy-address="fried-newer.tun.ply.gg" type="button">Копировать</button></div>
-            <div class="server-specs">
-                <div class="server-spec"><span>Minecraft</span><strong id="fabric-version">26.2</strong></div>
-                <div class="server-spec"><span>Загрузчик</span><strong>Fabric</strong></div>
-                <div class="server-spec"><span>Игроки онлайн</span><strong id="fabric-players">—</strong></div>
-                <div class="server-spec"><span>Отклик</span><strong id="fabric-ping">—</strong></div>
-            </div>
-            <div class="server-footer-note" id="fabric-note">Основной мир для совместного выживания, строительства и исследования.</div>
-        </article>
-        <article class="server-card">
-            <div class="server-card-top">
-                <div><div class="server-kicker">Игровой мир 02</div><h3 class="server-title">TogetherCraft · Create</h3></div>
-                <span class="server-tag">NEOFORGE</span>
-            </div>
-            <div class="server-state-row"><span id="create-status" class="server-state">Проверяем…</span><span class="server-status-updated" id="create-updated">—</span></div>
-            <div class="server-address-label">Адрес подключения</div>
-            <div class="server-address-row"><strong class="server-address" id="create-address">shrimp-crafts.tun.ply.gg</strong><button class="copy-button" id="copy-create-address" data-copy-address="shrimp-crafts.tun.ply.gg" type="button">Копировать</button></div>
-            <div class="server-specs">
-                <div class="server-spec"><span>Minecraft</span><strong id="create-version">1.21.1</strong></div>
-                <div class="server-spec"><span>Загрузчик</span><strong>NeoForge 21.1.248</strong></div>
-                <div class="server-spec"><span>Игроки онлайн</span><strong id="create-players">—</strong></div>
-                <div class="server-spec"><span>Отклик</span><strong id="create-ping">—</strong></div>
-            </div>
-            <div class="server-footer-note" id="create-note">Отдельный мир с Create, механизмами, поездами и автоматизацией.</div>
-        </article>
-    </div>
-</section>
-
-<section class="faq" id="faq">
-    <div class="section-label">FAQ</div>
-    <h2>Частые вопросы</h2>
-    <p class="faq-intro">Коротко о том, как устроен TogetherCraft.</p>
-    <div class="faq-list">
-        <details open><summary>Как попасть на сервер?</summary><div class="faq-answer">Создай аккаунт, подтверди профиль Minecraft через Microsoft и выбери игровые миры. После одобрения администратора ник автоматически добавится в whitelist выбранных серверов.</div></details>
-        <details><summary>Какая версия Minecraft используется?</summary><div class="faq-answer">Доступны два отдельных мира: Fabric на Minecraft 26.2 и Create на Minecraft 1.21.1 с NeoForge 21.1.248. Адреса подключения указаны в блоке игровых серверов.</div></details>
-        <details><summary>Можно ли строить свои проекты?</summary><div class="faq-answer">Да. Идея сервера — совместная игра: можно строить собственные места, объединяться в большие проекты, исследовать мир и помогать друг другу.</div></details>
-        <details><summary>Где узнать новости и связаться с игроками?</summary><div class="faq-answer">Присоединиться к сообществу можно через Discord — ссылка находится внизу сайта.</div></details>
-    </div>
-</section>
+    </section>
 </div>
-
-@section Scripts {
-    <script src="~/js/monitor.js" asp-append-version="true"></script>
-    <script src="~/js/minecraft-status.js" asp-append-version="true"></script>
-}
