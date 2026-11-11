@@ -99,7 +99,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Собираю и запускаю локальный TogetherCraft..." -ForegroundColor Cyan
-& docker compose @ComposePrefix up --build --detach
+& docker compose @ComposePrefix up --build --detach togethercraft-web
 if ($LASTEXITCODE -ne 0) {
     & docker compose @ComposePrefix logs --tail 80
     throw "Не удалось запустить предпросмотр. Последние логи выведены выше."
