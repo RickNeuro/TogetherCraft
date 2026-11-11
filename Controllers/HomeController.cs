@@ -30,7 +30,7 @@ public sealed class HomeController : Controller
             return Challenge();
 
         var account = await _database.FindByIdAsync(accountId, cancellationToken);
-        if (account is null || (account.Role != "Admin" && account.Status != "Approved"))
+        if (account is null || account.Status != "Approved")
             return Forbid();
 
         var isAdmin = account.Role == "Admin";
