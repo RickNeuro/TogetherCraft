@@ -75,7 +75,11 @@ admin_password="$(grep -E '^ADMIN_PASSWORD=' .env | tail -n 1 | cut -d= -f2-)"
 echo "Проверяю конфигурацию Docker Compose..."
 "${DOCKER[@]}" compose config --quiet
 
-echo "Запускаю PostgreSQL, настройку схемы и TogetherCraft..."
+echo "Запускаю PostgreSQL и применяю миграции базы..."
+"${DOCKER[@]}" compose up -d postgres
+"${DOCKER[@]}" compose run --rm db-bootstrap
+
+echo "Запускаю TogetherCraft..."
 "${DOCKER[@]}" compose up --build -d
 
 echo
