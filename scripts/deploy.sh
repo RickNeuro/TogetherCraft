@@ -4,7 +4,7 @@ SOURCE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 DEPLOY_DIR="${TOGETHERCRAFT_DEPLOY_DIR:-$HOME/apps/togethercraft/TogetherCraft}"
 ENV_FILE="$DEPLOY_DIR/.env"
 [[ -f "$ENV_FILE" ]] || { echo "Не найден production .env: $ENV_FILE" >&2; exit 1; }
-for key in POSTGRES_PASSWORD APP_DB_PASSWORD ADMIN_PASSWORD; do
+for key in POSTGRES_PASSWORD APP_DB_PASSWORD; do
   grep -q "^$key=." "$ENV_FILE" || { echo "В production .env отсутствует $key." >&2; exit 1; }
 done
 docker info >/dev/null 2>&1 || { echo "Runner не имеет доступа к Docker." >&2; exit 1; }
