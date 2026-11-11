@@ -65,12 +65,12 @@ public sealed class AccountController : Controller
 
             await SignInAccountAsync(account);
 
-            if (account.Role != "Admin" && account.MinecraftUuid is null)
+            if (account.Role == "Admin")
+                return RedirectToAction("Index", "Admin");
+            if (account.MinecraftUuid is null)
                 return RedirectToAction(nameof(ConnectMinecraft));
             if (account.Status == "Pending")
                 return RedirectToAction(nameof(Waiting));
-            if (account.Role == "Admin")
-                return RedirectToAction("Index", "Admin");
             return RedirectToAction("Server", "Home");
         }
         catch (Exception exception)
