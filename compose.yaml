@@ -75,7 +75,7 @@ services:
       DataProtection__KeysPath: /var/dpkeys
       Prometheus__BaseUrl: http://prometheus:9090
     ports:
-      - "8080:8080"
+      - "${WEB_BIND_ADDRESS:-0.0.0.0}:${WEB_BIND_PORT:-8080}:8080"
     volumes:
       - data-protection-keys:/var/dpkeys
     extra_hosts:
