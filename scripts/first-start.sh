@@ -62,7 +62,8 @@ admin_password_generated=0
 if [[ "$created_env" -eq 1 ]]; then
     ensure_secret POSTGRES_PASSWORD || true
     ensure_secret APP_DB_PASSWORD || true
-    if ensure_secret ADMIN_PASSWORD; then
+    admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
+    if [[ -n "$admin_username" ]] && ensure_secret ADMIN_PASSWORD; then
         admin_password_generated=1
     fi
 else
@@ -70,16 +71,18 @@ else
         echo "В существующем .env нет рабочего POSTGRES_PASSWORD. Укажи пароль текущей базы вручную."
         exit 1
     fi
-    if is_placeholder ADMIN_PASSWORD; then
-        echo "В существующем .env нет рабочего ADMIN_PASSWORD. Укажи пароль текущего администратора вручную."
+    admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
+    if [[ -n "$admin_username" ]] && is_placeholder ADMIN_PASSWORD; then
+        echo "Для нового bootstrap-аккаунта ADMIN_USERNAME задай сильный ADMIN_PASSWORD. Для существующего аккаунта пароль можно оставить пустым."
         exit 1
     fi
     ensure_secret APP_DB_PASSWORD || true
 fi
 
 chmod 600 .env
+admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
 admin_password="$(grep -E '^ADMIN_PASSWORD=' .env | tail -n 1 | cut -d= -f2-)"
-if [[ "$(printf '%s' "$admin_password" | wc -c)" -lt 14 ]]; then
+if [[ -n "$admin_username" && -n "$admin_password" && "$(printf '%s' "$admin_password" | wc -c)" -lt 14 ]]; then
     echo "ADMIN_PASSWORD должен содержать не менее 14 символов."
     exit 1
 fi
@@ -94,13 +97,19 @@ echo
 "${DOCKER[@]}" compose ps
 echo
 echo "Локальный адрес: http://127.0.0.1:8080"
-if [[ "$admin_password_generated" -eq 1 ]]; then
-    admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
-    echo "Логин администратора: $admin_username"
-    echo "Временный пароль администратора (сохрани его сейчас):"
-    echo "$admin_password"
+if [[ -n "$admin_username" ]]; then
+    if [[ "$admin_password_generated" -eq 1 ]]; then
+        echo "Создана bootstrap-учётная запись администратора: $admin_username"
+        echo "Временный пароль администратора (сохрани его сейчас):"
+        echo "$admin_password"
+    elif [[ -n "$admin_password" ]]; then
+        echo "Bootstrap-аккаунт $admin_username настроен. Проверь, что это именно нужная учётная запись."
+    else
+        echo "Существующий аккаунт $admin_username будет назначен Admin. Входи с его прежним паролем."
+    fi
+    echo "После проверки очисти ADMIN_USERNAME в .env, чтобы bootstrap-настройка не влияла на дальнейшие изменения ролей."
 else
-    echo "Учётные данные администратора сохранены в существующем .env."
+    echo "Отдельная учётная запись admin не создаётся: ADMIN_USERNAME пуст."
 fi
 echo
 echo "Для регистрации заполни MICROSOFT_CLIENT_ID и MICROSOFT_CLIENT_SECRET."
