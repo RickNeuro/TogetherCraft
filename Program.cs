@@ -164,7 +164,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("ApprovedUser", policy => policy.RequireAuthenticatedUser()
-        .RequireAssertion(context => context.User.IsInRole("Admin") || context.User.HasClaim("access_status", "Approved")));
+        .RequireClaim("access_status", "Approved"));
     options.AddPolicy("AdminOnly", policy => policy.RequireAuthenticatedUser().RequireRole("Admin"));
 });
 
