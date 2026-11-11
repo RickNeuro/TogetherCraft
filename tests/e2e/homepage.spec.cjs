@@ -12,7 +12,10 @@ test('homepage renders all three game directions without public connection addre
     await expect(page.locator('.world-card').filter({ hasText: direction })).toHaveCount(1);
   }
   await expect(page.locator('.footer')).toBeVisible();
-  expect(await page.locator('body').innerText()).not.toContain('127.0.0.1');
+  const homepageText = await page.locator('body').innerText();
+  for (const address of ['127.0.0.1', 'fried-newer.tun.ply.gg', 'shrimp-crafts.tun.ply.gg', '25565', '25566']) {
+    expect(homepageText, 'Homepage must not expose ' + address).not.toContain(address);
+  }
   expect(pageErrors).toEqual([]);
 });
 
@@ -44,7 +47,7 @@ test('login and registration pages render forms', async ({ page }) => {
 });
 
 test('connection page and status endpoints are private', async ({ request }) => {
-  const routes = ['/Home/Play', '/api/minecraft/servers', '/api/minecraft/status', '/api/metrics'];
+  const routes = ['/Home/Play', '/Home/Server', '/Admin', '/Admin/Users', '/api/minecraft/servers', '/api/minecraft/status', '/api/metrics'];
   for (const route of routes) {
     const response = await request.get(route, { maxRedirects: 0 });
     expect(response.status(), route + ' must not be public').toBe(302);
