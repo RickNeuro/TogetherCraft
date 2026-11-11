@@ -3,7 +3,7 @@
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
     var isAdmin = isAuthenticated && User.IsInRole("Admin");
     var isPending = isAuthenticated && User.HasClaim("access_status", "Pending");
-    var canPlay = isAdmin || (isAuthenticated && User.HasClaim("access_status", "Approved"));
+    var canPlay = isAuthenticated && User.HasClaim("access_status", "Approved");
 }
 <div class="wrap">
     <section class="hero" id="about">
@@ -19,7 +19,10 @@
                 }
                 else if (isAdmin)
                 {
-                    <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Play">Адреса игровых миров</a>
+                    @if (canPlay)
+                    {
+                        <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Play">Адреса игровых миров</a>
+                    }
                     <a class="tc-btn" asp-controller="Admin" asp-action="Index">Заявки</a>
                 }
                 else if (isPending)
