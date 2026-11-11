@@ -18,7 +18,7 @@
                 <a asp-controller="Home" asp-action="Index">Главная</a>
                 <a href="/#worlds">Игровые миры</a>
                 <a href="/#faq">FAQ</a>
-                @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.HasClaim("access_status", "Approved")))
+                @if (User.Identity?.IsAuthenticated == true && User.HasClaim("access_status", "Approved"))
                 {
                     <a asp-controller="Home" asp-action="Play">Подключение</a>
                 }
