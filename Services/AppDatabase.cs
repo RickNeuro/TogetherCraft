@@ -1,3 +1,4 @@
+using System.Data;
 using Npgsql;
 using Microsoft.AspNetCore.Identity;
 using TogetherCraft.Models;
@@ -123,6 +124,100 @@ public sealed class AppDatabase
         command.Parameters.AddWithValue("username", username);
         command.Parameters.AddWithValue("id", id);
         return await command.ExecuteNonQueryAsync(cancellationToken) == 1;
+    }
+
+    public async Task<IReadOnlyList<AdminUserViewModel>> GetUsersAsync(CancellationToken cancellationToken = default)
+    {
+        var users = new List<AdminUserViewModel>();
+        await using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT id, username, email, minecraft_username, account_role, account_status, created_at_utc
+            FROM tc_users
+            ORDER BY CASE WHEN account_role = 'Admin' THEN 0 ELSE 1 END, created_at_utc ASC;
+            """, connection);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            users.Add(new AdminUserViewModel
+            {
+                Id = reader.GetInt64(0),
+                Username = reader.GetString(1),
+                Email = reader.IsDBNull(2) ? null : reader.GetString(2),
+                MinecraftUsername = reader.IsDBNull(3) ? null : reader.GetString(3),
+                Role = reader.GetString(4),
+                Status = reader.GetString(5),
+                CreatedAtUtc = reader.GetDateTime(6)
+            });
+        }
+        return users;
+    }
+
+    public async Task<bool> SetUserRoleAsync(long id, string role, CancellationToken cancellationToken = default)
+    {
+        if (role is not ("Admin" or "User"))
+            throw new ArgumentOutOfRangeException(nameof(role));
+
+        await using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+
+        // Serialize role changes so two administrators cannot remove the last admin simultaneously.
+        await using (var lockCommand = new NpgsqlCommand(
+            "LOCK TABLE tc_users IN SHARE ROW EXCLUSIVE MODE;", connection, transaction))
+        {
+            await lockCommand.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        string? currentRole = null;
+        string? currentStatus = null;
+        await using (var find = new NpgsqlCommand(
+            "SELECT account_role, account_status FROM tc_users WHERE id = @id FOR UPDATE;", connection, transaction))
+        {
+            find.Parameters.AddWithValue("id", id);
+            await using var reader = await find.ExecuteReaderAsync(cancellationToken);
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                currentRole = reader.GetString(0);
+                currentStatus = reader.GetString(1);
+            }
+        }
+
+        if (currentRole is null || currentStatus == "Rejected")
+            return false;
+
+        if (currentRole == role)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return true;
+        }
+
+        if (role == "User" && currentRole == "Admin")
+        {
+            await using var count = new NpgsqlCommand(
+                "SELECT COUNT(*) FROM tc_users WHERE account_role = 'Admin';", connection, transaction);
+            var adminCount = Convert.ToInt32(await count.ExecuteScalarAsync(cancellationToken));
+            if (adminCount <= 1)
+                return false;
+        }
+
+        await using (var update = new NpgsqlCommand("""
+            UPDATE tc_users
+            SET account_role = @role,
+                account_status = 'Approved',
+                approved_at_utc = COALESCE(approved_at_utc, NOW())
+            WHERE id = @id;
+            """, connection, transaction))
+        {
+            update.Parameters.AddWithValue("role", role);
+            update.Parameters.AddWithValue("id", id);
+            var updated = await update.ExecuteNonQueryAsync(cancellationToken);
+            if (updated != 1)
+                return false;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return true;
     }
 
     public async Task<IReadOnlyList<UserAccount>> GetPendingUsersAsync(CancellationToken cancellationToken = default)
