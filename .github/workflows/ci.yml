@@ -125,7 +125,7 @@ jobs:
 
       - name: Package tested source snapshot
         if: success()
-        run: git archive --format=zip --prefix=TogetherCraft/ HEAD -o "$RUNNER_TEMP/TogetherCraft-test-${GITHUB_SHA::7}.zip"
+        run: git archive --format=zip --prefix=TogetherCraft/ HEAD -o "$RUNNER_TEMP/TogetherCraft-test-${GITHUB_SHA}.zip"
 
       - name: Upload Windows test package
         if: success()
