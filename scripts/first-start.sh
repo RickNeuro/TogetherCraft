@@ -58,22 +58,12 @@ ensure_secret() {
     return 1
 }
 
-admin_password_generated=0
 if [[ "$created_env" -eq 1 ]]; then
     ensure_secret POSTGRES_PASSWORD || true
     ensure_secret APP_DB_PASSWORD || true
-    admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
-    if [[ -n "$admin_username" ]] && ensure_secret ADMIN_PASSWORD; then
-        admin_password_generated=1
-    fi
 else
     if is_placeholder POSTGRES_PASSWORD; then
         echo "В существующем .env нет рабочего POSTGRES_PASSWORD. Укажи пароль текущей базы вручную."
-        exit 1
-    fi
-    admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
-    if [[ -n "$admin_username" ]] && is_placeholder ADMIN_PASSWORD; then
-        echo "Для нового bootstrap-аккаунта ADMIN_USERNAME задай сильный ADMIN_PASSWORD. Для существующего аккаунта пароль можно оставить пустым."
         exit 1
     fi
     ensure_secret APP_DB_PASSWORD || true
@@ -82,11 +72,6 @@ fi
 chmod 600 .env
 admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
 admin_password="$(grep -E '^ADMIN_PASSWORD=' .env | tail -n 1 | cut -d= -f2-)"
-if [[ -n "$admin_username" && -n "$admin_password" && "$(printf '%s' "$admin_password" | wc -c)" -lt 14 ]]; then
-    echo "ADMIN_PASSWORD должен содержать не менее 14 символов."
-    exit 1
-fi
-
 echo "Проверяю конфигурацию Docker Compose..."
 "${DOCKER[@]}" compose config --quiet
 
@@ -98,14 +83,11 @@ echo
 echo
 echo "Локальный адрес: http://127.0.0.1:8080"
 if [[ -n "$admin_username" ]]; then
-    if [[ "$admin_password_generated" -eq 1 ]]; then
-        echo "Создана bootstrap-учётная запись администратора: $admin_username"
-        echo "Временный пароль администратора (сохрани его сейчас):"
-        echo "$admin_password"
-    elif [[ -n "$admin_password" ]]; then
-        echo "Bootstrap-аккаунт $admin_username настроен. Проверь, что это именно нужная учётная запись."
+    if [[ -n "$admin_password" ]]; then
+        echo "Bootstrap-аккаунт $admin_username настроен."
     else
-        echo "Существующий аккаунт $admin_username будет назначен Admin. Входи с его прежним паролем."
+        echo "Если аккаунт $admin_username уже существует, он будет назначен Admin без смены пароля."
+        echo "Если такого аккаунта нет, задай для него сильный ADMIN_PASSWORD (не менее 14 символов)."
     fi
     echo "После проверки очисти ADMIN_USERNAME в .env, чтобы bootstrap-настройка не влияла на дальнейшие изменения ролей."
 else
