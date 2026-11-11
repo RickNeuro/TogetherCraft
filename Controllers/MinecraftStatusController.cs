@@ -6,7 +6,7 @@ namespace TogetherCraft.Controllers;
 
 [ApiController]
 [Route("api/minecraft/status")]
-[Authorize(Policy = "ApprovedUser")]
+[Authorize(Policy = "AdminOnly")]
 public sealed class MinecraftStatusController : ControllerBase
 {
     private readonly MinecraftStatusMonitorService _monitor;
