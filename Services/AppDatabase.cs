@@ -203,9 +203,7 @@ public sealed class AppDatabase
 
         await using (var update = new NpgsqlCommand("""
             UPDATE tc_users
-            SET account_role = @role,
-                account_status = 'Approved',
-                approved_at_utc = COALESCE(approved_at_utc, NOW())
+            SET account_role = @role
             WHERE id = @id;
             """, connection, transaction))
         {
