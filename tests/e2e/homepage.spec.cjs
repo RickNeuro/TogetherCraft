@@ -1,62 +1,52 @@
 const { test, expect } = require('@playwright/test');
 
-test('homepage renders the site header, both game worlds and footer', async ({ page }) => {
+test('homepage renders all three game directions without public connection addresses', async ({ page }) => {
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
-
   const response = await page.goto('/');
   expect(response && response.status()).toBe(200);
-
   await expect(page.locator('.brand')).toContainText('TogetherCraft');
   await expect(page.locator('.hero h1')).toBeVisible();
-  await expect(page.locator('.server-card')).toHaveCount(2);
+  await expect(page.locator('.world-card')).toHaveCount(3);
+  for (const direction of ['Minecraft · Fabric', 'Minecraft · Create', 'Factorio']) {
+    await expect(page.locator('.world-card').filter({ hasText: direction })).toHaveCount(1);
+  }
   await expect(page.locator('.footer')).toBeVisible();
-
+  expect(await page.locator('body').innerText()).not.toContain('127.0.0.1');
   expect(pageErrors).toEqual([]);
 });
 
-test('server navigation moves to the game worlds section', async ({ page }) => {
+test('game worlds navigation moves to the directions section', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Серверы' }).click();
-  await expect(page).toHaveURL(/#servers$/);
-  await expect(page.locator('#servers')).toBeVisible();
+  await page.getByRole('link', { name: 'Игровые миры' }).click();
+  await expect(page).toHaveURL(/#worlds$/);
+  await expect(page.locator('#worlds')).toBeVisible();
 });
 
 test('homepage has no horizontal overflow on desktop and mobile widths', async ({ page }) => {
   for (const width of [1440, 390, 360]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-
     const dimensions = await page.evaluate(() => ({
       viewport: document.documentElement.clientWidth,
       content: document.documentElement.scrollWidth
     }));
-
-    expect(
-      dimensions.content,
-      `Horizontal overflow at viewport width ${width}px: content is ${dimensions.content}px`
-    ).toBeLessThanOrEqual(dimensions.viewport);
+    expect(dimensions.content, 'Horizontal overflow at viewport width ' + width + 'px').toBeLessThanOrEqual(dimensions.viewport);
   }
 });
 
 test('login and registration pages render forms', async ({ page }) => {
   for (const route of ['/Account/Login', '/Account/Register']) {
     const response = await page.goto(route);
-    expect(response && response.status(), `${route} should return HTTP 200`).toBe(200);
+    expect(response && response.status(), route + ' should return HTTP 200').toBe(200);
     await expect(page.locator('form').first()).toBeVisible();
   }
 });
 
-
-test('Minecraft status is public while host metrics require approval', async ({ request }) => {
-  const statusResponse = await request.get('/api/minecraft/servers');
-  expect(statusResponse.status()).toBe(200);
-  const status = await statusResponse.json();
-  expect(status.fabric).toBeTruthy();
-  expect(status.create).toBeTruthy();
-  expect(status.fabric).toHaveProperty('isOnline');
-  expect(status.create).toHaveProperty('isOnline');
-
-  const metricsResponse = await request.get('/api/metrics', { maxRedirects: 0 });
-  expect(metricsResponse.status()).toBe(302);
+test('connection page and status endpoints are private', async ({ request }) => {
+  const routes = ['/Home/Play', '/api/minecraft/servers', '/api/minecraft/status', '/api/metrics'];
+  for (const route of routes) {
+    const response = await request.get(route, { maxRedirects: 0 });
+    expect(response.status(), route + ' must not be public').toBe(302);
+  }
 });
