@@ -24,3 +24,6 @@ postgres-data/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local preview credentials
+.preview-admin.txt
