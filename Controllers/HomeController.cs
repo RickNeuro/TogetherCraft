@@ -23,7 +23,7 @@ public sealed class HomeController : Controller
     [Authorize(Policy = "ApprovedUser")]
     public async Task<IActionResult> Play(CancellationToken cancellationToken = default)
     {
-        Response.Headers.CacheControl = "no-store, no-cache";
+        Response.Headers["Cache-Control"] = "no-store, no-cache";
 
         var idText = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!long.TryParse(idText, out var accountId))
