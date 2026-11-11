@@ -6,7 +6,7 @@ namespace TogetherCraft.Controllers;
 
 [ApiController]
 [Route("api/metrics")]
-[Authorize(Policy = "ApprovedUser")]
+[Authorize(Policy = "AdminOnly")]
 public sealed class ApiMetricsController : ControllerBase
 {
     private readonly PrometheusMetricsService _metrics;
