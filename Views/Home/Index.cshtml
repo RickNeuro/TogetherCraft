@@ -1,179 +1,70 @@
 @{
     ViewData["Title"] = "Главная";
-    var isAuthenticated = User.Identity?.IsAuthenticated == true;
-    var isAdmin = isAuthenticated && User.IsInRole("Admin");
-    var isPending = isAuthenticated && User.HasClaim("access_status", "Pending");
-    var canPlay = isAuthenticated && User.HasClaim("access_status", "Approved");
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var pending = signedIn && User.HasClaim("access_status", "Pending");
+    var approved = signedIn && User.HasClaim("access_status", "Approved");
+    var actionUrl = !signedIn ? Url.Action("Register", "Account") : pending ? Url.Action("Waiting", "Account") : approved ? Url.Action("Play", "Home") : Url.Action("Login", "Account");
+    var actionText = !signedIn ? "Присоединиться" : pending ? "Заявка на рассмотрении" : approved ? "Открыть игровые миры" : "Продолжить";
 }
-<div class="wrap home-page">
-    <section class="hero" id="about">
-        <div class="hero-copy-block">
-            <p class="eyebrow"><span class="eyebrow-mark"></span> СООБЩЕСТВО СОЗДАТЕЛЕЙ И ИГРОКОВ</p>
-            <h1>Мир больше,<br /><span>когда строим вместе.</span></h1>
-            <p class="hero-copy">От первого дома в Minecraft до огромной автоматизированной фабрики. Выбирай игру, находи единомышленников и становись частью общего проекта.</p>
-            <div class="hero-actions" id="join">
-                @if (!isAuthenticated)
-                {
-                    <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Register">Присоединиться <span aria-hidden="true">↗</span></a>
-                    <a class="tc-btn tc-btn-secondary" href="#worlds">Выбрать мир</a>
-                }
-                else if (isAdmin)
-                {
-                    @if (canPlay)
-                    {
-                        <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Play">Мои игровые миры <span aria-hidden="true">↗</span></a>
-                    }
-                    <a class="tc-btn tc-btn-secondary" asp-controller="Admin" asp-action="Index">Панель заявок</a>
-                }
-                else if (isPending)
-                {
-                    <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Waiting">Статус моей заявки <span aria-hidden="true">↗</span></a>
-                }
-                else if (canPlay)
-                {
-                    <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Play">Мои игровые миры <span aria-hidden="true">↗</span></a>
-                }
-                else
-                {
-                    <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Login">Продолжить <span aria-hidden="true">↗</span></a>
-                }
+<div id="tc-landing">
+    <section class="hero" id="home">
+        <div class="hero-inner"><div class="hero-copy">
+            <p class="hero-kicker">ИГРОВОЕ СООБЩЕСТВО</p>
+            <h1>Выбирай своё<br /><span>приключение</span></h1>
+            <p class="hero-description">TogetherCraft — место, где можно играть, строить и создавать вместе.</p>
+            <div class="hero-actions">
+                <a class="tc-button tc-button-primary" href="@actionUrl">@actionText <span aria-hidden="true">›</span></a>
+                @if (approved) { <a class="tc-button tc-button-quiet" asp-controller="Home" asp-action="Play">Подключение</a> }
+                else if (pending) { <a class="tc-button tc-button-quiet" asp-controller="Account" asp-action="Waiting">Моя заявка</a> }
             </div>
-            <div class="hero-proof">
-                <span><i></i> Совместные проекты</span>
-                <span><i></i> Разные игровые миры</span>
-                <span><i></i> Живое сообщество</span>
+        </div></div>
+    </section>
+    <section class="world-grid" id="worlds" aria-label="Игровые направления">
+        <a class="world-card" href="@actionUrl">
+            <img class="world-photo" src="~/img/concept/world-fabric.webp" asp-append-version="true" alt="Minecraft Fabric" />
+            <span class="world-content"><span class="world-title-line"><span class="world-icon world-icon-fabric">◆</span><strong>Minecraft · Fabric</strong></span><span class="world-description">Выживание, приключения и общие постройки.</span><span class="world-more">Подробнее <span aria-hidden="true">→</span></span></span>
+        </a>
+        <a class="world-card" href="@actionUrl">
+            <img class="world-photo" src="~/img/concept/world-create.webp" asp-append-version="true" alt="Minecraft Create" />
+            <span class="world-content"><span class="world-title-line"><span class="world-icon world-icon-create">⚙</span><strong>Minecraft · Create</strong></span><span class="world-description">Механизмы, инженерия и автоматизация.</span><span class="world-more">Подробнее <span aria-hidden="true">→</span></span></span>
+        </a>
+        <a class="world-card" href="@actionUrl">
+            <img class="world-photo" src="~/img/concept/world-factorio.webp" asp-append-version="true" alt="Factorio" />
+            <span class="world-content"><span class="world-title-line"><span class="world-icon world-icon-factorio">⬡</span><strong>Factorio</strong></span><span class="world-description">Строй фабрику, развивай производство вместе.</span><span class="world-more">Подробнее <span aria-hidden="true">→</span></span></span>
+        </a>
+    </section>
+    <section class="support-grid">
+        <article class="support-panel gallery-panel" id="gallery">
+            <div class="panel-heading"><h2><span class="panel-icon">▧</span>Галерея</h2><a href="#worlds">Смотреть всё →</a></div>
+            <div class="gallery-thumbs">
+                <a href="#worlds"><img src="~/img/concept/gallery-1.webp" asp-append-version="true" alt="Постройки сообщества" loading="lazy" /></a>
+                <a href="#worlds"><img src="~/img/concept/gallery-2.webp" asp-append-version="true" alt="Игровой мир" loading="lazy" /></a>
+                <a href="#worlds"><img src="~/img/concept/gallery-3.webp" asp-append-version="true" alt="Совместное приключение" loading="lazy" /></a>
             </div>
-        </div>
-        <div class="hero-visual">
-            <img class="hero-image" src="~/img/hero-fox.jpg" alt="Лиса на фоне закатного игрового мира" />
-            <div class="hero-image-shade"></div>
-            <div class="hero-image-caption">
-                <span class="hero-caption-kicker">TOGETHERCRAFT</span>
-                <strong>Не просто зайти.<br />А создать что-то своё.</strong>
+        </article>
+        <article class="support-panel team-panel" id="team">
+            <div class="panel-heading"><h2><span class="panel-icon">♟</span>Наша команда</h2></div>
+            <p>Люди, которые делают<br />эти миры общими.</p>
+            <div class="team-avatars">
+                <img src="~/img/concept/team-fox.webp" asp-append-version="true" alt="Участник сообщества" loading="lazy" />
+                <img src="~/img/concept/team-dark.webp" asp-append-version="true" alt="Участник сообщества" loading="lazy" />
+                <img src="~/img/concept/team-enderman.webp" asp-append-version="true" alt="Участник сообщества" loading="lazy" />
+                <a href="https://discord.gg/V6RnZ59VCe" target="_blank" rel="noopener noreferrer" aria-label="Познакомиться с сообществом">+</a>
             </div>
-            <span class="hero-image-index">01 / 03</span>
-        </div>
+        </article>
+        <article class="support-panel faq-panel">
+            <div class="panel-heading"><h2><span class="panel-icon">?</span>FAQ</h2></div>
+            <p>Как вступить, как подключиться<br />и что происходит после заявки.</p>
+            <a class="faq-button" href="#faq">Читать FAQ <span aria-hidden="true">→</span></a>
+        </article>
     </section>
-
-    <section class="worlds-section" id="worlds">
-        <div class="section-head">
-            <div>
-                <div class="section-label">ТРИ НАПРАВЛЕНИЯ · ОДНО СООБЩЕСТВО</div>
-                <h2>Во что играем</h2>
-            </div>
-            <p class="section-desc">Каждый мир — свой способ создавать.</p>
-        </div>
-
-        <div class="world-grid">
-            <article class="world-card world-card-fabric">
-                <div class="world-art">
-                    <span class="world-art-number">01</span>
-                    <span class="world-art-name">MINECRAFT</span>
-                    <span class="world-art-symbol world-symbol-block" aria-hidden="true"><i></i><b></b><em></em></span>
-                    <span class="world-art-bottom">SURVIVE · EXPLORE · BUILD</span>
-                </div>
-                <div class="world-content">
-                    <div class="world-title-line"><span class="world-kicker">ВЫЖИВАНИЕ И ИССЛЕДОВАНИЕ</span><span class="world-state world-state-live">МИР</span></div>
-                    <h3>Minecraft <span>· Fabric</span></h3>
-                    <p>Исследуй мир, строй поселения и воплощай идеи вместе с другими игроками.</p>
-                </div>
-            </article>
-
-            <article class="world-card world-card-create">
-                <div class="world-art">
-                    <span class="world-art-number">02</span>
-                    <span class="world-art-name">CREATE</span>
-                    <span class="world-art-symbol world-symbol-gear" aria-hidden="true">⚙</span>
-                    <span class="world-art-bottom">DESIGN · ENGINEER · AUTOMATE</span>
-                </div>
-                <div class="world-content">
-                    <div class="world-title-line"><span class="world-kicker">МЕХАНИЗМЫ И АВТОМАТИЗАЦИЯ</span><span class="world-state world-state-live">МИР</span></div>
-                    <h3>Minecraft <span>· Create</span></h3>
-                    <p>Проектируй механизмы, запускай поезда и превращай идеи в работающие системы.</p>
-                </div>
-            </article>
-
-            <article class="world-card world-card-factorio">
-                <div class="world-art">
-                    <span class="world-art-number">03</span>
-                    <span class="world-art-name">FACTORIO</span>
-                    <span class="world-art-symbol world-symbol-factory" aria-hidden="true"><i></i><b></b><em></em></span>
-                    <span class="world-art-bottom">PLAN · PRODUCE · EXPAND</span>
-                </div>
-                <div class="world-content">
-                    <div class="world-title-line"><span class="world-kicker">ФАБРИКИ И ЛОГИСТИКА</span><span class="world-state world-state-soon">ГОТОВИМ</span></div>
-                    <h3>Factorio</h3>
-                    <p>Строй производственные цепочки, соединяй логистику и развивай фабрику вместе.</p>
-                </div>
-            </article>
-        </div>
-    </section>
-
-    <section class="community-strip" aria-label="Что объединяет игровые направления">
-        <div><span class="strip-number">01</span><strong>Общие проекты</strong><p>Не просто отдельные постройки, а большие совместные идеи.</p></div>
-        <div><span class="strip-number">02</span><strong>Свобода играть</strong><p>Выбирай направление и свой темп — без обязательной гонки.</p></div>
-        <div><span class="strip-number">03</span><strong>Люди рядом</strong><p>Общайся, объединяйся и находи тех, кому интересно то же.</p></div>
-    </section>
-
-    <section class="join-section" id="how-to-join">
-        <div class="join-copy">
-            <div class="section-label">КАК ПОПАСТЬ ВМЕСТЕ</div>
-            <h2>Твой следующий<br /><span>проект начинается здесь.</span></h2>
-            <p>Вступление открыто для новых участников. Создай аккаунт, выбери игровые направления и отправь заявку команде TogetherCraft.</p>
-            @if (!isAuthenticated)
-            {
-                <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Register">Подать заявку <span aria-hidden="true">↗</span></a>
-            }
-            else if (isPending)
-            {
-                <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Waiting">Посмотреть заявку <span aria-hidden="true">↗</span></a>
-            }
-            else if (canPlay)
-            {
-                <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Play">Открыть подключение <span aria-hidden="true">↗</span></a>
-            }
-            else
-            {
-                <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Login">Войти в аккаунт <span aria-hidden="true">↗</span></a>
-            }
-        </div>
-        <div class="join-steps">
-            <div class="join-step"><span>01</span><div><strong>Создай аккаунт</strong><p>Зарегистрируйся и привяжи Minecraft Java-профиль.</p></div></div>
-            <div class="join-step"><span>02</span><div><strong>Выбери миры</strong><p>Отметь направления, в которых хочешь участвовать.</p></div></div>
-            <div class="join-step"><span>03</span><div><strong>Знакомься и играй</strong><p>После одобрения заявки получишь доступ к выбранным мирам.</p></div></div>
-        </div>
-    </section>
-
-    <section class="team-section" id="team">
-        <div class="team-mark" aria-hidden="true"><span>TC</span></div>
-        <div class="team-copy">
-            <div class="section-label">СООБЩЕСТВО TOGETHERCRAFT</div>
-            <h2>Постройки разные.<br /><span>Интерес — общий.</span></h2>
-            <p>Здесь встречаются строители, исследователи, механики и те, кто только ищет компанию для новой игры. Начать можно с простого — присоединиться к разговору.</p>
-        </div>
-        <a class="team-link" href="https://discord.gg/V6RnZ59VCe" target="_blank" rel="noopener noreferrer">Найти нас в Discord <span aria-hidden="true">↗</span></a>
-    </section>
-
-    <section class="faq" id="faq">
-        <div class="section-label">ПЕРЕД ТЕМ КАК НАЧАТЬ</div>
-        <div class="faq-heading-row"><h2>Частые вопросы</h2><p>Если что-то осталось непонятным — спроси в Discord.</p></div>
+    <section class="faq-section" id="faq">
+        <div class="faq-heading"><span>FAQ</span><h2>Частые вопросы</h2></div>
         <div class="faq-list">
-            <details>
-                <summary>Как попасть в сообщество?</summary>
-                <div class="faq-answer">Создай аккаунт, подтверди Minecraft Java-профиль через Microsoft и отправь заявку. После проверки команда откроет доступ к выбранным игровым мирам.</div>
-            </details>
-            <details>
-                <summary>Какие игровые направления доступны?</summary>
-                <div class="faq-answer">Сейчас в проекте два направления Minecraft: Fabric и Create. Factorio — следующее направление, которое мы готовим к запуску.</div>
-            </details>
-            <details>
-                <summary>Где найти адрес игрового сервера?</summary>
-                <div class="faq-answer">После одобрения заявки адреса выбранных игровых миров появятся в личном разделе «Подключение».</div>
-            </details>
-            <details>
-                <summary>Можно ли строить собственные проекты?</summary>
-                <div class="faq-answer">Да. Совместные постройки, механизмы и большие проекты — одна из главных идей TogetherCraft. Договаривайтесь с участниками и создавайте своё.</div>
-            </details>
+            <details><summary>Как присоединиться к TogetherCraft?</summary><p>Создай аккаунт, выбери доступные игровые направления и подтверди Minecraft Java через Microsoft. После этого заявка попадёт администраторам на рассмотрение.</p></details>
+            <details><summary>Зачем подтверждать Minecraft через Microsoft?</summary><p>Так мы проверяем, что Minecraft-профиль принадлежит тебе. Пароль вводится на официальном сайте Microsoft — TogetherCraft его не получает.</p></details>
+            <details><summary>Когда появятся адреса серверов?</summary><p>После одобрения заявки раздел «Подключение» станет доступен в аккаунте.</p></details>
+            <details><summary>Можно ли присоединиться не ко всем мирам?</summary><p>Да. При регистрации можно выбрать поддерживаемые игровые направления. Factorio пока представлен на сайте как направление сообщества, его подключение будет добавлено отдельно.</p></details>
         </div>
     </section>
 </div>

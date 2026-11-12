@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
 
-test('homepage renders all three game directions without public connection addresses', async ({ page }) => {
+test('homepage follows the TogetherCraft concept and keeps private addresses hidden', async ({ page }) => {
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   const response = await page.goto('/');
   expect(response && response.status()).toBe(200);
+
   await expect(page.locator('.brand')).toContainText('TogetherCraft');
   await expect(page.locator('.hero h1')).toBeVisible();
   await expect(page.locator('.world-card')).toHaveCount(3);
@@ -12,6 +13,15 @@ test('homepage renders all three game directions without public connection addre
     await expect(page.locator('.world-card').filter({ hasText: direction })).toHaveCount(1);
   }
   await expect(page.locator('.footer')).toBeVisible();
+  await expect(page.locator('#gallery .gallery-thumbs img')).toHaveCount(3);
+  await expect(page.locator('#team .team-avatars img')).toHaveCount(3);
+  await expect(page.locator('#faq details')).toHaveCount(4);
+
+  const brokenImages = await page.locator('#tc-landing img').evaluateAll(images =>
+    images.filter(image => !image.complete || image.naturalWidth === 0).map(image => image.src)
+  );
+  expect(brokenImages).toEqual([]);
+
   const homepageText = await page.locator('body').innerText();
   for (const address of ['127.0.0.1', 'fried-newer.tun.ply.gg', 'shrimp-crafts.tun.ply.gg', '25565', '25566']) {
     expect(homepageText, 'Homepage must not expose ' + address).not.toContain(address);
@@ -27,7 +37,7 @@ test('game worlds navigation moves to the directions section', async ({ page }) 
 });
 
 test('homepage has no horizontal overflow on desktop and mobile widths', async ({ page }) => {
-  for (const width of [1440, 390, 360]) {
+  for (const width of [1440, 900, 390, 360]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
     const dimensions = await page.evaluate(() => ({
