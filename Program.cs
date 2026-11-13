@@ -127,7 +127,8 @@ var authenticationBuilder = builder.Services.AddAuthentication(CookieAuthenticat
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-    })
+    });
+
 var microsoftClientId = builder.Configuration["MicrosoftMinecraft:ClientId"];
 var microsoftClientSecret = builder.Configuration["MicrosoftMinecraft:ClientSecret"];
 
