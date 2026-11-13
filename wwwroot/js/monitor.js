@@ -16,7 +16,7 @@
 
     function updateFan(name, rpm) {
         const hasReading = typeof rpm === 'number' && Number.isFinite(rpm);
-        const isSpinning = hasReading && rpm > 0;
+        const isSpinning = !hasReading || rpm > 0;
         const numberId = name + '-value';
         const stateId = name + '-state';
         const rotor = byId(name + '-rotor');
@@ -26,12 +26,14 @@
 
         if (state) {
             state.textContent = !hasReading ? 'Нет данных' : isSpinning ? 'Работает' : 'Остановлен';
-            state.classList.toggle('is-active', isSpinning);
+            state.classList.toggle('is-active', hasReading && isSpinning);
         }
 
         if (rotor) {
             if (isSpinning) {
-                const duration = Math.max(0.28, Math.min(1.5, 1800 / rpm));
+                const duration = hasReading
+                    ? Math.max(0.28, Math.min(1.5, 1800 / rpm))
+                    : 1.35;
                 rotor.style.animationDuration = duration + 's';
                 rotor.style.animationPlayState = 'running';
             } else {
