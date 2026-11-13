@@ -68,25 +68,9 @@
                                 <span>FAN1</span>
                                 <span id="fan1-state" class="fan-state">Нет данных</span>
                             </div>
-                            <svg class="fan-visual" viewBox="0 0 100 100" role="img" aria-label="Анимированный вентилятор FAN1">
-                                <rect class="fan-frame" x="2" y="2" width="96" height="96" rx="9" />
-                                <circle class="fan-screw" cx="11" cy="11" r="3" />
-                                <circle class="fan-screw" cx="89" cy="11" r="3" />
-                                <circle class="fan-screw" cx="11" cy="89" r="3" />
-                                <circle class="fan-screw" cx="89" cy="89" r="3" />
-                                <circle class="fan-guard" cx="50" cy="50" r="41" />
-                                <circle class="fan-inner-ring" cx="50" cy="50" r="36" />
-                                <g id="fan1-rotor" class="fan-rotor">
-                                    <path class="fan-blade" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(51.43 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(102.86 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(154.29 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(205.71 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(257.14 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(308.57 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <circle class="fan-hub" cx="50" cy="50" r="11" />
-                                    <circle class="fan-hub-center" cx="50" cy="50" r="4" />
-                                </g>
+                            <svg class="fan-visual" viewBox="0 0 60 60" role="img" aria-label="Кулер FAN1">
+                                <use href="@Url.Content("~/img/fan-cooler.svg#fan-housing")"></use>
+                                <use id="fan1-rotor" class="fan-rotor" href="@Url.Content("~/img/fan-cooler.svg#fan-rotor")"></use>
                             </svg>
                             <div class="fan-rpm"><strong id="fan1-value">—</strong><span>RPM</span></div>
                         </div>
@@ -96,25 +80,9 @@
                                 <span>FAN3</span>
                                 <span id="fan3-state" class="fan-state">Нет данных</span>
                             </div>
-                            <svg class="fan-visual" viewBox="0 0 100 100" role="img" aria-label="Анимированный вентилятор FAN3">
-                                <rect class="fan-frame" x="2" y="2" width="96" height="96" rx="9" />
-                                <circle class="fan-screw" cx="11" cy="11" r="3" />
-                                <circle class="fan-screw" cx="89" cy="11" r="3" />
-                                <circle class="fan-screw" cx="11" cy="89" r="3" />
-                                <circle class="fan-screw" cx="89" cy="89" r="3" />
-                                <circle class="fan-guard" cx="50" cy="50" r="41" />
-                                <circle class="fan-inner-ring" cx="50" cy="50" r="36" />
-                                <g id="fan3-rotor" class="fan-rotor">
-                                    <path class="fan-blade" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(51.43 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(102.86 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(154.29 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(205.71 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(257.14 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <path class="fan-blade" transform="rotate(308.57 50 50)" d="M50 46 C43 41 35 28 39 15 C42 7 51 8 56 14 C58 25 56 38 53 46 Z" />
-                                    <circle class="fan-hub" cx="50" cy="50" r="11" />
-                                    <circle class="fan-hub-center" cx="50" cy="50" r="4" />
-                                </g>
+                            <svg class="fan-visual" viewBox="0 0 60 60" role="img" aria-label="Кулер FAN3">
+                                <use href="@Url.Content("~/img/fan-cooler.svg#fan-housing")"></use>
+                                <use id="fan3-rotor" class="fan-rotor" href="@Url.Content("~/img/fan-cooler.svg#fan-rotor")"></use>
                             </svg>
                             <div class="fan-rpm"><strong id="fan3-value">—</strong><span>RPM</span></div>
                         </div>
