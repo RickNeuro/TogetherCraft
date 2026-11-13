@@ -129,6 +129,7 @@ var authenticationBuilder = builder.Services.AddAuthentication(CookieAuthenticat
         options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
     });
 
+// Microsoft login is optional; leave the scheme unregistered until both secrets are configured.
 var microsoftClientId = builder.Configuration["MicrosoftMinecraft:ClientId"];
 var microsoftClientSecret = builder.Configuration["MicrosoftMinecraft:ClientSecret"];
 
