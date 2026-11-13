@@ -56,7 +56,7 @@ builder.Services.AddHttpClient<PrometheusMetricsService>(client =>
     client.BaseAddress = new Uri(builder.Configuration["Prometheus:BaseUrl"] ?? "http://prometheus:9090");
     client.Timeout = TimeSpan.FromSeconds(4);
 });
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+var authenticationBuilder = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.Cookie.Name = "TogetherCraft.Auth";
@@ -127,12 +127,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-    })
-    .AddOAuth("MicrosoftMinecraft", options =>
+    });
+
+// Microsoft login is optional; leave the scheme unregistered until both secrets are configured.
+var microsoftClientId = builder.Configuration["MicrosoftMinecraft:ClientId"];
+var microsoftClientSecret = builder.Configuration["MicrosoftMinecraft:ClientSecret"];
+
+if (!string.IsNullOrWhiteSpace(microsoftClientId) && !string.IsNullOrWhiteSpace(microsoftClientSecret))
+{
+    authenticationBuilder.AddOAuth("MicrosoftMinecraft", options =>
     {
         options.SignInScheme = "External";
-        options.ClientId = builder.Configuration["MicrosoftMinecraft:ClientId"] ?? "";
-        options.ClientSecret = builder.Configuration["MicrosoftMinecraft:ClientSecret"] ?? "";
+        options.ClientId = microsoftClientId;
+        options.ClientSecret = microsoftClientSecret;
         options.CallbackPath = "/signin-microsoft-minecraft";
         options.AuthorizationEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
         options.TokenEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
@@ -161,10 +168,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             return Task.CompletedTask;
         };
     });
+}
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("ApprovedUser", policy => policy.RequireAuthenticatedUser()
-        .RequireAssertion(context => context.User.IsInRole("Admin") || context.User.HasClaim("access_status", "Approved")));
+        .RequireClaim("access_status", "Approved"));
     options.AddPolicy("AdminOnly", policy => policy.RequireAuthenticatedUser().RequireRole("Admin"));
 });
 

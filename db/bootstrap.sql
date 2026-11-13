@@ -22,3 +22,4 @@ GRANT USAGE ON SCHEMA public TO tc_app;
 -- The initial schema grants only the columns required by application operations.
 \i /db/migrations/001-initial-schema.sql
 \i /db/migrations/002-registration-worlds.sql
+\i /db/migrations/003-admin-roles.sql

@@ -21,8 +21,12 @@ for route in "/" "/Account/Login" "/Account/Register"; do
     [[ "$status" == "200" ]] || fail "$route returned HTTP $status"
     if [[ "$route" == "/" ]]; then
         grep -q "TogetherCraft" "$TMP_HTML" || fail "homepage does not contain TogetherCraft"
-        grep -q "Игровой мир 01" "$TMP_HTML" || fail "homepage does not render the first game world"
-        grep -q "Игровой мир 02" "$TMP_HTML" || fail "homepage does not render the second game world"
+        grep -qi "Minecraft · Vanilla" "$TMP_HTML" || fail "homepage does not render the Vanilla direction"
+        grep -qi "Minecraft · Create" "$TMP_HTML" || fail "homepage does not render the Create direction"
+        grep -q "Factorio" "$TMP_HTML" || fail "homepage does not render the Factorio direction"
+        for address in "127.0.0.1" "fried-newer.tun.ply.gg" "shrimp-crafts.tun.ply.gg" "25565" "25566"; do
+            ! grep -q "$address" "$TMP_HTML" || fail "homepage exposes a connection address: $address"
+        done
         cp "$TMP_HTML" "${TMP_HTML}.homepage"
     fi
 done
@@ -113,32 +117,33 @@ with opener.open(request, timeout=10) as response:
     body = response.read().decode("utf-8", errors="replace")
     if response.status != 200 or final_path.rstrip("/") not in ("/Admin", "/Admin/Index"):
         raise SystemExit(f"Admin login failed: HTTP {response.status}, final path {final_path}")
-    if "Заявки на доступ" not in body:
+    if "Заявки" not in body:
         raise SystemExit("Admin page did not render its expected content")
 
-print("Authentication OK: test admin signed in and opened the AdminOnly page")
+# A signed-in administrator can open the connection page and role management.
+for path, expected in (("/Home/Play", "Minecraft"), ("/Admin/Users", "Пользователи")):
+    with opener.open(base_url.rstrip("/") + path, timeout=10) as response:
+        page = response.read().decode("utf-8", errors="replace")
+        if response.status != 200 or expected not in page:
+            raise SystemExit(f"{path} did not render for the administrator")
+
+# The private status API remains available to administrators.
+with opener.open(base_url.rstrip("/") + "/api/minecraft/servers", timeout=10) as response:
+    import json
+    status = json.loads(response.read().decode("utf-8"))
+    if response.status != 200 or not isinstance(status.get("fabric"), dict) or not isinstance(status.get("create"), dict):
+        raise SystemExit("Admin Minecraft status API response is incomplete")
+
+print("Authentication OK: admin can open applications, connections, user roles and private status API")
 PY
 
 echo "Smoke tests passed: PostgreSQL health/permissions, backend routes/authentication, homepage and local CSS/JS assets."
 
 
-# Minecraft status is public; host metrics remain protected.
-STATUS_CODE="$(curl --silent --show-error --output "$TMP_HTML" --write-out '%{http_code}' "$BASE_URL/api/minecraft/servers")" \
-    || fail "public Minecraft status request failed"
-[[ "$STATUS_CODE" == "200" ]] || fail "/api/minecraft/servers returned HTTP $STATUS_CODE"
-python3 - "$TMP_HTML" <<'PY'
-import json
-import sys
-with open(sys.argv[1], encoding="utf-8") as stream:
-    data = json.load(stream)
-for world in ("fabric", "create"):
-    if not isinstance(data.get(world), dict):
-        raise SystemExit(f"Public API did not return {world}")
-    if "isOnline" not in data[world] or "address" not in data[world]:
-        raise SystemExit(f"{world} status response is incomplete")
-print("Public Minecraft status API OK")
-PY
-METRICS_CODE="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$BASE_URL/api/metrics")" \
-    || fail "metrics authorization request failed"
-[[ "$METRICS_CODE" == "302" ]] || fail "/api/metrics should redirect anonymous users to login, got HTTP $METRICS_CODE"
-echo "Public/private API checks passed."
+# Game addresses, technical status and host metrics must not be available anonymously.
+for route in "/Home/Play" "/Home/Server" "/Admin" "/Admin/Users" "/api/minecraft/servers" "/api/minecraft/status" "/api/metrics"; do
+    status_code="$(curl --silent --show-error --output "$TMP_HTML" --write-out '%{http_code}' "$BASE_URL$route")" \
+        || fail "request failed for $route"
+    [[ "$status_code" == "302" ]] || fail "$route should redirect anonymous users to login, got HTTP $status_code"
+done
+echo "Private connection page and technical APIs correctly reject anonymous visitors."

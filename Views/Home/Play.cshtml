@@ -1,0 +1,69 @@
+@model TogetherCraft.Models.PlayViewModel
+@{
+    ViewData["Title"] = "Подключение";
+}
+<div class="wrap py-4">
+    <section class="mb-4">
+        <p class="section-label">ЗАКРЫТЫЙ РАЗДЕЛ</p>
+        <h1 class="display-6 fw-bold">Подключение к игровым мирам</h1>
+        <p class="text-secondary">Привет, @Model.Username. Здесь находятся адреса тех миров, к которым тебе одобрен доступ.</p>
+    </section>
+
+    @if (Model.Servers.Count == 0)
+    {
+        <div class="world-content">
+            <h2 class="h5">Пока нет доступных адресов</h2>
+            <p class="text-secondary mb-0">Проверь выбранные игровые направления или обратись к администратору.</p>
+        </div>
+    }
+    else
+    {
+        <div class="world-grid connection-grid">
+            @foreach (var server in Model.Servers)
+            {
+                <article class="world-card connection-card">
+                    <div class="world-content">
+                        <span class="world-kicker">АДРЕС ПОДКЛЮЧЕНИЯ</span>
+                        <h2>@server.Name</h2>
+                        @if (string.IsNullOrWhiteSpace(server.Address))
+                        {
+                            <p class="text-secondary mb-0">Адрес пока не настроен. Обратись к администратору.</p>
+                        }
+                        else
+                        {
+                            <div class="connection-address-row">
+                                <code class="connection-address">@server.Address</code>
+                                <button class="tc-btn copy-address" type="button" data-address="@server.Address">Копировать</button>
+                            </div>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    }
+
+    <article class="world-card mt-3">
+        <div class="world-content">
+            <span class="world-kicker">НОВОЕ НАПРАВЛЕНИЕ</span>
+            <h2>Factorio</h2>
+            <p class="text-secondary mb-0">Сервер готовится. Адрес появится здесь после запуска.</p>
+        </div>
+    </article>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll(".copy-address").forEach(button => {
+            button.addEventListener("click", async () => {
+                const address = button.dataset.address;
+                try {
+                    await navigator.clipboard.writeText(address);
+                    button.textContent = "Скопировано";
+                } catch {
+                    button.textContent = "Не удалось скопировать";
+                }
+                window.setTimeout(() => button.textContent = "Копировать", 1500);
+            });
+        });
+    </script>
+}

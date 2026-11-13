@@ -55,8 +55,8 @@ jobs:
           APP_DB_PASSWORD=CI_ONLY_APP_PASSWORD_2026
           ADMIN_USERNAME=ci-admin
           ADMIN_PASSWORD=CI-Only-Admin-Password-2026!
-          MICROSOFT_CLIENT_ID=00000000-0000-0000-0000-000000000001
-          MICROSOFT_CLIENT_SECRET=CI_ONLY_NOT_A_REAL_SECRET
+          MICROSOFT_CLIENT_ID=
+          MICROSOFT_CLIENT_SECRET=
           RCON_HOST=host.docker.internal
           RCON_PORT=25575
           RCON_PASSWORD=ci-not-used
@@ -75,6 +75,9 @@ jobs:
           EOF
           chmod 600 "$RUNNER_TEMP/togethercraft-ci.env"
           echo "COMPOSE_ENV_FILE=$RUNNER_TEMP/togethercraft-ci.env" >> "$GITHUB_ENV"
+
+      - name: Validate deployment shell scripts
+        run: bash -n scripts/deploy.sh scripts/bootstrap-db.sh scripts/first-start.sh
 
       - name: Validate Docker Compose configuration
         run: docker compose --env-file "$COMPOSE_ENV_FILE" config --quiet
@@ -99,7 +102,7 @@ jobs:
             -e PGPASSWORD=CI_ONLY_APP_PASSWORD_2026 postgres \
             psql --host 127.0.0.1 --username tc_app --dbname togethercraft \
             --set ON_ERROR_STOP=1 --command \
-            "BEGIN; INSERT INTO tc_users (username, username_normalized, password_hash, minecraft_username, email, wants_fabric, wants_create) VALUES ('ci-probe', 'CI_PROBE', 'test-hash', NULL, 'ci-probe@example.invalid', TRUE, FALSE); UPDATE tc_users SET minecraft_username='CIPlayer', minecraft_uuid='00000000-0000-0000-0000-000000000001' WHERE username_normalized='CI-ADMIN'; ROLLBACK;"
+            "BEGIN; INSERT INTO tc_users (username, username_normalized, password_hash, minecraft_username, email, wants_fabric, wants_create) VALUES ('ci-probe', 'CI_PROBE', 'test-hash', NULL, 'ci-probe@example.invalid', TRUE, FALSE); UPDATE tc_users SET minecraft_username='CIPlayer', minecraft_uuid='00000000-0000-0000-0000-000000000001' WHERE username_normalized='CI-ADMIN'; UPDATE tc_users SET account_role='Admin' WHERE username_normalized='CI-ADMIN'; ROLLBACK;"
 
       - name: Check backend, database and frontend assets
         run: bash scripts/ci-smoke.sh http://127.0.0.1:8080
@@ -122,3 +125,16 @@ jobs:
           if [ -f "$RUNNER_TEMP/togethercraft-ci.env" ]; then
             docker compose --env-file "$RUNNER_TEMP/togethercraft-ci.env" down --volumes --remove-orphans
           fi
+
+      - name: Package tested source snapshot
+        if: success()
+        run: git archive --format=zip --prefix=TogetherCraft/ HEAD -o "$RUNNER_TEMP/TogetherCraft-test-${GITHUB_SHA}.zip"
+
+      - name: Upload Windows test package
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TogetherCraft-test-${{ github.sha }}
+          path: ${{ runner.temp }}/TogetherCraft-test-${{ github.sha }}.zip
+          if-no-files-found: error
+          retention-days: 7

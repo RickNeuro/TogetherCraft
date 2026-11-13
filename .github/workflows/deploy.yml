@@ -1,9 +1,10 @@
 name: TogetherCraft deployment
 
 on:
-  push:
+  workflow_run:
+    workflows: ["TogetherCraft CI"]
+    types: [completed]
     branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,14 +16,29 @@ concurrency:
 jobs:
   deploy:
     name: Deploy tested main to Ubuntu
-    if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, linux, x64, togethercraft-deploy]
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 25
     steps:
-      - name: Checkout tested commit
+      - name: Checkout the exact commit that passed CI
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Confirm this is still the latest main commit
+        id: current
+        env:
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          latest_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          if [[ "$latest_sha" == "$TESTED_SHA" ]]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping stale CI result $TESTED_SHA; current main is $latest_sha."
+          fi
       - name: Deploy and verify health
+        if: steps.current.outputs.deploy == 'true'
         run: bash scripts/deploy.sh
         env:
-          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_SHA: ${{ github.event.workflow_run.head_sha }}
           TOGETHERCRAFT_DEPLOY_DIR: ${{ vars.DEPLOY_PATH }}

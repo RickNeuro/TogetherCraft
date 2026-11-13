@@ -1,3 +1,4 @@
+using System.Data;
 using Npgsql;
 using Microsoft.AspNetCore.Identity;
 using TogetherCraft.Models;
@@ -21,18 +22,43 @@ public sealed class AppDatabase
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync(cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(adminUsername) || string.IsNullOrWhiteSpace(adminPassword))
+        if (string.IsNullOrWhiteSpace(adminUsername))
             return;
+
+        var normalized = adminUsername.Trim().ToUpperInvariant();
+        long? existingId = null;
+        string? existingStatus = null;
+        await using (var check = new NpgsqlCommand(
+            "SELECT id, account_status FROM tc_users WHERE username_normalized = @username LIMIT 1;",
+            connection))
+        {
+            check.Parameters.AddWithValue("username", normalized);
+            await using var reader = await check.ExecuteReaderAsync(cancellationToken);
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                existingId = reader.GetInt64(0);
+                existingStatus = reader.GetString(1);
+            }
+        }
+
+        if (existingId is not null)
+        {
+            if (existingStatus == "Rejected")
+                throw new InvalidOperationException("Нельзя назначить администратором аккаунт с отклонённой заявкой.");
+
+            await using var promote = new NpgsqlCommand(
+                "UPDATE tc_users SET account_role = 'Admin' WHERE id = @id;",
+                connection);
+            promote.Parameters.AddWithValue("id", existingId.Value);
+            await promote.ExecuteNonQueryAsync(cancellationToken);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(adminPassword))
+            throw new InvalidOperationException("Для создания отдельной bootstrap-учётной записи задай ADMIN_PASSWORD. Для существующего аккаунта пароль не требуется.");
 
         if (adminPassword.Length < 14 || (adminPassword.Contains("replace", StringComparison.OrdinalIgnoreCase) || adminPassword.Contains("change_me", StringComparison.OrdinalIgnoreCase) || adminPassword.Contains("changeme", StringComparison.OrdinalIgnoreCase) || adminPassword.Contains("example", StringComparison.OrdinalIgnoreCase)))
             throw new InvalidOperationException("ADMIN_PASSWORD должен быть заменён на уникальный пароль длиной не менее 14 символов.");
-
-        var normalized = adminUsername.Trim().ToUpperInvariant();
-        await using var check = new NpgsqlCommand("SELECT id FROM tc_users WHERE username_normalized = @username", connection);
-        check.Parameters.AddWithValue("username", normalized);
-        var existing = await check.ExecuteScalarAsync(cancellationToken);
-        if (existing is not null)
-            return;
 
         var admin = new UserAccount
         {
@@ -123,6 +149,98 @@ public sealed class AppDatabase
         command.Parameters.AddWithValue("username", username);
         command.Parameters.AddWithValue("id", id);
         return await command.ExecuteNonQueryAsync(cancellationToken) == 1;
+    }
+
+    public async Task<IReadOnlyList<AdminUserViewModel>> GetUsersAsync(CancellationToken cancellationToken = default)
+    {
+        var users = new List<AdminUserViewModel>();
+        await using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT id, username, email, minecraft_username, account_role, account_status, created_at_utc
+            FROM tc_users
+            ORDER BY CASE WHEN account_role = 'Admin' THEN 0 ELSE 1 END, created_at_utc ASC;
+            """, connection);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            users.Add(new AdminUserViewModel
+            {
+                Id = reader.GetInt64(0),
+                Username = reader.GetString(1),
+                Email = reader.IsDBNull(2) ? null : reader.GetString(2),
+                MinecraftUsername = reader.IsDBNull(3) ? null : reader.GetString(3),
+                Role = reader.GetString(4),
+                Status = reader.GetString(5),
+                CreatedAtUtc = reader.GetDateTime(6)
+            });
+        }
+        return users;
+    }
+
+    public async Task<bool> SetUserRoleAsync(long id, string role, CancellationToken cancellationToken = default)
+    {
+        if (role is not ("Admin" or "User"))
+            throw new ArgumentOutOfRangeException(nameof(role));
+
+        await using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+
+        // Serialize role changes so two administrators cannot remove the last admin simultaneously.
+        await using (var lockCommand = new NpgsqlCommand(
+            "LOCK TABLE tc_users IN SHARE ROW EXCLUSIVE MODE;", connection, transaction))
+        {
+            await lockCommand.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        string? currentRole = null;
+        string? currentStatus = null;
+        await using (var find = new NpgsqlCommand(
+            "SELECT account_role, account_status FROM tc_users WHERE id = @id FOR UPDATE;", connection, transaction))
+        {
+            find.Parameters.AddWithValue("id", id);
+            await using var reader = await find.ExecuteReaderAsync(cancellationToken);
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                currentRole = reader.GetString(0);
+                currentStatus = reader.GetString(1);
+            }
+        }
+
+        if (currentRole is null || currentStatus == "Rejected")
+            return false;
+
+        if (currentRole == role)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return true;
+        }
+
+        if (role == "User" && currentRole == "Admin")
+        {
+            await using var count = new NpgsqlCommand(
+                "SELECT COUNT(*) FROM tc_users WHERE account_role = 'Admin';", connection, transaction);
+            var adminCount = Convert.ToInt32(await count.ExecuteScalarAsync(cancellationToken));
+            if (adminCount <= 1)
+                return false;
+        }
+
+        await using (var update = new NpgsqlCommand("""
+            UPDATE tc_users
+            SET account_role = @role
+            WHERE id = @id;
+            """, connection, transaction))
+        {
+            update.Parameters.AddWithValue("role", role);
+            update.Parameters.AddWithValue("id", id);
+            var updated = await update.ExecuteNonQueryAsync(cancellationToken);
+            if (updated != 1)
+                return false;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return true;
     }
 
     public async Task<IReadOnlyList<UserAccount>> GetPendingUsersAsync(CancellationToken cancellationToken = default)

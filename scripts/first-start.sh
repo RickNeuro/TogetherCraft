@@ -58,49 +58,45 @@ ensure_secret() {
     return 1
 }
 
-admin_password_generated=0
 if [[ "$created_env" -eq 1 ]]; then
     ensure_secret POSTGRES_PASSWORD || true
     ensure_secret APP_DB_PASSWORD || true
-    if ensure_secret ADMIN_PASSWORD; then
-        admin_password_generated=1
-    fi
 else
     if is_placeholder POSTGRES_PASSWORD; then
         echo "В существующем .env нет рабочего POSTGRES_PASSWORD. Укажи пароль текущей базы вручную."
-        exit 1
-    fi
-    if is_placeholder ADMIN_PASSWORD; then
-        echo "В существующем .env нет рабочего ADMIN_PASSWORD. Укажи пароль текущего администратора вручную."
         exit 1
     fi
     ensure_secret APP_DB_PASSWORD || true
 fi
 
 chmod 600 .env
+admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
 admin_password="$(grep -E '^ADMIN_PASSWORD=' .env | tail -n 1 | cut -d= -f2-)"
-if [[ "$(printf '%s' "$admin_password" | wc -c)" -lt 14 ]]; then
-    echo "ADMIN_PASSWORD должен содержать не менее 14 символов."
-    exit 1
-fi
-
 echo "Проверяю конфигурацию Docker Compose..."
 "${DOCKER[@]}" compose config --quiet
 
-echo "Запускаю PostgreSQL, настройку схемы и TogetherCraft..."
+echo "Запускаю PostgreSQL и применяю миграции базы..."
+"${DOCKER[@]}" compose up -d postgres
+"${DOCKER[@]}" compose run --rm db-bootstrap
+
+echo "Запускаю TogetherCraft..."
 "${DOCKER[@]}" compose up --build -d
 
 echo
 "${DOCKER[@]}" compose ps
 echo
 echo "Локальный адрес: http://127.0.0.1:8080"
-if [[ "$admin_password_generated" -eq 1 ]]; then
-    admin_username="$(grep -E '^ADMIN_USERNAME=' .env | tail -n 1 | cut -d= -f2-)"
-    echo "Логин администратора: $admin_username"
-    echo "Временный пароль администратора (сохрани его сейчас):"
-    echo "$admin_password"
+if [[ -n "$admin_username" ]]; then
+    echo "Логин bootstrap: $admin_username"
+    if [[ -z "$admin_password" ]]; then
+        echo "Если такой аккаунт уже есть, он будет назначен Admin с прежним паролем."
+        echo "Если аккаунта нет, задай сильный ADMIN_PASSWORD в .env (не менее 14 символов) и перезапусти."
+    else
+        echo "Если аккаунт уже существует, будет сохранён его прежний пароль; иначе он будет создан с ADMIN_PASSWORD."
+    fi
+    echo "После проверки очисти ADMIN_USERNAME в .env, чтобы bootstrap-настройка не влияла на дальнейшие изменения ролей."
 else
-    echo "Учётные данные администратора сохранены в существующем .env."
+    echo "Отдельная учётная запись admin не создаётся: ADMIN_USERNAME пуст."
 fi
 echo
 echo "Для регистрации заполни MICROSOFT_CLIENT_ID и MICROSOFT_CLIENT_SECRET."

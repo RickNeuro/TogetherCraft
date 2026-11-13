@@ -1,0 +1,50 @@
+name: Recover TogetherCraft PostgreSQL
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/recover-postgres.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: togethercraft-postgres-recovery
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    name: Start the existing PostgreSQL container
+    runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 5
+    steps:
+      - name: Start PostgreSQL and verify readiness without changing Docker networks
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          docker info >/dev/null
+
+          if ! docker inspect togethercraft-postgres >/dev/null 2>&1; then
+            echo "Container togethercraft-postgres was not found. No volume or container was created." >&2
+            exit 1
+          fi
+
+          running="$(docker inspect --format '{{.State.Running}}' togethercraft-postgres)"
+          if [[ "$running" != "true" ]]; then
+            docker start togethercraft-postgres
+          fi
+
+          for attempt in $(seq 1 40); do
+            if docker exec togethercraft-postgres pg_isready --username togethercraft --dbname togethercraft >/dev/null 2>&1; then
+              echo "PostgreSQL is accepting connections."
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker inspect togethercraft-postgres || true
+          docker logs --tail 100 togethercraft-postgres || true
+          echo "PostgreSQL did not become ready. No data volume was removed." >&2
+          exit 1

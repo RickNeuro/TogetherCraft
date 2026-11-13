@@ -1,113 +1,101 @@
+@inject IConfiguration Configuration
 @{
     ViewData["Title"] = "Главная";
-    var isAuthenticated = User.Identity?.IsAuthenticated == true;
-    var isAdmin = isAuthenticated && User.IsInRole("Admin");
-    var isPending = isAuthenticated && User.HasClaim("access_status", "Pending");
-    var canPlay = isAdmin || (isAuthenticated && User.HasClaim("access_status", "Approved"));
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var pending = signedIn && User.HasClaim("access_status", "Pending");
+    var approved = signedIn && User.HasClaim("access_status", "Approved");
+    var registrationEnabled = !string.IsNullOrWhiteSpace(Configuration["MicrosoftMinecraft:ClientId"])
+        && !string.IsNullOrWhiteSpace(Configuration["MicrosoftMinecraft:ClientSecret"]);
+    var worldActionUrl = !signedIn
+        ? Url.Action(registrationEnabled ? "Register" : "Login", "Account")
+        : pending
+            ? Url.Action("Waiting", "Account")
+            : approved
+                ? Url.Action("Play", "Home")
+                : Url.Action("Login", "Account");
 }
-<div class="wrap">
-    <section class="hero" id="about">
+<div class="wrap home-page" id="tc-landing">
+    <section class="hero" id="home">
         <div class="hero-copy-block">
-            <p class="eyebrow">Minecraft · Factorio · совместная игра</p>
-            <h1>Играем вместе. Создаём больше.</h1>
-            <p class="hero-copy">Строим миры, исследуем неизведанное и автоматизируем производство. TogetherCraft объединяет разные игровые проекты и людей, которым интересно создавать что-то вместе.</p>
-            <div class="hero-actions" id="apply">
-                @if (!isAuthenticated)
-                {
-                    <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Register">Стать участником</a>
-                    <a class="tc-btn" asp-controller="Account" asp-action="Login">Войти</a>
-                }
-                else if (isAdmin)
-                {
-                    <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Play">Адреса игровых миров</a>
-                    <a class="tc-btn" asp-controller="Admin" asp-action="Index">Заявки</a>
-                }
-                else if (isPending)
-                {
-                    <a class="tc-btn tc-btn-primary" asp-controller="Account" asp-action="Waiting">Моя заявка</a>
-                }
-                else if (canPlay)
-                {
-                    <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Play">Адреса игровых миров</a>
-                }
+            <p class="eyebrow"><span class="eyebrow-mark"></span> ИГРОВОЕ СООБЩЕСТВО</p>
+            <h1>Выбирай своё<br /><span>приключение</span></h1>
+            <p class="hero-copy">Три разных мира, одна идея — играть, строить и создавать вместе. От спокойного выживания до сложных механизмов и огромных фабрик.</p>
+            <div class="hero-actions">
+                <a class="tc-btn tc-btn-primary" href="#worlds">Выбрать мир <span aria-hidden="true">→</span></a>
+                <a class="tc-btn tc-btn-secondary" href="#team">О сообществе</a>
+            </div>
+            <div class="hero-proof">
+                <span><i></i> Совместные постройки</span>
+                <span><i></i> Свои игровые истории</span>
+                <span><i></i> Люди, а не рейтинги</span>
             </div>
         </div>
-        <img class="hero-image" src="~/img/hero-fox.jpg" alt="Лиса в мире Minecraft на закате" />
+        <div class="hero-visual" role="img" aria-label="TogetherCraft — одна команда, много историй">
+            <span class="hero-panel-tag">TOGETHERCRAFT / WORLDS</span>
+            <strong class="hero-panel-caption">ОДНА КОМАНДА — МНОГО ИСТОРИЙ</strong>
+        </div>
     </section>
-
     <section class="worlds-section" id="worlds">
         <div class="section-head">
-            <div>
-                <div class="section-label">Игровые направления</div>
-                <h2>Выбирай свой мир</h2>
-            </div>
-            <p class="section-desc">Разные игры — одно сообщество.</p>
+            <div><div class="section-label">ВО ЧТО ИГРАЕМ</div><h2>Три мира. Выбирай свой.</h2></div>
+            <p class="section-desc">Каждое направление со своим характером, темпом и возможностями.</p>
         </div>
-
         <div class="world-grid">
-            <article class="world-card">
-                <div class="world-art world-art-fabric" role="img" aria-label="Иллюстрация мира Minecraft Fabric">
-                    <span class="world-art-label">MINECRAFT</span>
-                    <span class="world-art-number">01</span>
-                </div>
+            <article class="world-card world-card-fabric">
+                <div class="world-art"><span class="world-art-number">01 / SURVIVAL</span><span class="world-art-symbol world-symbol-block" aria-hidden="true">◆</span></div>
                 <div class="world-content">
-                    <span class="world-kicker">ВЫЖИВАНИЕ И ИССЛЕДОВАНИЕ</span>
-                    <h3>Minecraft · Fabric</h3>
-                    <p>Совместное выживание, строительство, исследование мира и собственные проекты.</p>
-                    <span class="world-detail">Основной игровой мир</span>
+                    <span class="world-kicker">MINECRAFT · VANILLA</span><h3>Спокойное выживание</h3>
+                    <p>Исследуем мир, строим базы и создаём общие места, куда хочется возвращаться.</p>
+                    <a class="world-more" href="@worldActionUrl">Исследовать мир <span aria-hidden="true">→</span></a>
                 </div>
             </article>
-
-            <article class="world-card">
-                <div class="world-art world-art-create" role="img" aria-label="Иллюстрация мира Minecraft Create">
-                    <span class="world-art-label">CREATE</span>
-                    <span class="world-art-number">02</span>
-                </div>
+            <article class="world-card world-card-create">
+                <div class="world-art"><span class="world-art-number">02 / ENGINEERING</span><span class="world-art-symbol world-symbol-gear" aria-hidden="true">⚙</span></div>
                 <div class="world-content">
-                    <span class="world-kicker">МЕХАНИЗМЫ И АВТОМАТИЗАЦИЯ</span>
-                    <h3>Minecraft · Create</h3>
-                    <p>Механизмы, поезда, производственные цепочки и большие инженерные проекты.</p>
-                    <span class="world-detail">Технический игровой мир</span>
+                    <span class="world-kicker">MINECRAFT · CREATE</span><h3>Инженерия и механизмы</h3>
+                    <p>Проектируем машины, автоматизируем процессы и собираем большие технические проекты.</p>
+                    <a class="world-more" href="@worldActionUrl">Изучить механизмы <span aria-hidden="true">→</span></a>
                 </div>
             </article>
-
-            <article class="world-card">
-                <div class="world-art world-art-factorio" role="img" aria-label="Иллюстрация Factorio">
-                    <span class="world-art-label">FACTORIO</span>
-                    <span class="world-art-number">03</span>
-                </div>
+            <article class="world-card world-card-factorio">
+                <div class="world-art"><span class="world-art-number">03 / INDUSTRY</span><span class="world-art-symbol world-symbol-factory" aria-hidden="true">⬡</span></div>
                 <div class="world-content">
-                    <span class="world-kicker">ФАБРИКИ И ЛОГИСТИКА</span>
-                    <h3>Factorio</h3>
-                    <p>Развиваем производство, строим конвейерные сети и вместе оптимизируем фабрики.</p>
-                    <span class="world-detail">Новое направление TogetherCraft</span>
+                    <span class="world-kicker">FACTORIO</span><h3>Фабрика растёт</h3>
+                    <p>Добываем ресурсы, связываем производство и превращаем хаос в работающую систему.</p>
+                    <a class="world-more" href="#team">Скоро подробнее <span aria-hidden="true">→</span></a>
                 </div>
             </article>
         </div>
-        <p class="worlds-access-note">Адреса подключения доступны только после одобрения заявки.</p>
     </section>
-
+    <section class="gallery-section" id="gallery">
+        <div class="section-head">
+            <div><div class="section-label">ИЗ ЖИЗНИ СООБЩЕСТВА</div><h2>Галерея</h2></div>
+            <p class="section-desc">Постройки, механизмы и проекты участников.</p>
+        </div>
+        <div class="gallery-grid">
+            <article class="gallery-tile gallery-tile-build"><span>01 / MINECRAFT</span><strong>Совместные постройки</strong></article>
+            <article class="gallery-tile gallery-tile-create"><span>02 / CREATE</span><strong>Механизмы и поезда</strong></article>
+            <article class="gallery-tile gallery-tile-factorio"><span>03 / FACTORIO</span><strong>Фабричные проекты</strong></article>
+        </div>
+    </section>
+    <section class="team-section" id="team">
+        <div class="team-mark"><span>TC</span></div>
+        <div class="team-copy">
+            <div class="section-label">СООБЩЕСТВО</div><h2>Люди, которые создают <span>вместе.</span></h2>
+            <p>TogetherCraft — это игроки, которым интересно не просто заходить на сервер, а строить общие миры и доводить идеи до результата.</p>
+        </div>
+        <a class="team-link" href="https://discord.gg/V6RnZ59VCe" target="_blank" rel="noopener noreferrer">Наш Discord <span aria-hidden="true">↗</span></a>
+    </section>
     <section class="faq" id="faq">
-        <div class="section-label">FAQ</div>
-        <h2>Частые вопросы</h2>
-        <p class="faq-intro">Коротко о том, как устроен TogetherCraft.</p>
+        <div class="faq-heading-row">
+            <div><div class="section-label">FAQ</div><h2>Частые вопросы</h2></div>
+            <p>Коротко о том, как устроен TogetherCraft.</p>
+        </div>
         <div class="faq-list">
-            <details open>
-                <summary>Как попасть в сообщество?</summary>
-                <div class="faq-answer">Создай аккаунт, подтверди профиль Minecraft через Microsoft и отправь заявку. После проверки администратор откроет доступ к выбранным игровым мирам.</div>
-            </details>
-            <details>
-                <summary>Какие игровые направления есть?</summary>
-                <div class="faq-answer">Сейчас доступны два направления Minecraft: Fabric и Create. Factorio — новое направление, которое мы готовим к запуску.</div>
-            </details>
-            <details>
-                <summary>Когда я получу адреса подключения?</summary>
-                <div class="faq-answer">После одобрения заявки адреса доступных игровых миров появятся в личном разделе «Подключение».</div>
-            </details>
-            <details>
-                <summary>Можно ли строить собственные проекты?</summary>
-                <div class="faq-answer">Да. TogetherCraft создан для совместной игры: можно строить, исследовать, объединяться в команды и развивать общие проекты.</div>
-            </details>
+            <details><summary>Как присоединиться к TogetherCraft?</summary><div class="faq-answer">Создай аккаунт и отправь заявку. После одобрения администратора откроется доступ к выбранным игровым мирам.</div></details>
+            <details><summary>Какие игровые направления доступны?</summary><div class="faq-answer">В Minecraft есть спокойный мир Vanilla и отдельный технический мир с Create. Factorio представлен как следующее направление сообщества.</div></details>
+            <details><summary>Когда появятся адреса подключения?</summary><div class="faq-answer">После одобрения заявки адреса доступных игровых миров появятся в личном разделе «Подключение».</div></details>
+            <details><summary>Можно ли строить собственные проекты?</summary><div class="faq-answer">Да. Можно строить свои базы, объединяться в команды, автоматизировать производство и развивать общие проекты.</div></details>
         </div>
     </section>
 </div>

@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: togethercraft-postgres
+    container_name: ${POSTGRES_CONTAINER_NAME:-togethercraft-postgres}
     restart: unless-stopped
     environment:
       POSTGRES_DB: togethercraft
@@ -39,10 +39,11 @@ services:
       - backend
 
   togethercraft-web:
+    image: togethercraft-web:${APP_VERSION:-latest}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: togethercraft-web
+    container_name: ${WEB_CONTAINER_NAME:-togethercraft-web}
     restart: unless-stopped
     depends_on:
       postgres:
@@ -55,9 +56,8 @@ services:
       MicrosoftMinecraft__ClientId: ${MICROSOFT_CLIENT_ID:-}
       MicrosoftMinecraft__ClientSecret: ${MICROSOFT_CLIENT_SECRET:-}
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=togethercraft;Username=tc_app;Password=${APP_DB_PASSWORD:?Create .env and set APP_DB_PASSWORD}
-      ForwardedHeaders__KnownProxy: 172.30.0.10
-      Admin__Username: ${ADMIN_USERNAME:-admin}
-      Admin__Password: ${ADMIN_PASSWORD:?Create .env and set a strong ADMIN_PASSWORD}
+      Admin__Username: ${ADMIN_USERNAME:-}
+      Admin__Password: ${ADMIN_PASSWORD:-}
       MinecraftRcon__Host: ${RCON_HOST:-host.docker.internal}
       MinecraftRcon__Port: ${RCON_PORT:-25575}
       MinecraftRcon__Password: ${RCON_PASSWORD:-}
@@ -75,7 +75,7 @@ services:
       DataProtection__KeysPath: /var/dpkeys
       Prometheus__BaseUrl: http://prometheus:9090
     ports:
-      - "8080:8080"
+      - "${WEB_BIND_ADDRESS:-0.0.0.0}:${WEB_BIND_PORT:-8080}:8080"
     volumes:
       - data-protection-keys:/var/dpkeys
     extra_hosts:
@@ -86,7 +86,7 @@ services:
 
   node-exporter:
     image: prom/node-exporter:v1.12.1
-    container_name: togethercraft-node-exporter
+    container_name: ${NODE_EXPORTER_CONTAINER_NAME:-togethercraft-node-exporter}
     restart: unless-stopped
     command:
       - --path.procfs=/host/proc
@@ -98,13 +98,13 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro,rslave
     ports:
-      - "127.0.0.1:9100:9100"
+      - "${NODE_EXPORTER_BIND_ADDRESS:-127.0.0.1}:${NODE_EXPORTER_BIND_PORT:-9100}:9100"
     networks:
       - backend
 
   prometheus:
     image: prom/prometheus:v3.15.0
-    container_name: togethercraft-prometheus
+    container_name: ${PROMETHEUS_CONTAINER_NAME:-togethercraft-prometheus}
     restart: unless-stopped
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -114,7 +114,7 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     ports:
-      - "127.0.0.1:9090:9090"
+      - "${PROMETHEUS_BIND_ADDRESS:-127.0.0.1}:${PROMETHEUS_BIND_PORT:-9090}:9090"
     depends_on:
       - node-exporter
     networks:
@@ -122,7 +122,7 @@ services:
 
   caddy:
     image: caddy:2-alpine
-    container_name: togethercraft-caddy
+    container_name: ${CADDY_CONTAINER_NAME:-togethercraft-caddy}
     restart: unless-stopped
     profiles: ["public"]
     depends_on:
@@ -139,8 +139,7 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     networks:
-      frontend:
-        ipv4_address: 172.30.0.10
+      - frontend
 
 volumes:
   postgres-data:
@@ -151,10 +150,5 @@ volumes:
 
 networks:
   frontend:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.30.0.0/24
   backend:
-    driver: bridge
     internal: true
