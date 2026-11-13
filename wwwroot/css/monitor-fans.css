@@ -90,7 +90,7 @@
     transform-box: fill-box;
     transform-origin: center;
     animation: fan-rotor-spin 1s linear infinite;
-    animation-play-state: paused;
+    animation-play-state: running;
 }
 
 @keyframes fan-rotor-spin {
