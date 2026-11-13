@@ -7,6 +7,8 @@ test('homepage follows the TogetherCraft concept and keeps private addresses hid
   expect(response && response.status()).toBe(200);
 
   await expect(page.locator('.brand')).toContainText('TogetherCraft');
+  await expect(page.locator('.nav-actions .register-link')).toHaveCount(0);
+  await expect(page.locator('.hero-actions a').first()).toHaveText(/Войти/);
   await expect(page.locator('.hero h1')).toBeVisible();
   await expect(page.locator('.world-card')).toHaveCount(3);
   for (const direction of ['Minecraft · Fabric', 'Minecraft · Create', 'Factorio']) {
@@ -48,12 +50,15 @@ test('homepage has no horizontal overflow on desktop and mobile widths', async (
   }
 });
 
-test('login and registration pages render forms', async ({ page }) => {
-  for (const route of ['/Account/Login', '/Account/Register']) {
-    const response = await page.goto(route);
-    expect(response && response.status(), route + ' should return HTTP 200').toBe(200);
-    await expect(page.locator('form').first()).toBeVisible();
-  }
+test('login remains available while registration is disabled without Microsoft OAuth', async ({ page }) => {
+  const loginResponse = await page.goto('/Account/Login');
+  expect(loginResponse && loginResponse.status()).toBe(200);
+  await expect(page.locator('form').first()).toBeVisible();
+
+  const registerResponse = await page.goto('/Account/Register');
+  expect(registerResponse && registerResponse.status()).toBe(200);
+  await expect(page.getByRole('heading', { name: 'Регистрация временно отключена' })).toBeVisible();
+  await expect(page.locator('form')).toHaveCount(0);
 });
 
 test('connection page and status endpoints are private', async ({ request }) => {
