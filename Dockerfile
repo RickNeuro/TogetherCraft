@@ -3,6 +3,10 @@ WORKDIR /src
 COPY TogetherCraft.csproj ./
 RUN dotnet restore TogetherCraft.csproj
 COPY . ./
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && bash scripts/download-game-assets.sh
 RUN dotnet publish TogetherCraft.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
