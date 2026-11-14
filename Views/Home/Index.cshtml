@@ -1,25 +1,5 @@
-@inject IConfiguration Configuration
 @{
     ViewData["Title"] = "Главная";
-    var signedIn = User.Identity?.IsAuthenticated == true;
-    var pending = signedIn && User.HasClaim("access_status", "Pending");
-    var approved = signedIn && User.HasClaim("access_status", "Approved");
-    var registrationEnabled = !string.IsNullOrWhiteSpace(Configuration["MicrosoftMinecraft:ClientId"])
-        && !string.IsNullOrWhiteSpace(Configuration["MicrosoftMinecraft:ClientSecret"]);
-    var vanillaActionUrl = !signedIn
-        ? (registrationEnabled ? Url.Action("Register", "Account") : Url.Action("Login", "Account", new { returnUrl = Url.Action("Vanilla", "Home") }))
-        : pending
-            ? Url.Action("Waiting", "Account")
-            : approved
-                ? Url.Action("Vanilla", "Home")
-                : Url.Action("Login", "Account");
-    var createActionUrl = !signedIn
-        ? (registrationEnabled ? Url.Action("Register", "Account") : Url.Action("Login", "Account", new { returnUrl = Url.Action("Create", "Home") }))
-        : pending
-            ? Url.Action("Waiting", "Account")
-            : approved
-                ? Url.Action("Create", "Home")
-                : Url.Action("Login", "Account");
 }
 <div class="wrap home-page" id="tc-landing">
     <section class="hero" id="home">
@@ -28,8 +8,8 @@
             <h1>Выбирай своё<br /><span>приключение</span></h1>
             <p class="hero-copy">Три разных мира, одна идея — играть, строить и создавать вместе. От спокойного выживания до сложных механизмов и огромных фабрик.</p>
             <div class="hero-actions">
-                <a class="tc-btn tc-btn-primary" href="#worlds">Выбрать мир <span aria-hidden="true">→</span></a>
-                <a class="tc-btn tc-btn-secondary" href="#team">О сообществе</a>
+                <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Worlds">Выбрать мир <span aria-hidden="true">→</span></a>
+                <a class="tc-btn tc-btn-secondary" asp-controller="Home" asp-action="Team">О сообществе</a>
             </div>
             <div class="hero-proof">
                 <span><i></i> Совместные постройки</span>
@@ -42,67 +22,24 @@
             <strong class="hero-panel-caption">ОДНА КОМАНДА — МНОГО ИСТОРИЙ</strong>
         </div>
     </section>
-    <section class="worlds-section" id="worlds">
+
+    <section class="home-worlds-preview">
         <div class="section-head">
             <div><div class="section-label">ВО ЧТО ИГРАЕМ</div><h2>Три мира. Выбирай свой.</h2></div>
-            <p class="section-desc">Каждое направление со своим характером, темпом и возможностями.</p>
+            <a class="section-more-link" asp-controller="Home" asp-action="Worlds">Все игровые миры <span aria-hidden="true">→</span></a>
         </div>
-        <div class="world-grid">
-            <article class="world-card world-card-fabric">
-                <div class="world-art"><span class="world-art-number">01 / SURVIVAL</span><span class="world-art-symbol world-symbol-block" aria-hidden="true">◆</span></div>
-                <div class="world-content">
-                    <span class="world-kicker">MINECRAFT · VANILLA</span><h3>Спокойное выживание</h3>
-                    <p>Исследуем мир, строим базы и создаём общие места, куда хочется возвращаться.</p>
-                    <a class="world-more" href="@vanillaActionUrl">Исследовать мир <span aria-hidden="true">→</span></a>
-                </div>
-            </article>
-            <article class="world-card world-card-create">
-                <div class="world-art"><span class="world-art-number">02 / ENGINEERING</span><span class="world-art-symbol world-symbol-gear" aria-hidden="true">⚙</span></div>
-                <div class="world-content">
-                    <span class="world-kicker">MINECRAFT · CREATE</span><h3>Инженерия и механизмы</h3>
-                    <p>Проектируем машины, автоматизируем процессы и собираем большие технические проекты.</p>
-                    <a class="world-more" href="@createActionUrl">Изучить механизмы <span aria-hidden="true">→</span></a>
-                </div>
-            </article>
-            <article class="world-card world-card-factorio">
-                <div class="world-art"><span class="world-art-number">03 / INDUSTRY</span><span class="world-art-symbol world-symbol-factory" aria-hidden="true">⬡</span></div>
-                <div class="world-content">
-                    <span class="world-kicker">FACTORIO</span><h3>Фабрика растёт</h3>
-                    <p>Добываем ресурсы, связываем производство и превращаем хаос в работающую систему.</p>
-                    <a class="world-more" href="#team">Скоро подробнее <span aria-hidden="true">→</span></a>
-                </div>
-            </article>
+        <div class="home-worlds-strip">
+            <div><span class="world-dot world-dot-vanilla"></span><strong>Minecraft · Vanilla</strong><small>Классическое выживание</small></div>
+            <div><span class="world-dot world-dot-create"></span><strong>Minecraft · Create</strong><small>Механизмы и инженерия</small></div>
+            <div><span class="world-dot world-dot-factorio"></span><strong>Factorio</strong><small>Фабрики и автоматизация</small></div>
         </div>
     </section>
-    <section class="gallery-section" id="gallery">
-        <div class="section-head">
-            <div><div class="section-label">ИЗ ЖИЗНИ СООБЩЕСТВА</div><h2>Галерея</h2></div>
-            <p class="section-desc">Постройки, механизмы и проекты участников.</p>
+
+    <section class="home-gallery-preview">
+        <div>
+            <div class="section-label">ИЗ ЖИЗНИ СООБЩЕСТВА</div>
+            <h2>Постройки, механизмы и проекты.</h2>
         </div>
-        <div class="gallery-grid">
-            <article class="gallery-tile gallery-tile-build"><span>01 / MINECRAFT</span><strong>Совместные постройки</strong></article>
-            <article class="gallery-tile gallery-tile-create"><span>02 / CREATE</span><strong>Механизмы и поезда</strong></article>
-            <article class="gallery-tile gallery-tile-factorio"><span>03 / FACTORIO</span><strong>Фабричные проекты</strong></article>
-        </div>
-    </section>
-    <section class="team-section" id="team">
-        <div class="team-mark"><span>TC</span></div>
-        <div class="team-copy">
-            <div class="section-label">СООБЩЕСТВО</div><h2>Люди, которые создают <span>вместе.</span></h2>
-            <p>TogetherCraft — это игроки, которым интересно не просто заходить на сервер, а строить общие миры и доводить идеи до результата.</p>
-        </div>
-        <a class="team-link" href="https://discord.gg/V6RnZ59VCe" target="_blank" rel="noopener noreferrer">Наш Discord <span aria-hidden="true">↗</span></a>
-    </section>
-    <section class="faq" id="faq">
-        <div class="faq-heading-row">
-            <div><div class="section-label">FAQ</div><h2>Частые вопросы</h2></div>
-            <p>Коротко о том, как устроен TogetherCraft.</p>
-        </div>
-        <div class="faq-list">
-            <details><summary>Как присоединиться к TogetherCraft?</summary><div class="faq-answer">Создай аккаунт и отправь заявку. После одобрения администратора откроется доступ к выбранным игровым мирам.</div></details>
-            <details><summary>Какие игровые направления доступны?</summary><div class="faq-answer">В Minecraft есть спокойный мир Vanilla и отдельный технический мир с Create. Factorio представлен как следующее направление сообщества.</div></details>
-            <details><summary>Когда появятся адреса подключения?</summary><div class="faq-answer">После одобрения заявки адреса доступных игровых миров появятся в личном разделе «Подключение».</div></details>
-            <details><summary>Можно ли строить собственные проекты?</summary><div class="faq-answer">Да. Можно строить свои базы, объединяться в команды, автоматизировать производство и развивать общие проекты.</div></details>
-        </div>
+        <a class="world-action" asp-controller="Home" asp-action="Gallery">Открыть галерею <span aria-hidden="true">→</span></a>
     </section>
 </div>
