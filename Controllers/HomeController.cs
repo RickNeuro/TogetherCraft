@@ -48,7 +48,7 @@ public sealed class HomeController : Controller
                 .Where(path => allowedExtensions.Contains(
                     Path.GetExtension(path),
                     StringComparer.OrdinalIgnoreCase))
-                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .OrderByDescending(System.IO.File.GetLastWriteTimeUtc)
                 .Select(Path.GetFileName)
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .Select(name => name!)
