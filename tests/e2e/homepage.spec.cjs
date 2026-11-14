@@ -13,8 +13,8 @@ test('homepage matches the agreed TogetherCraft layout and keeps private address
   for (const title of ['Спокойное выживание', 'Инженерия и механизмы', 'Фабрика растёт']) {
     await expect(page.locator('.world-card').filter({ hasText: title })).toHaveCount(1);
   }
-  await expect(page.getByRole('link', { name: /Исследовать мир/ })).toHaveAttribute('href', '/Home/Vanilla');
-  await expect(page.getByRole('link', { name: /Изучить механизмы/ })).toHaveAttribute('href', '/Home/Create');
+  await expect(page.getByRole('link', { name: /Исследовать мир/ })).toHaveAttribute('href', /returnUrl=.*Home%2FVanilla/);
+  await expect(page.getByRole('link', { name: /Изучить механизмы/ })).toHaveAttribute('href', /returnUrl=.*Home%2FCreate/);
   await expect(page.locator('#gallery .gallery-tile')).toHaveCount(3);
   await expect(page.locator('#team')).toBeVisible();
   await expect(page.locator('#faq details')).toHaveCount(4);
