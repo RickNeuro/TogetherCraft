@@ -1,0 +1,53 @@
+@model List<string>
+@{
+    ViewData["Title"] = "Галерея";
+}
+<section class="internal-page gallery-page">
+    <header class="internal-page-header">
+        <div>
+            <div class="section-label">ИЗ ЖИЗНИ СООБЩЕСТВА</div>
+            <h1>Галерея</h1>
+            <p class="internal-page-lead">Скриншоты построек, механизмов и фабрик участников TogetherCraft.</p>
+        </div>
+    </header>
+
+    @if (Model.Count == 0)
+    {
+        <div class="gallery-empty-state">
+            <div class="gallery-empty-mark" aria-hidden="true">
+                <svg viewBox="0 0 64 64">
+                    <path d="M9 17h10l4-6h18l4 6h10a4 4 0 0 1 4 4v29a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V21a4 4 0 0 1 4-4Z" fill="none" stroke="currentColor" stroke-width="3"/>
+                    <circle cx="32" cy="34" r="12" fill="none" stroke="currentColor" stroke-width="3"/>
+                    <circle cx="32" cy="34" r="5" fill="currentColor"/>
+                </svg>
+            </div>
+            <h2>Галерея пока наполняется</h2>
+            <p>Здесь появятся настоящие скриншоты миров и проектов участников.</p>
+        </div>
+    }
+    else
+    {
+        <div class="gallery-photo-grid">
+            @foreach (var file in Model)
+            {
+                var title = System.IO.Path.GetFileNameWithoutExtension(file).Replace('-', ' ').Replace('_', ' ');
+                var imageUrl = Url.Content("~/images/gallery/" + Uri.EscapeDataString(file));
+                <button class="gallery-photo" type="button"
+                        data-gallery-open
+                        data-gallery-src="@imageUrl"
+                        data-gallery-title="@title">
+                    <img src="@imageUrl" alt="@title" loading="lazy" />
+                    <span>@title</span>
+                </button>
+            }
+        </div>
+    }
+</section>
+
+<dialog class="gallery-lightbox" id="gallery-lightbox" aria-label="Просмотр изображения">
+    <form method="dialog">
+        <button class="gallery-lightbox-close" type="submit" aria-label="Закрыть">×</button>
+    </form>
+    <img id="gallery-lightbox-image" alt="" />
+    <p id="gallery-lightbox-caption"></p>
+</dialog>
