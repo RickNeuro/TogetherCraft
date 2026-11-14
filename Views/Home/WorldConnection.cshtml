@@ -1,0 +1,49 @@
+@model TogetherCraft.Models.WorldConnectionViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+<div class="wrap internal-page world-connection-page py-5">
+    <a class="back-to-worlds" asp-controller="Home" asp-action="Play">← Все доступные игровые миры</a>
+
+    <header class="internal-page-header">
+        <div>
+            <p class="section-label">@Model.Kicker</p>
+            <h1>@Model.Title</h1>
+            <p class="internal-page-lead">Привет, @Model.Username. @Model.Description</p>
+        </div>
+    </header>
+
+    <section class="connection-address-panel">
+        <span class="world-kicker">АДРЕС ЭТОГО СЕРВЕРА</span>
+        @if (string.IsNullOrWhiteSpace(Model.Address))
+        {
+            <h2>Адрес пока не настроен</h2>
+            <p>Обратись к администратору. Другой игровой сервер не затрагивается.</p>
+        }
+        else
+        {
+            <div class="connection-address-row">
+                <code class="connection-address">@Model.Address</code>
+                <button class="tc-btn tc-btn-primary copy-address" type="button" data-address="@Model.Address">Копировать адрес</button>
+            </div>
+            <p class="connection-address-note">Этот адрес относится только к серверу @Model.Title.</p>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll(".copy-address").forEach(button => {
+            button.addEventListener("click", async () => {
+                const address = button.dataset.address;
+                try {
+                    await navigator.clipboard.writeText(address);
+                    button.textContent = "Скопировано";
+                } catch {
+                    button.textContent = "Не удалось скопировать";
+                }
+                window.setTimeout(() => button.textContent = "Копировать адрес", 1500);
+            });
+        });
+    </script>
+}

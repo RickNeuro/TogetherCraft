@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="~/css/home-community.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body data-bs-theme="dark">
+<body class="app-shell" data-bs-theme="dark">
     <header class="topbar">
         <div class="wrap nav">
             <a class="brand" asp-controller="Home" asp-action="Index" aria-label="TogetherCraft — главная">
@@ -59,7 +59,7 @@
         </div>
     </header>
 
-    <main id="top">
+    <main id="top" class="site-main">
         <div class="wrap">
             @if (TempData["Success"] is string successMessage)
             {

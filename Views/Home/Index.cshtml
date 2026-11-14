@@ -6,12 +6,19 @@
     var approved = signedIn && User.HasClaim("access_status", "Approved");
     var registrationEnabled = !string.IsNullOrWhiteSpace(Configuration["MicrosoftMinecraft:ClientId"])
         && !string.IsNullOrWhiteSpace(Configuration["MicrosoftMinecraft:ClientSecret"]);
-    var worldActionUrl = !signedIn
-        ? Url.Action(registrationEnabled ? "Register" : "Login", "Account")
+    var vanillaActionUrl = !signedIn
+        ? (registrationEnabled ? Url.Action("Register", "Account") : Url.Action("Login", "Account", new { returnUrl = Url.Action("Vanilla", "Home") }))
         : pending
             ? Url.Action("Waiting", "Account")
             : approved
-                ? Url.Action("Play", "Home")
+                ? Url.Action("Vanilla", "Home")
+                : Url.Action("Login", "Account");
+    var createActionUrl = !signedIn
+        ? (registrationEnabled ? Url.Action("Register", "Account") : Url.Action("Login", "Account", new { returnUrl = Url.Action("Create", "Home") }))
+        : pending
+            ? Url.Action("Waiting", "Account")
+            : approved
+                ? Url.Action("Create", "Home")
                 : Url.Action("Login", "Account");
 }
 <div class="wrap home-page" id="tc-landing">
@@ -46,7 +53,7 @@
                 <div class="world-content">
                     <span class="world-kicker">MINECRAFT · VANILLA</span><h3>Спокойное выживание</h3>
                     <p>Исследуем мир, строим базы и создаём общие места, куда хочется возвращаться.</p>
-                    <a class="world-more" href="@worldActionUrl">Исследовать мир <span aria-hidden="true">→</span></a>
+                    <a class="world-more" href="@vanillaActionUrl">Исследовать мир <span aria-hidden="true">→</span></a>
                 </div>
             </article>
             <article class="world-card world-card-create">
@@ -54,7 +61,7 @@
                 <div class="world-content">
                     <span class="world-kicker">MINECRAFT · CREATE</span><h3>Инженерия и механизмы</h3>
                     <p>Проектируем машины, автоматизируем процессы и собираем большие технические проекты.</p>
-                    <a class="world-more" href="@worldActionUrl">Изучить механизмы <span aria-hidden="true">→</span></a>
+                    <a class="world-more" href="@createActionUrl">Изучить механизмы <span aria-hidden="true">→</span></a>
                 </div>
             </article>
             <article class="world-card world-card-factorio">

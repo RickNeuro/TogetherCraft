@@ -18,7 +18,7 @@ public sealed class MinecraftRconService
 
     public Task AddToWhitelistAsync(string minecraftUsername, CancellationToken cancellationToken = default)
     {
-        return AddToWhitelistAsync(_fabric, "Fabric", minecraftUsername, cancellationToken);
+        return AddToWhitelistAsync(_fabric, "Vanilla", minecraftUsername, cancellationToken);
     }
 
     public Task AddToCreateWhitelistAsync(string minecraftUsername, CancellationToken cancellationToken = default)

@@ -1,21 +1,17 @@
 namespace TogetherCraft.Models;
 
-public sealed class GameConnectionItem
-{
-    public string Name { get; set; } = "";
-    public string Address { get; set; } = "";
-
-    public GameConnectionItem() { }
-
-    public GameConnectionItem(string name, string address)
-    {
-        Name = name;
-        Address = address;
-    }
-}
-
 public sealed class PlayViewModel
 {
     public string Username { get; set; } = "";
-    public IReadOnlyList<GameConnectionItem> Servers { get; set; } = Array.Empty<GameConnectionItem>();
+    public bool CanAccessVanilla { get; set; }
+    public bool CanAccessCreate { get; set; }
+}
+
+public sealed class WorldConnectionViewModel
+{
+    public string Username { get; set; } = "";
+    public string Title { get; set; } = "";
+    public string Kicker { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string Address { get; set; } = "";
 }

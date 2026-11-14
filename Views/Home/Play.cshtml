@@ -2,68 +2,60 @@
 @{
     ViewData["Title"] = "Подключение";
 }
-<div class="wrap py-4">
-    <section class="mb-4">
-        <p class="section-label">ЗАКРЫТЫЙ РАЗДЕЛ</p>
-        <h1 class="display-6 fw-bold">Подключение к игровым мирам</h1>
-        <p class="text-secondary">Привет, @Model.Username. Здесь находятся адреса тех миров, к которым тебе одобрен доступ.</p>
-    </section>
-
-    @if (Model.Servers.Count == 0)
-    {
-        <div class="world-content">
-            <h2 class="h5">Пока нет доступных адресов</h2>
-            <p class="text-secondary mb-0">Проверь выбранные игровые направления или обратись к администратору.</p>
+<div class="wrap internal-page worlds-hub-page py-5">
+    <header class="internal-page-header">
+        <div>
+            <p class="section-label">ТВОИ ИГРОВЫЕ МИРЫ</p>
+            <h1>Подключение</h1>
+            <p class="internal-page-lead">Привет, @Model.Username. Выбери отдельный сервер — у каждого свой мир, правила и стиль игры.</p>
         </div>
+    </header>
+
+    @if (!Model.CanAccessVanilla && !Model.CanAccessCreate)
+    {
+        <section class="empty-state-panel">
+            <h2>Пока нет доступных серверов</h2>
+            <p>Проверь выбранные игровые направления или обратись к администратору.</p>
+        </section>
     }
     else
     {
-        <div class="world-grid connection-grid">
-            @foreach (var server in Model.Servers)
+        <div class="server-choice-grid">
+            @if (Model.CanAccessVanilla)
             {
-                <article class="world-card connection-card">
-                    <div class="world-content">
-                        <span class="world-kicker">АДРЕС ПОДКЛЮЧЕНИЯ</span>
-                        <h2>@server.Name</h2>
-                        @if (string.IsNullOrWhiteSpace(server.Address))
-                        {
-                            <p class="text-secondary mb-0">Адрес пока не настроен. Обратись к администратору.</p>
-                        }
-                        else
-                        {
-                            <div class="connection-address-row">
-                                <code class="connection-address">@server.Address</code>
-                                <button class="tc-btn copy-address" type="button" data-address="@server.Address">Копировать</button>
-                            </div>
-                        }
+                <a class="server-choice server-choice-vanilla" asp-controller="Home" asp-action="Vanilla">
+                    <div class="server-choice-art">
+                        <span>SERVER 01</span>
+                        <strong class="server-choice-symbol" aria-hidden="true">◆</strong>
+                        <small>CLASSIC SURVIVAL</small>
                     </div>
-                </article>
+                    <div class="server-choice-content">
+                        <span class="world-kicker">MINECRAFT · VANILLA</span>
+                        <h2>Классическое выживание</h2>
+                        <p>Исследование, строительство и совместная игра. Отдельный мир без Create-механик.</p>
+                        <span class="server-choice-link">Открыть Vanilla <b aria-hidden="true">→</b></span>
+                    </div>
+                </a>
+            }
+
+            @if (Model.CanAccessCreate)
+            {
+                <a class="server-choice server-choice-create" asp-controller="Home" asp-action="Create">
+                    <div class="server-choice-art">
+                        <span>SERVER 02</span>
+                        <strong class="server-choice-symbol" aria-hidden="true">⚙</strong>
+                        <small>ENGINEERING & AUTOMATION</small>
+                    </div>
+                    <div class="server-choice-content">
+                        <span class="world-kicker">MINECRAFT · CREATE</span>
+                        <h2>Механизмы и автоматизация</h2>
+                        <p>Отдельный технический мир с шестернями, поездами, фабриками и механизмами Create.</p>
+                        <span class="server-choice-link">Открыть Create <b aria-hidden="true">→</b></span>
+                    </div>
+                </a>
             }
         </div>
     }
 
-    <article class="world-card mt-3">
-        <div class="world-content">
-            <span class="world-kicker">НОВОЕ НАПРАВЛЕНИЕ</span>
-            <h2>Factorio</h2>
-            <p class="text-secondary mb-0">Сервер готовится. Адрес появится здесь после запуска.</p>
-        </div>
-    </article>
+    <p class="future-world-note"><strong>Factorio</strong> — отдельное направление сообщества. Подключение появится здесь после запуска.</p>
 </div>
-
-@section Scripts {
-    <script>
-        document.querySelectorAll(".copy-address").forEach(button => {
-            button.addEventListener("click", async () => {
-                const address = button.dataset.address;
-                try {
-                    await navigator.clipboard.writeText(address);
-                    button.textContent = "Скопировано";
-                } catch {
-                    button.textContent = "Не удалось скопировать";
-                }
-                window.setTimeout(() => button.textContent = "Копировать", 1500);
-            });
-        });
-    </script>
-}

@@ -106,7 +106,7 @@ public sealed class AdminController : Controller
             if (account.WantsFabric)
             {
                 await _rcon.AddToWhitelistAsync(account.MinecraftUsername, cancellationToken);
-                addedServers.Add("Fabric");
+                addedServers.Add("Vanilla");
             }
 
             if (account.WantsCreate)

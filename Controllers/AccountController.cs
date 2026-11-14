@@ -71,7 +71,9 @@ public sealed class AccountController : Controller
                 return RedirectToAction(nameof(ConnectMinecraft));
             if (account.Status == "Pending")
                 return RedirectToAction(nameof(Waiting));
-            return RedirectToAction("Server", "Home");
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
+            return RedirectToAction("Play", "Home");
         }
         catch (Exception exception)
         {

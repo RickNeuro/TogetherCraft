@@ -120,12 +120,31 @@ with opener.open(request, timeout=10) as response:
     if "Заявки" not in body:
         raise SystemExit("Admin page did not render its expected content")
 
-# A signed-in administrator can open the connection page and role management.
-for path, expected in (("/Home/Play", "Minecraft"), ("/Admin/Users", "Пользователи")):
+# A signed-in administrator sees a selector and two truly separate Minecraft pages.
+with opener.open(base_url.rstrip("/") + "/Home/Play", timeout=10) as response:
+    page = response.read().decode("utf-8", errors="replace")
+    if response.status != 200 or "Minecraft · Vanilla" not in page or "Minecraft · Create" not in page:
+        raise SystemExit("The connection selector did not show both independent Minecraft worlds")
+    if "/Home/Vanilla" not in page or "/Home/Create" not in page:
+        raise SystemExit("The selector does not link to separate Vanilla and Create pages")
+    if "vanilla-ci.example.invalid" in page or "create-ci.example.invalid" in page:
+        raise SystemExit("The selector unexpectedly contains a server address")
+
+for path, own_address, other_address in (
+    ("/Home/Vanilla", "vanilla-ci.example.invalid", "create-ci.example.invalid"),
+    ("/Home/Create", "create-ci.example.invalid", "vanilla-ci.example.invalid"),
+):
     with opener.open(base_url.rstrip("/") + path, timeout=10) as response:
         page = response.read().decode("utf-8", errors="replace")
-        if response.status != 200 or expected not in page:
-            raise SystemExit(f"{path} did not render for the administrator")
+        if response.status != 200 or own_address not in page:
+            raise SystemExit(f"{path} did not render its own configured address")
+        if other_address in page:
+            raise SystemExit(f"{path} contains the other server's address")
+
+with opener.open(base_url.rstrip("/") + "/Admin/Users", timeout=10) as response:
+    page = response.read().decode("utf-8", errors="replace")
+    if response.status != 200 or "Пользователи" not in page:
+        raise SystemExit("/Admin/Users did not render for the administrator")
 
 # The private status API remains available to administrators.
 with opener.open(base_url.rstrip("/") + "/api/minecraft/servers", timeout=10) as response:
@@ -141,7 +160,7 @@ echo "Smoke tests passed: PostgreSQL health/permissions, backend routes/authenti
 
 
 # Game addresses, technical status and host metrics must not be available anonymously.
-for route in "/Home/Play" "/Home/Server" "/Admin" "/Admin/Users" "/api/minecraft/servers" "/api/minecraft/status" "/api/metrics"; do
+for route in "/Home/Play" "/Home/Vanilla" "/Home/Create" "/Home/Server" "/Admin" "/Admin/Users" "/api/minecraft/servers" "/api/minecraft/status" "/api/metrics"; do
     status_code="$(curl --silent --show-error --output "$TMP_HTML" --write-out '%{http_code}' "$BASE_URL$route")" \
         || fail "request failed for $route"
     [[ "$status_code" == "302" ]] || fail "$route should redirect anonymous users to login, got HTTP $status_code"

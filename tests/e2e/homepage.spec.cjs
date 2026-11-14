@@ -13,6 +13,8 @@ test('homepage matches the agreed TogetherCraft layout and keeps private address
   for (const title of ['Спокойное выживание', 'Инженерия и механизмы', 'Фабрика растёт']) {
     await expect(page.locator('.world-card').filter({ hasText: title })).toHaveCount(1);
   }
+  await expect(page.getByRole('link', { name: /Исследовать мир/ })).toHaveAttribute('href', '/Home/Vanilla');
+  await expect(page.getByRole('link', { name: /Изучить механизмы/ })).toHaveAttribute('href', '/Home/Create');
   await expect(page.locator('#gallery .gallery-tile')).toHaveCount(3);
   await expect(page.locator('#team')).toBeVisible();
   await expect(page.locator('#faq details')).toHaveCount(4);
@@ -56,7 +58,7 @@ test('login remains available while registration is disabled without Microsoft O
 });
 
 test('connection page and status endpoints are private', async ({ request }) => {
-  const routes = ['/Home/Play', '/Home/Server', '/Admin', '/Admin/Users', '/api/minecraft/servers', '/api/minecraft/status', '/api/metrics'];
+  const routes = ['/Home/Play', '/Home/Vanilla', '/Home/Create', '/Home/Server', '/Admin', '/Admin/Users', '/api/minecraft/servers', '/api/minecraft/status', '/api/metrics'];
   for (const route of routes) {
     const response = await request.get(route, { maxRedirects: 0 });
     expect(response.status(), route + ' must not be public').toBe(302);
@@ -103,4 +105,16 @@ test('header keeps a full row on desktop and wraps links below the brand on mobi
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(() => nav.evaluate(el => getComputedStyle(el).flexWrap)).toBe('wrap');
   await expect(page.locator('header.topbar .navlinks')).toBeVisible();
+});
+
+test('the internal application shell fills the viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const body = await page.locator('body').evaluate(el => ({
+    minHeight: getComputedStyle(el).minHeight,
+    display: getComputedStyle(el).display
+  }));
+  expect(body.minHeight).toBe('900px');
+  expect(body.display).toBe('flex');
 });

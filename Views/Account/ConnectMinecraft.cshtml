@@ -2,7 +2,6 @@
 <div class="container py-5"><div class="row justify-content-center"><div class="col-12 col-lg-7"><div class="card"><div class="card-body p-4 p-md-5">
     <h1 class="h2">Подтверди Minecraft Java</h1>
     <p class="text-secondary">Чтобы подтвердить, что Minecraft-профиль принадлежит тебе, войди через Microsoft. Пароль вводится только на официальной странице Microsoft.</p>
-    @if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
     <div class="alert alert-secondary">TogetherCraft не получает пароль Microsoft и не сохраняет токены Microsoft. После проверки мы сохраним только UUID и актуальный ник Minecraft.</div>
     <p class="text-secondary mb-0">Сейчас вход Microsoft не настроен на сервере. Администратору нужно добавить Client ID и Client Secret приложения Microsoft в закрытый файл .env.</p>
     <form asp-controller="Account" asp-action="Logout" method="post" class="mt-4">
