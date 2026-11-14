@@ -138,3 +138,17 @@
         animation: none !important;
     }
 }
+
+/* The monitoring dashboard follows the same square-corner UI language. */
+.monitor-page .card,
+.monitor-page .alert,
+.monitor-page .progress,
+.monitor-page .btn,
+.monitor-page .badge,
+.monitor-page .fan-unit {
+    border-radius: 0 !important;
+}
+.monitor-page .card,
+.monitor-page .fan-unit {
+    border-color: #3b4249;
+}

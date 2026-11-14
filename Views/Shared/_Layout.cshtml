@@ -5,8 +5,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] — TogetherCraft</title>
-    <meta name="description" content="TogetherCraft — игровое сообщество Minecraft, Factorio и совместных проектов." />
-    <meta name="theme-color" content="#101116" />
+    <meta name="description" content="TogetherCraft — Minecraft, Factorio и совместные игровые проекты." />
+    <meta name="theme-color" content="#232628" />
     <link rel="icon" type="image/png" href="https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/88/FoxFace.png/revision/latest?cb=20190213180659" sizes="32x32" referrerpolicy="no-referrer" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/home-v4.css" asp-append-version="true" />
@@ -14,67 +14,53 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body data-bs-theme="dark">
-    <header class="tc-topbar">
-        <div class="tc-nav-wrap">
+    <header class="topbar">
+        <div class="wrap nav">
             <a class="brand" asp-controller="Home" asp-action="Index" aria-label="TogetherCraft — главная">
                 <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/88/FoxFace.png/revision/latest?cb=20190213180659" alt="Лиса Minecraft" referrerpolicy="no-referrer" />
                 <span>Together<strong>Craft</strong></span>
             </a>
+
             <nav class="navlinks" aria-label="Главная навигация">
                 <a asp-controller="Home" asp-action="Index">Главная</a>
                 <a href="/#worlds">Игровые миры</a>
                 <a href="/#gallery">Галерея</a>
                 <a href="/#team">Команда</a>
                 <a href="/#faq">FAQ</a>
+                @if (User.Identity?.IsAuthenticated == true && User.HasClaim("access_status", "Approved"))
+                {
+                    <a asp-controller="Home" asp-action="Play">Подключение</a>
+                }
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Admin" asp-action="Index">Админка</a>
+                    <a asp-controller="Home" asp-action="Server">Мониторинг</a>
+                }
             </nav>
+
+            <div class="spacer"></div>
             <div class="nav-actions">
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    @if (User.HasClaim("access_status", "Approved"))
-                    {
-                        <a class="account-link" asp-controller="Home" asp-action="Play">Подключение</a>
-                    }
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <a class="account-link admin-link" asp-controller="Admin" asp-action="Index">Админка</a>
-                        <a class="account-link admin-link" asp-controller="Home" asp-action="Server">Мониторинг</a>
-                    }
                     <span class="nav-user">@User.Identity.Name</span>
-                    <form asp-controller="Account" asp-action="Logout" method="post" class="nav-logout"><button class="login-link" type="submit">Выйти</button></form>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="nav-logout">
+                        <button class="nav-link-button" type="submit">Выйти</button>
+                    </form>
                 }
                 else
                 {
-                    <a class="login-link" asp-controller="Account" asp-action="Login">Войти</a>
+                    <a asp-controller="Account" asp-action="Login">Войти</a>
                     @if (!string.IsNullOrWhiteSpace(Configuration["MicrosoftMinecraft:ClientId"]) && !string.IsNullOrWhiteSpace(Configuration["MicrosoftMinecraft:ClientSecret"]))
                     {
-                        <a class="register-link" asp-controller="Account" asp-action="Register">Регистрация</a>
+                        <a class="cta" asp-controller="Account" asp-action="Register">Присоединиться ↗</a>
                     }
                 }
             </div>
-            <details class="mobile-menu">
-                <summary aria-label="Открыть меню">☰</summary>
-                <nav aria-label="Мобильная навигация">
-                    <a asp-controller="Home" asp-action="Index">Главная</a>
-                    <a href="/#worlds">Игровые миры</a>
-                    <a href="/#gallery">Галерея</a>
-                    <a href="/#team">Команда</a>
-                    <a href="/#faq">FAQ</a>
-                    @if (User.Identity?.IsAuthenticated == true && User.HasClaim("access_status", "Approved"))
-                    {
-                        <a asp-controller="Home" asp-action="Play">Подключение</a>
-                    }
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <a asp-controller="Admin" asp-action="Index">Заявки</a>
-                        <a asp-controller="Admin" asp-action="Users">Игроки</a>
-                        <a asp-controller="Home" asp-action="Server">Мониторинг</a>
-                    }
-                </nav>
-            </details>
         </div>
     </header>
+
     <main id="top">
-        <div class="tc-alert-wrap">
+        <div class="wrap">
             @if (TempData["Success"] is string successMessage)
             {
                 <div class="site-alert site-alert-success" role="status">@successMessage</div>
@@ -86,17 +72,29 @@
         </div>
         @RenderBody()
     </main>
-    <footer class="footer tc-footer" id="community">
-        <div class="tc-footer-inner">
-            <div class="footer-social">
-                <a href="https://discord.gg/V6RnZ59VCe" target="_blank" rel="noopener noreferrer"><span class="discord-mark">◉</span>Discord</a>
-                <span class="footer-separator"></span>
-                <a href="https://github.com/RickNeuro/TogetherCraft" target="_blank" rel="noopener noreferrer"><span class="github-mark">◉</span>GitHub</a>
+
+    <footer class="footer" id="community">
+        <div class="wrap">
+            <div class="footer-main">
+                <div class="footer-brand footer-brand-line">
+                    <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/88/FoxFace.png/revision/latest?cb=20190213180659" alt="" referrerpolicy="no-referrer" />
+                    <div>
+                        <strong>TogetherCraft</strong>
+                        <span>Вместе играем. Вместе строим.</span>
+                    </div>
+                </div>
+                <div class="footer-social">
+                    <a href="https://discord.gg/V6RnZ59VCe" target="_blank" rel="noopener noreferrer">Discord ↗</a>
+                    <a href="https://github.com/RickNeuro/TogetherCraft" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+                </div>
             </div>
-            <div class="footer-signature"><img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/88/FoxFace.png/revision/latest?cb=20190213180659" alt="Лиса Minecraft" referrerpolicy="no-referrer" />TogetherCraft — Играем вместе! <a class="footer-asset-credit" href="https://minecraft.fandom.com/wiki/File:FoxFace.png" target="_blank" rel="noopener noreferrer" title="Пиксельная иконка FoxFace.png из категории Mob faces Minecraft Wiki">Лиса Minecraft · FoxFace из Minecraft Wiki</a></div>
-            <img class="footer-cube" src="~/img/cube.svg" alt="" />
+            <div class="footer-bottom">
+                <span>© TogetherCraft · Minecraft + Factorio</span>
+                <span>Игровые адреса доступны одобренным участникам</span>
+            </div>
         </div>
     </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)

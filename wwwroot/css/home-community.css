@@ -740,3 +740,147 @@ body { background: var(--tc-bg); color: var(--tc-text); }
 .world-art-symbol.world-symbol-factory i,
 .world-art-symbol.world-symbol-factory b,
 .world-art-symbol.world-symbol-factory em { display: none; }
+
+
+
+/* Shared site chrome: match the home-v4 markup on every page. */
+header.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    min-height: 72px;
+    background: rgba(35, 38, 40, .64);
+    border-bottom: 1px solid rgba(228, 154, 78, .22);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+header.topbar .wrap.nav {
+    width: min(1140px, calc(100% - 48px));
+    min-height: 72px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0;
+}
+header.topbar .brand {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    color: #e4dfd0;
+    text-decoration: none;
+    white-space: nowrap;
+}
+header.topbar .brand img {
+    display: block;
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+header.topbar .brand::before { display: none; }
+header.topbar .navlinks {
+    display: flex;
+    flex: 0 1 auto;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 22px;
+    margin-left: 34px;
+}
+header.topbar .navlinks a {
+    color: #c6c3bb;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+header.topbar .navlinks a:hover { color: var(--tc-accent-light); }
+header.topbar .spacer { flex: 1 1 auto; min-width: 12px; }
+header.topbar .nav-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 16px;
+    margin-left: 14px;
+}
+header.topbar .nav-actions a,
+header.topbar .nav-link-button {
+    color: #d1cec5;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+header.topbar .nav-actions a:hover,
+header.topbar .nav-link-button:hover { color: var(--tc-accent-light); }
+header.topbar .nav-actions .cta {
+    padding: 9px 14px;
+    border: 1px solid var(--tc-accent);
+    border-radius: 0;
+    background: var(--tc-accent);
+    color: #1c2022;
+    font-weight: 750;
+}
+header.topbar .nav-actions .cta:hover { background: var(--tc-accent-light); color: #1c2022; }
+header.topbar .nav-user { color: #aeb7be; font-size: 11px; white-space: nowrap; }
+header.topbar .nav-logout { margin: 0; }
+header.topbar .nav-link-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+.footer { padding: 22px 0 17px; }
+.footer .wrap { width: min(1140px, calc(100% - 48px)); margin: 0 auto; }
+.footer-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 48px;
+}
+.footer-brand-line { display: flex; align-items: center; gap: 10px; }
+.footer-brand-line img {
+    display: block;
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+.footer-brand-line strong { display: block; color: #e4dfd0; font-size: 14px; }
+.footer-brand-line span { display: block; margin-top: 2px; color: #8d969c; font-size: 10px; }
+.footer-social { display: flex; align-items: center; gap: 18px; }
+.footer-social a {
+    color: #c2c9cf;
+    font-size: 11px;
+    text-decoration: none;
+}
+.footer-social a:hover { color: var(--tc-accent-light); }
+.footer-bottom { margin-top: 14px; padding-top: 11px; }
+.site-alert, .card, .alert, .progress, .btn, .badge,
+.fan-unit, .tc-btn, .social-link { border-radius: 0 !important; }
+@media (max-width: 980px) {
+    header.topbar .navlinks { gap: 14px; margin-left: 22px; }
+    header.topbar .navlinks a { font-size: 11px; }
+    header.topbar .nav-actions { gap: 10px; }
+}
+@media (max-width: 680px) {
+    header.topbar { position: sticky; top: 0; }
+    header.topbar .wrap.nav {
+        width: calc(100% - 28px);
+        flex-wrap: wrap;
+    }
+    header.topbar .navlinks {
+        order: 3;
+        flex-basis: 100%;
+        flex-wrap: wrap;
+        gap: 10px 17px;
+        margin: 7px 0 0;
+        padding-bottom: 7px;
+    }
+    header.topbar .nav-actions { margin-left: auto; }
+    .footer .wrap { width: calc(100% - 28px); }
+    .footer-main { align-items: flex-start; }
+}

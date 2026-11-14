@@ -62,3 +62,45 @@ test('connection page and status endpoints are private', async ({ request }) => 
     expect(response.status(), route + ' must not be public').toBe(302);
   }
 });
+
+test('shared header is a transparent square bar and footer has no decorative cube', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const header = page.locator('header.topbar');
+  await expect(header).toBeVisible();
+  await expect(header.locator('.navlinks')).toBeVisible();
+  await expect(page.locator('.mobile-menu')).toHaveCount(0);
+  await expect(page.locator('.footer-cube')).toHaveCount(0);
+  await expect(page.locator('footer .footer-main')).toBeVisible();
+
+  const headerStyle = await header.evaluate(element => {
+    const style = getComputedStyle(element);
+    return {
+      position: style.position,
+      background: style.backgroundColor,
+      radius: style.borderRadius
+    };
+  });
+  expect(headerStyle.position).toBe('sticky');
+  expect(headerStyle.background).toMatch(/^rgba\(/);
+  expect(headerStyle.radius).toBe('0px');
+
+  const footerStyle = await page.locator('footer').evaluate(element => ({
+    height: element.getBoundingClientRect().height,
+    width: element.getBoundingClientRect().width
+  }));
+  expect(footerStyle.height).toBeLessThan(180);
+});
+
+test('header keeps a full row on desktop and wraps links below the brand on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const nav = page.locator('header.topbar .wrap.nav');
+
+  await expect.poll(() => nav.evaluate(el => getComputedStyle(el).flexWrap)).toBe('nowrap');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => nav.evaluate(el => getComputedStyle(el).flexWrap)).toBe('wrap');
+  await expect(page.locator('header.topbar .navlinks')).toBeVisible();
+});
