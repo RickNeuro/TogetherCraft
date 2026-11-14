@@ -33,7 +33,7 @@ test('main navigation opens dedicated pages instead of jumping to homepage secti
   for (const [label, url, heading] of destinations) {
     await page.getByRole('link', { name: label, exact: true }).click();
     await expect(page).toHaveURL(new RegExp(url.replaceAll('/', '\\/') + '$'));
-    await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+    await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
   }
 });
 
@@ -52,7 +52,7 @@ test('world pages use recognizable SVG marks and full-size action buttons', asyn
 
 test('gallery has a real empty state when no images have been uploaded', async ({ page }) => {
   await page.goto('/Home/Gallery');
-  await expect(page.getByRole('heading', { name: 'Галерея' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Галерея', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Галерея пока наполняется' })).toBeVisible();
   await expect(page.locator('[data-gallery-open]')).toHaveCount(0);
 });
