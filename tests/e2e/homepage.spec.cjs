@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test('homepage matches the agreed TogetherCraft layout and keeps private addresses hidden', async ({ page }) => {
+test('homepage shows the agreed public introduction and keeps private addresses hidden', async ({ page }) => {
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   const response = await page.goto('/');
@@ -9,15 +9,9 @@ test('homepage matches the agreed TogetherCraft layout and keeps private address
   await expect(page.locator('.brand')).toContainText('TogetherCraft');
   await expect(page.locator('.hero h1')).toContainText('Выбирай своё');
   await expect(page.locator('.hero-visual')).toBeVisible();
-  await expect(page.locator('.world-card')).toHaveCount(3);
-  for (const title of ['Спокойное выживание', 'Инженерия и механизмы', 'Фабрика растёт']) {
-    await expect(page.locator('.world-card').filter({ hasText: title })).toHaveCount(1);
-  }
-  await expect(page.getByRole('link', { name: /Исследовать мир/ })).toHaveAttribute('href', /returnUrl=.*Home%2FVanilla/);
-  await expect(page.getByRole('link', { name: /Изучить механизмы/ })).toHaveAttribute('href', /returnUrl=.*Home%2FCreate/);
-  await expect(page.locator('#gallery .gallery-tile')).toHaveCount(3);
-  await expect(page.locator('#team')).toBeVisible();
-  await expect(page.locator('#faq details')).toHaveCount(4);
+  await expect(page.locator('.home-worlds-strip > div')).toHaveCount(3);
+  await expect(page.getByRole('link', { name: /Все игровые миры/ })).toHaveAttribute('href', '/Home/Worlds');
+  await expect(page.getByRole('link', { name: /Открыть галерею/ })).toHaveAttribute('href', '/Home/Gallery');
   await expect(page.locator('.footer')).toBeVisible();
 
   const homepageText = await page.locator('body').innerText();
@@ -27,11 +21,40 @@ test('homepage matches the agreed TogetherCraft layout and keeps private address
   expect(pageErrors).toEqual([]);
 });
 
-test('game worlds navigation moves to the directions section', async ({ page }) => {
+test('main navigation opens dedicated pages instead of jumping to homepage sections', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Игровые миры' }).click();
-  await expect(page).toHaveURL(/#worlds$/);
-  await expect(page.locator('#worlds')).toBeVisible();
+  const destinations = [
+    ['Игровые миры', '/Home/Worlds', 'Игровые миры'],
+    ['Галерея', '/Home/Gallery', 'Галерея'],
+    ['Команда', '/Home/Team', 'Команда TogetherCraft'],
+    ['FAQ', '/Home/Faq', 'Частые вопросы']
+  ];
+
+  for (const [label, url, heading] of destinations) {
+    await page.getByRole('link', { name: label, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(url.replaceAll('/', '\\/') + '$'));
+    await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+  }
+});
+
+test('world pages use recognizable SVG marks and full-size action buttons', async ({ page }) => {
+  await page.goto('/Home/Worlds');
+  await expect(page.locator('.world-card')).toHaveCount(3);
+  await expect(page.locator('.world-symbol-block svg')).toBeVisible();
+  await expect(page.locator('.world-symbol-gear svg')).toBeVisible();
+  await expect(page.locator('.world-symbol-factory svg')).toBeVisible();
+
+  const buttonHeight = await page.locator('.world-action').first().evaluate(element => element.getBoundingClientRect().height);
+  expect(buttonHeight).toBeGreaterThanOrEqual(48);
+  await expect(page.getByRole('link', { name: /Исследовать мир/ })).toHaveAttribute('href', /returnUrl=.*Home%2FVanilla/);
+  await expect(page.getByRole('link', { name: /Изучить механизмы/ })).toHaveAttribute('href', /returnUrl=.*Home%2FCreate/);
+});
+
+test('gallery has a real empty state when no images have been uploaded', async ({ page }) => {
+  await page.goto('/Home/Gallery');
+  await expect(page.getByRole('heading', { name: 'Галерея', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Галерея пока наполняется' })).toBeVisible();
+  await expect(page.locator('[data-gallery-open]')).toHaveCount(0);
 });
 
 test('homepage has no horizontal overflow on desktop and mobile widths', async ({ page }) => {

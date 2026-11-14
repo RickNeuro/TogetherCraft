@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using TogetherCraft.Models;
 using TogetherCraft.Services;
@@ -10,15 +11,52 @@ public sealed class HomeController : Controller
 {
     private readonly IConfiguration _configuration;
     private readonly AppDatabase _database;
+    private readonly IWebHostEnvironment _environment;
 
-    public HomeController(IConfiguration configuration, AppDatabase database)
+    public HomeController(
+        IConfiguration configuration,
+        AppDatabase database,
+        IWebHostEnvironment environment)
     {
         _configuration = configuration;
         _database = database;
+        _environment = environment;
     }
 
     [AllowAnonymous]
     public IActionResult Index() => View();
+
+    [AllowAnonymous]
+    public IActionResult Worlds() => View();
+
+    [AllowAnonymous]
+    public IActionResult Team() => View();
+
+    [AllowAnonymous]
+    public IActionResult Faq() => View();
+
+    [AllowAnonymous]
+    public IActionResult Gallery()
+    {
+        var webRoot = _environment.WebRootPath
+            ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+        var galleryFolder = Path.Combine(webRoot, "images", "gallery");
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+
+        var images = Directory.Exists(galleryFolder)
+            ? Directory.EnumerateFiles(galleryFolder)
+                .Where(path => allowedExtensions.Contains(
+                    Path.GetExtension(path),
+                    StringComparer.OrdinalIgnoreCase))
+                .OrderByDescending(System.IO.File.GetLastWriteTimeUtc)
+                .Select(Path.GetFileName)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => name!)
+                .ToList()
+            : new List<string>();
+
+        return View(images);
+    }
 
     [Authorize(Policy = "ApprovedUser")]
     public async Task<IActionResult> Play(CancellationToken cancellationToken = default)

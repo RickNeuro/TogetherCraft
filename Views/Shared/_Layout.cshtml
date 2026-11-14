@@ -1,4 +1,8 @@
 @inject IConfiguration Configuration
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -22,14 +26,14 @@
             </a>
 
             <nav class="navlinks" aria-label="Главная навигация">
-                <a asp-controller="Home" asp-action="Index">Главная</a>
-                <a href="/#worlds">Игровые миры</a>
-                <a href="/#gallery">Галерея</a>
-                <a href="/#team">Команда</a>
-                <a href="/#faq">FAQ</a>
+                <a asp-controller="Home" asp-action="Index" class="@(currentAction == "Index" ? "active" : "")">Главная</a>
+                <a asp-controller="Home" asp-action="Worlds" class="@(currentAction == "Worlds" ? "active" : "")">Игровые миры</a>
+                <a asp-controller="Home" asp-action="Gallery" class="@(currentAction == "Gallery" ? "active" : "")">Галерея</a>
+                <a asp-controller="Home" asp-action="Team" class="@(currentAction == "Team" ? "active" : "")">Команда</a>
+                <a asp-controller="Home" asp-action="Faq" class="@(currentAction == "Faq" ? "active" : "")">FAQ</a>
                 @if (User.Identity?.IsAuthenticated == true && User.HasClaim("access_status", "Approved"))
                 {
-                    <a asp-controller="Home" asp-action="Play">Подключение</a>
+                    <a asp-controller="Home" asp-action="Play" class="@(currentAction == "Play" ? "active" : "")">Подключение</a>
                 }
                 @if (User.IsInRole("Admin"))
                 {
