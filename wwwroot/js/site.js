@@ -40,6 +40,28 @@
         });
     }
 
+    // Gallery lightbox: each image button opens its full-size source.
+    const galleryDialog = document.querySelector('#gallery-lightbox');
+    const galleryImage = document.querySelector('#gallery-lightbox-image');
+    const galleryCaption = document.querySelector('#gallery-lightbox-caption');
+
+    document.querySelectorAll('[data-gallery-open]').forEach(button => {
+        button.addEventListener('click', () => {
+            if (!galleryDialog || !galleryImage) return;
+            galleryImage.src = button.dataset.gallerySrc || '';
+            galleryImage.alt = button.dataset.galleryTitle || '';
+            if (galleryCaption) galleryCaption.textContent = button.dataset.galleryTitle || '';
+            if (typeof galleryDialog.showModal === 'function') galleryDialog.showModal();
+            else galleryDialog.setAttribute('open', '');
+        });
+    });
+
+    if (galleryDialog) {
+        galleryDialog.addEventListener('click', event => {
+            if (event.target === galleryDialog) galleryDialog.close();
+        });
+    }
+
     const rangeLabels = {
         '1ч': ['10:00', '10:15', '10:30', '10:45', '11:00', '11:15'],
         '6ч': ['05:00', '06:00', '07:00', '08:00', '09:00', '10:00'],
