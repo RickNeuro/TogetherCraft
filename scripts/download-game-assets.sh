@@ -15,7 +15,7 @@ download_png() {
     curl --fail --location --silent --show-error \
         --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 120 \
         --user-agent "TogetherCraft game asset downloader" \
-        "$url" --output "$temporary"
+        --output "$temporary" "$url"
 
     local signature
     signature="$(head -c 8 "$temporary" | od -An -tx1 | tr -d ' \n')"
