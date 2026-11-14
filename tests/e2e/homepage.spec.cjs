@@ -37,12 +37,21 @@ test('main navigation opens dedicated pages instead of jumping to homepage secti
   }
 });
 
-test('world pages use recognizable SVG marks and full-size action buttons', async ({ page }) => {
+test('world pages load the original game artwork and keep full-size action buttons', async ({ page }) => {
   await page.goto('/Home/Worlds');
   await expect(page.locator('.world-card')).toHaveCount(3);
-  await expect(page.locator('.world-symbol-block svg')).toBeVisible();
-  await expect(page.locator('.world-symbol-gear svg')).toBeVisible();
-  await expect(page.locator('.world-symbol-factory svg')).toBeVisible();
+
+  const artwork = [
+    ['.world-symbol-block img', '/img/game-assets/mossy-cobblestone.png'],
+    ['.world-symbol-gear img', '/img/game-assets/create-large-cogwheel.png'],
+    ['.world-symbol-factory img', '/img/game-assets/factorio-logo.png']
+  ];
+
+  for (const [selector, source] of artwork) {
+    const image = page.locator(selector);
+    await expect(image).toHaveAttribute('src', source);
+    await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+  }
 
   const buttonHeight = await page.locator('.world-action').first().evaluate(element => element.getBoundingClientRect().height);
   expect(buttonHeight).toBeGreaterThanOrEqual(48);

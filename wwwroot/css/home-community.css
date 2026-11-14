@@ -1368,3 +1368,56 @@ header.topbar .navlinks a.active::after {
 @media (prefers-reduced-motion: reduce) {
     ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 }
+
+
+/* Original game artwork used in the world cards. */
+.world-art-symbol {
+    display: grid;
+    place-items: center;
+    width: 88px;
+    height: 88px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+}
+.world-art-symbol img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 9px rgba(0, 0, 0, .38));
+}
+.world-symbol-block img,
+.world-symbol-gear img {
+    image-rendering: pixelated;
+}
+.world-art-symbol.world-symbol-factory {
+    top: 30%;
+    right: 6%;
+    width: min(58%, 250px);
+    height: auto;
+    border: 0;
+    background: transparent;
+    transform: none;
+}
+.world-symbol-factory img {
+    width: 100%;
+    height: auto;
+    max-height: 78px;
+    object-fit: contain;
+    image-rendering: auto;
+}
+@media (max-width: 640px) {
+    .world-art-symbol:not(.world-symbol-factory) {
+        width: 68px;
+        height: 68px;
+    }
+    .world-art-symbol.world-symbol-factory {
+        top: 35%;
+        width: min(58%, 190px);
+    }
+}
