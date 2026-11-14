@@ -123,7 +123,7 @@ with opener.open(request, timeout=10) as response:
 # A signed-in administrator sees a selector and two truly separate Minecraft pages.
 with opener.open(base_url.rstrip("/") + "/Home/Play", timeout=10) as response:
     page = response.read().decode("utf-8", errors="replace")
-    if response.status != 200 or "Minecraft · Vanilla" not in page or "Minecraft · Create" not in page:
+    if response.status != 200 or "MINECRAFT · VANILLA" not in page or "MINECRAFT · CREATE" not in page:
         raise SystemExit("The connection selector did not show both independent Minecraft worlds")
     if "/Home/Vanilla" not in page or "/Home/Create" not in page:
         raise SystemExit("The selector does not link to separate Vanilla and Create pages")
