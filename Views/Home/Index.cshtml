@@ -8,7 +8,7 @@
             <h1>Выбирай своё<br /><span>приключение</span></h1>
             <p class="hero-copy">Три разных мира, одна идея — играть, строить и создавать вместе. От спокойного выживания до сложных механизмов и огромных фабрик.</p>
             <div class="hero-actions">
-                <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Worlds">Выбрать мир <span aria-hidden="true">→</span></a>
+                <a class="tc-btn tc-btn-primary" asp-controller="Home" asp-action="Worlds">Выбрать мир</a>
                 <a class="tc-btn tc-btn-secondary" asp-controller="Home" asp-action="Team">О сообществе</a>
             </div>
             <div class="hero-proof">
@@ -17,21 +17,26 @@
                 <span><i></i> Люди, а не рейтинги</span>
             </div>
         </div>
-        <div class="hero-visual" role="img" aria-label="TogetherCraft — одна команда, много историй">
-            <span class="hero-panel-tag">TOGETHERCRAFT / WORLDS</span>
-            <strong class="hero-panel-caption">ОДНА КОМАНДА — МНОГО ИСТОРИЙ</strong>
+        <div class="hero-visual">
+            <img class="hero-image" src="/img/hero-fox.jpg" alt="Лиса TogetherCraft — символ игрового сообщества" fetchpriority="high" />
+            <span class="hero-image-shade" aria-hidden="true"></span>
+            <span class="hero-image-index">TOGETHERCRAFT / WORLDS</span>
+            <div class="hero-image-caption">
+                <span class="hero-caption-kicker">BUILD · EXPLORE · CREATE</span>
+                <strong>Одна команда.<br />Много историй.</strong>
+            </div>
         </div>
     </section>
 
     <section class="home-worlds-preview">
         <div class="section-head">
             <div><div class="section-label">ВО ЧТО ИГРАЕМ</div><h2>Три мира. Выбирай свой.</h2></div>
-            <a class="section-more-link" asp-controller="Home" asp-action="Worlds">Все игровые миры <span aria-hidden="true">→</span></a>
+            <a class="section-more-link" asp-controller="Home" asp-action="Worlds">Все игровые миры</a>
         </div>
         <div class="home-worlds-strip">
-            <div><span class="world-dot world-dot-vanilla"></span><strong>Minecraft · Vanilla</strong><small>Классическое выживание</small></div>
-            <div><span class="world-dot world-dot-create"></span><strong>Minecraft · Create</strong><small>Механизмы и инженерия</small></div>
-            <div><span class="world-dot world-dot-factorio"></span><strong>Factorio</strong><small>Фабрики и автоматизация</small></div>
+            <div><span class="home-world-icon"><img src="/img/icon-minecraft.svg" alt="" loading="lazy" /></span><span><strong>Minecraft · Vanilla</strong><small>Классическое выживание</small></span></div>
+            <div><span class="home-world-icon"><img src="/img/game-assets/create-large-cogwheel.png" alt="" loading="lazy" /></span><span><strong>Minecraft · Create</strong><small>Механизмы и инженерия</small></span></div>
+            <div><span class="home-world-icon home-world-icon-factorio"><img src="/img/game-assets/factorio-logo.png" alt="" loading="lazy" /></span><span><strong>Factorio</strong><small>Фабрики и автоматизация</small></span></div>
         </div>
     </section>
 
@@ -40,6 +45,6 @@
             <div class="section-label">ИЗ ЖИЗНИ СООБЩЕСТВА</div>
             <h2>Постройки, механизмы и проекты.</h2>
         </div>
-        <a class="world-action" asp-controller="Home" asp-action="Gallery">Открыть галерею <span aria-hidden="true">→</span></a>
+        <a class="world-action" asp-controller="Home" asp-action="Gallery">Открыть галерею</a>
     </section>
 </div>

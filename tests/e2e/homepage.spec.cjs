@@ -150,3 +150,35 @@ test('the internal application shell fills the viewport', async ({ page }) => {
   expect(body.minHeight).toBe('900px');
   expect(body.display).toBe('flex');
 });
+
+test('final TogetherCraft artwork and game icons are local and replace placeholder glyphs', async ({ page }) => {
+  await page.goto('/');
+  const hero = page.locator('.hero-image');
+  await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
+  await expect.poll(() => hero.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+  await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/icon-meteor.svg');
+  await expect(page.locator('.home-world-icon img')).toHaveCount(3);
+  await expect(page.locator('.footer-social img')).toHaveCount(2);
+
+  for (const image of await page.locator('.home-world-icon img, .footer-social img').all()) {
+    await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+  }
+
+  let bodyText = await page.locator('body').innerText();
+  for (const glyph of ['→', '↗', '←', '◆']) {
+    expect(bodyText).not.toContain(glyph);
+  }
+
+  await page.goto('/Home/Team');
+  await expect(page.locator('.team-mark img')).toHaveAttribute('src', '/img/icon-meteor.svg');
+  await expect(page.locator('.team-discord-link img')).toHaveAttribute('src', '/img/icon-discord.svg');
+  await expect(page.locator('.team-mark span')).toHaveCount(0);
+
+  await page.goto('/Home/Worlds');
+  await expect(page.locator('.world-platform img')).toHaveAttribute('src', '/img/icon-curseforge.svg');
+  await expect(page.locator('.world-symbol-block img')).toHaveAttribute('src', '/img/game-assets/mossy-cobblestone.png');
+  bodyText = await page.locator('body').innerText();
+  for (const glyph of ['→', '↗', '◆']) {
+    expect(bodyText).not.toContain(glyph);
+  }
+});
