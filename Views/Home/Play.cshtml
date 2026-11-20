@@ -24,10 +24,12 @@
             @if (Model.CanAccessVanilla)
             {
                 <a class="server-choice server-choice-vanilla" asp-controller="Home" asp-action="Vanilla">
-                    <div class="server-choice-art">
-                        <span>SERVER 01</span>
-                        <strong class="server-choice-symbol"><img src="/img/icon-minecraft.svg" alt="Minecraft" /></strong>
-                        <small>CLASSIC SURVIVAL</small>
+                    <div class="server-choice-art server-choice-art-vanilla">
+                        <span class="server-choice-server-label">SERVER 01</span>
+                        <div class="server-choice-placeholder">
+                            <strong>VANILLA</strong>
+                            <small>СКРИНШОТ МИРА</small>
+                        </div>
                     </div>
                     <div class="server-choice-content">
                         <span class="world-kicker">MINECRAFT · VANILLA</span>
@@ -41,10 +43,12 @@
             @if (Model.CanAccessCreate)
             {
                 <a class="server-choice server-choice-create" asp-controller="Home" asp-action="Create">
-                    <div class="server-choice-art">
-                        <span>SERVER 02</span>
-                        <strong class="server-choice-symbol"><img src="/img/game-assets/create-large-cogwheel.png" alt="Шестерня Create" /></strong>
-                        <small>ENGINEERING & AUTOMATION</small>
+                    <div class="server-choice-art server-choice-art-create">
+                        <span class="server-choice-server-label">SERVER 02</span>
+                        <div class="server-choice-placeholder">
+                            <strong>CREATE</strong>
+                            <small>СКРИНШОТ МИРА</small>
+                        </div>
                     </div>
                     <div class="server-choice-content">
                         <span class="world-kicker">MINECRAFT · CREATE</span>

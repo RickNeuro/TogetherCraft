@@ -39,21 +39,16 @@ test('main navigation opens dedicated pages instead of jumping to homepage secti
   }
 });
 
-test('world pages load the original game artwork and keep full-size action buttons', async ({ page }) => {
+test('world cover cards use neutral placeholders until the owner supplies real screenshots', async ({ page }) => {
   await page.goto('/Home/Worlds');
   await expect(page.locator('.world-card')).toHaveCount(3);
 
-  const artwork = [
-    ['.world-symbol-block img', '/img/game-assets/mossy-cobblestone.png'],
-    ['.world-symbol-gear img', '/img/game-assets/create-large-cogwheel.png'],
-    ['.world-symbol-factory img', '/img/game-assets/factorio-logo.png']
-  ];
-
-  for (const [selector, source] of artwork) {
-    const image = page.locator(selector);
-    await expect(image).toHaveAttribute('src', source);
-    await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
-  }
+  await expect(page.locator('.world-art-placeholder')).toHaveCount(3);
+  await expect(page.locator('.world-art img')).toHaveCount(0);
+  await expect(page.locator('.world-art-placeholder strong').nth(0)).toHaveText('VANILLA');
+  await expect(page.locator('.world-art-placeholder strong').nth(1)).toHaveText('CREATE');
+  await expect(page.locator('.world-art-placeholder strong').nth(2)).toHaveText('FACTORIO');
+  await expect(page.locator('.world-art-placeholder-note')).toHaveCount(3);
 
   const buttonHeight = await page.locator('.world-action').first().evaluate(element => element.getBoundingClientRect().height);
   expect(buttonHeight).toBeGreaterThanOrEqual(48);
@@ -153,13 +148,17 @@ test('the internal application shell fills the viewport', async ({ page }) => {
   expect(body.display).toBe('flex');
 });
 
-test('final TogetherCraft artwork and game icons are local and replace placeholder glyphs', async ({ page }) => {
+test('TogetherCraft uses the owner's logo and world covers remain neutral until screenshots arrive', async ({ page }) => {
   await page.goto('/');
   const hero = page.locator('.hero-image');
   await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
   await expect.poll(() => hero.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
-  await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/icon-meteor.svg');
+  await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp');
+  await expect.poll(() => page.locator('header.topbar .brand img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/img/togethercraft-mark.webp');
   await expect(page.locator('.home-world-icon img')).toHaveCount(3);
+  await expect(page.locator('footer .footer-brand-line img')).toHaveAttribute('src', '/img/togethercraft-mark.webp');
+  await expect.poll(() => page.locator('footer .footer-brand-line img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.footer-social img')).toHaveCount(2);
 
   for (const image of await page.locator('.home-world-icon img, .footer-social img').all()) {
@@ -172,13 +171,15 @@ test('final TogetherCraft artwork and game icons are local and replace placehold
   }
 
   await page.goto('/Home/Team');
-  await expect(page.locator('.team-mark img')).toHaveAttribute('src', '/img/icon-meteor.svg');
+  await expect(page.locator('.team-mark img')).toHaveAttribute('src', '/img/togethercraft-mark.webp');
+  await expect.poll(() => page.locator('.team-mark img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.team-discord-link img')).toHaveAttribute('src', '/img/icon-discord.svg');
   await expect(page.locator('.team-mark span')).toHaveCount(0);
 
   await page.goto('/Home/Worlds');
   await expect(page.locator('.world-platform img')).toHaveAttribute('src', '/img/icon-curseforge.svg');
-  await expect(page.locator('.world-symbol-block img')).toHaveAttribute('src', '/img/game-assets/mossy-cobblestone.png');
+  await expect(page.locator('.world-art-placeholder')).toHaveCount(3);
+  await expect(page.locator('.world-art img')).toHaveCount(0);
   bodyText = await page.locator('body').innerText();
   for (const glyph of ['→', '↗', '◆']) {
     expect(bodyText).not.toContain(glyph);
@@ -283,9 +284,11 @@ test('light and dark themes switch, style controls and persist between pages', a
     buttonBackground: getComputedStyle(document.querySelector('.tc-btn-primary')).backgroundColor,
     buttonText: getComputedStyle(document.querySelector('.tc-btn-primary')).color
   }));
-  expect(dark.background).toBe('rgb(33, 26, 23)');
+  expect(dark.background).toBe('rgb(36, 24, 15)');
   expect(dark.buttonBackground).toBe('rgb(193, 135, 107)');
   expect(dark.buttonText).toBe('rgb(42, 30, 25)');
+  const darkSurface = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--panel2').trim().toLowerCase());
+  expect(darkSurface).toBe('#593315');
 
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
@@ -308,4 +311,44 @@ test('light and dark themes switch, style controls and persist between pages', a
   await page.getByRole('button', { name: 'Переключить на тёмную тему' }).click();
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+});
+
+
+test('CTA labels are vertically and horizontally centered without link underlines', async ({ page }) => {
+  await page.goto('/');
+  const selectors = ['.hero-actions .tc-btn-primary', '.hero-actions .tc-btn-secondary', '.home-gallery-preview .world-action'];
+  for (const selector of selectors) {
+    const style = await page.locator(selector).evaluate(element => {
+      const css = getComputedStyle(element);
+      return {
+        display: css.display,
+        alignItems: css.alignItems,
+        justifyContent: css.justifyContent,
+        textAlign: css.textAlign,
+        textDecoration: css.textDecorationLine
+      };
+    });
+    expect(style.display).toBe('inline-flex');
+    expect(style.alignItems).toBe('center');
+    expect(style.justifyContent).toBe('center');
+    expect(style.textAlign).toBe('center');
+    expect(style.textDecoration).toBe('none');
+  }
+
+  await page.goto('/Home/Worlds');
+  const worldAction = await page.locator('.world-action').first().evaluate(element => {
+    const css = getComputedStyle(element);
+    return {
+      display: css.display,
+      alignItems: css.alignItems,
+      justifyContent: css.justifyContent,
+      textAlign: css.textAlign,
+      textDecoration: css.textDecorationLine
+    };
+  });
+  expect(worldAction.display).toBe('inline-flex');
+  expect(worldAction.alignItems).toBe('center');
+  expect(worldAction.justifyContent).toBe('center');
+  expect(worldAction.textAlign).toBe('center');
+  expect(worldAction.textDecoration).toBe('none');
 });
