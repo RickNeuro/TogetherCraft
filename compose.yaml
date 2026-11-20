@@ -78,6 +78,7 @@ services:
       - "${WEB_BIND_ADDRESS:-0.0.0.0}:${WEB_BIND_PORT:-8080}:8080"
     volumes:
       - data-protection-keys:/var/dpkeys
+      - gallery-data:/app/wwwroot/images/gallery
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -146,6 +147,7 @@ volumes:
   caddy-data:
   caddy-config:
   data-protection-keys:
+  gallery-data:
   prometheus-data:
 
 networks:

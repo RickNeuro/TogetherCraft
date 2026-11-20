@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TogetherCraft.Services;
 
@@ -10,13 +12,22 @@ public sealed class AdminController : Controller
 {
     private readonly AppDatabase _database;
     private readonly MinecraftRconService _rcon;
-    private readonly ILogger<AdminController> _logger;
+    private const long MaxGalleryImageBytes = 8 * 1024 * 1024;
+    private static readonly string[] AllowedGalleryExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
 
-    public AdminController(AppDatabase database, MinecraftRconService rcon, ILogger<AdminController> logger)
+    private readonly ILogger<AdminController> _logger;
+    private readonly IWebHostEnvironment _environment;
+
+    public AdminController(
+        AppDatabase database,
+        MinecraftRconService rcon,
+        ILogger<AdminController> logger,
+        IWebHostEnvironment environment)
     {
         _database = database;
         _rcon = rcon;
         _logger = logger;
+        _environment = environment;
     }
 
     [HttpGet]
@@ -149,4 +160,183 @@ public sealed class AdminController : Controller
         }
         return RedirectToAction(nameof(Index));
     }
+    [HttpGet]
+    public IActionResult Gallery()
+    {
+        var folder = GetGalleryFolder();
+        Directory.CreateDirectory(folder);
+
+        var images = Directory.EnumerateFiles(folder)
+            .Where(path => AllowedGalleryExtensions.Contains(
+                Path.GetExtension(path),
+                StringComparer.OrdinalIgnoreCase))
+            .Select(Path.GetFileName)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name!)
+            .OrderByDescending(name => System.IO.File.GetLastWriteTimeUtc(Path.Combine(folder, name)))
+            .ToList();
+
+        return View(images);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequestSizeLimit(MaxGalleryImageBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxGalleryImageBytes)]
+    public async Task<IActionResult> UploadGalleryImage(
+        IFormFile? image,
+        string? title,
+        CancellationToken cancellationToken = default)
+    {
+        if (image is null || image.Length == 0)
+        {
+            TempData["Error"] = "Выбери изображение для загрузки.";
+            return RedirectToAction(nameof(Gallery));
+        }
+
+        if (image.Length > MaxGalleryImageBytes)
+        {
+            TempData["Error"] = "Изображение слишком большое. Максимальный размер — 8 МБ.";
+            return RedirectToAction(nameof(Gallery));
+        }
+
+        var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+        if (!AllowedGalleryExtensions.Contains(extension, StringComparer.Ordinal))
+        {
+            TempData["Error"] = "Поддерживаются только JPG, PNG, WEBP и GIF.";
+            return RedirectToAction(nameof(Gallery));
+        }
+
+        await using var buffer = new MemoryStream();
+        await image.CopyToAsync(buffer, cancellationToken);
+        var fileBytes = buffer.ToArray();
+
+        if (!HasValidImageSignature(fileBytes, extension))
+        {
+            TempData["Error"] = "Содержимое файла не соответствует формату изображения.";
+            return RedirectToAction(nameof(Gallery));
+        }
+
+        var safeTitle = CreateGallerySlug(title, image.FileName);
+        var fileName = $"{safeTitle}--{Guid.NewGuid():N}{extension}";
+        var folder = GetGalleryFolder();
+        Directory.CreateDirectory(folder);
+        var filePath = Path.Combine(folder, fileName);
+
+        try
+        {
+            await using var output = new FileStream(
+                filePath,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize: 81920,
+                useAsync: true);
+            await output.WriteAsync(fileBytes, cancellationToken);
+
+            TempData["Success"] = "Изображение добавлено в галерею.";
+        }
+        catch (IOException exception)
+        {
+            _logger.LogError(exception, "Не удалось сохранить изображение галереи {FileName}.", fileName);
+            TempData["Error"] = "Не удалось сохранить изображение. Проверь свободное место и права на папку галереи.";
+        }
+
+        return RedirectToAction(nameof(Gallery));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteGalleryImage(string? fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName)
+            || !string.Equals(fileName, Path.GetFileName(fileName), StringComparison.Ordinal)
+            || !AllowedGalleryExtensions.Contains(Path.GetExtension(fileName), StringComparer.OrdinalIgnoreCase))
+        {
+            TempData["Error"] = "Некорректное имя изображения.";
+            return RedirectToAction(nameof(Gallery));
+        }
+
+        var folder = GetGalleryFolder();
+        var filePath = Path.GetFullPath(Path.Combine(folder, fileName));
+        var folderPath = Path.GetFullPath(folder) + Path.DirectorySeparatorChar;
+        if (!filePath.StartsWith(folderPath, StringComparison.Ordinal))
+        {
+            TempData["Error"] = "Путь к изображению недопустим.";
+            return RedirectToAction(nameof(Gallery));
+        }
+
+        if (!System.IO.File.Exists(filePath))
+        {
+            TempData["Error"] = "Изображение уже удалено или не найдено.";
+            return RedirectToAction(nameof(Gallery));
+        }
+
+        try
+        {
+            System.IO.File.Delete(filePath);
+            TempData["Success"] = "Изображение удалено из галереи.";
+        }
+        catch (IOException exception)
+        {
+            _logger.LogError(exception, "Не удалось удалить изображение галереи {FileName}.", fileName);
+            TempData["Error"] = "Не удалось удалить изображение.";
+        }
+
+        return RedirectToAction(nameof(Gallery));
+    }
+
+    private string GetGalleryFolder()
+    {
+        var webRoot = _environment.WebRootPath
+            ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+        return Path.Combine(webRoot, "images", "gallery");
+    }
+
+    private static bool HasValidImageSignature(byte[] bytes, string extension)
+    {
+        if (extension is ".jpg" or ".jpeg")
+            return bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF;
+
+        if (extension == ".png")
+        {
+            byte[] signature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+            return bytes.Length >= signature.Length
+                && bytes.AsSpan(0, signature.Length).SequenceEqual(signature);
+        }
+
+        if (extension == ".gif")
+        {
+            return bytes.Length >= 6
+                && (System.Text.Encoding.ASCII.GetString(bytes, 0, 6) is "GIF87a" or "GIF89a");
+        }
+
+        if (extension == ".webp")
+        {
+            return bytes.Length >= 12
+                && System.Text.Encoding.ASCII.GetString(bytes, 0, 4) == "RIFF"
+                && System.Text.Encoding.ASCII.GetString(bytes, 8, 4) == "WEBP";
+        }
+
+        return false;
+    }
+
+    private static string CreateGallerySlug(string? title, string originalFileName)
+    {
+        var source = string.IsNullOrWhiteSpace(title)
+            ? Path.GetFileNameWithoutExtension(originalFileName)
+            : title.Trim();
+
+        var cleaned = new string(source
+            .ToLowerInvariant()
+            .Select(character => char.IsLetterOrDigit(character) ? character : ' ')
+            .ToArray());
+        var slug = string.Join("-", cleaned.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+        if (slug.Length > 50)
+            slug = slug[..50].Trim('-');
+
+        return string.IsNullOrWhiteSpace(slug) ? "screenshot" : slug;
+    }
+
 }

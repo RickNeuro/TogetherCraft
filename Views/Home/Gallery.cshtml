@@ -30,7 +30,11 @@
         <div class="gallery-photo-grid">
             @foreach (var file in Model)
             {
-                var title = System.IO.Path.GetFileNameWithoutExtension(file).Replace('-', ' ').Replace('_', ' ');
+                var title = System.IO.Path.GetFileNameWithoutExtension(file);
+                var titleSeparator = title.LastIndexOf("--", StringComparison.Ordinal);
+                if (titleSeparator > 0)
+                    title = title[..titleSeparator];
+                title = title.Replace('-', ' ').Replace('_', ' ');
                 var imageUrl = Url.Content("~/images/gallery/" + Uri.EscapeDataString(file));
                 <button class="gallery-photo" type="button"
                         data-gallery-open

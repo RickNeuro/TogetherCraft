@@ -152,6 +152,11 @@ with opener.open(base_url.rstrip("/") + "/Admin/Users", timeout=10) as response:
     if response.status != 200 or "Пользователи" not in page:
         raise SystemExit("/Admin/Users did not render for the administrator")
 
+with opener.open(base_url.rstrip("/") + "/Admin/Gallery", timeout=10) as response:
+    page = response.read().decode("utf-8", errors="replace")
+    if response.status != 200 or "Управление галереей" not in page or "UploadGalleryImage" not in page:
+        raise SystemExit("/Admin/Gallery did not render the upload form for the administrator")
+
 # The private status API remains available to administrators.
 with opener.open(base_url.rstrip("/") + "/api/minecraft/servers", timeout=10) as response:
     import json
@@ -166,7 +171,7 @@ echo "Smoke tests passed: PostgreSQL health/permissions, backend routes/authenti
 
 
 # Game addresses, technical status and host metrics must not be available anonymously.
-for route in "/Home/Play" "/Home/Vanilla" "/Home/Create" "/Home/Server" "/Admin" "/Admin/Users" "/api/minecraft/servers" "/api/minecraft/status" "/api/metrics"; do
+for route in "/Home/Play" "/Home/Vanilla" "/Home/Create" "/Home/Server" "/Admin" "/Admin/Users" "/Admin/Gallery" "/api/minecraft/servers" "/api/minecraft/status" "/api/metrics"; do
     status_code="$(curl --silent --show-error --output "$TMP_HTML" --write-out '%{http_code}' "$BASE_URL$route")" \
         || fail "request failed for $route"
     [[ "$status_code" == "302" ]] || fail "$route should redirect anonymous users to login, got HTTP $status_code"

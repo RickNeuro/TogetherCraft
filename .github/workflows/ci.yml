@@ -114,6 +114,8 @@ jobs:
         run: npx playwright test
         env:
           BASE_URL: http://127.0.0.1:8080
+          CI_ADMIN_USERNAME: ci-admin
+          CI_ADMIN_PASSWORD: CI-Only-Admin-Password-2026!
 
       - name: Collect container logs on failure
         if: failure()

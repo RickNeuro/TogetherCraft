@@ -1,0 +1,78 @@
+@model IReadOnlyList<string>
+@{
+    ViewData["Title"] = "Управление галереей";
+}
+<section class="internal-page admin-gallery-page">
+    <header class="internal-page-header admin-page-header">
+        <div>
+            <p class="section-label">ПАНЕЛЬ АДМИНИСТРАТОРА</p>
+            <h1>Галерея сообщества</h1>
+            <p class="internal-page-lead">Загружай настоящие скриншоты игровых миров. Они появятся в публичной галерее и сохранятся после обновления сайта.</p>
+        </div>
+        <div class="admin-count"><strong>@Model.Count</strong><span>изображений</span></div>
+    </header>
+
+    <section class="admin-gallery-upload-panel">
+        <div>
+            <span class="section-label">НОВОЕ ИЗОБРАЖЕНИЕ</span>
+            <h2>Добавить скриншот</h2>
+            <p>JPG, PNG, WEBP или GIF. Максимальный размер одного файла — 8 МБ.</p>
+        </div>
+        <form asp-controller="Admin" asp-action="UploadGalleryImage" method="post" enctype="multipart/form-data" class="admin-gallery-upload-form">
+            <div class="admin-gallery-fields">
+                <label>
+                    <span>Название скриншота</span>
+                    <input type="text" name="title" maxlength="80" placeholder="Например, База Vanilla" />
+                </label>
+                <label>
+                    <span>Файл изображения</span>
+                    <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" required />
+                </label>
+            </div>
+            <button class="tc-btn tc-btn-primary" type="submit">Загрузить в галерею</button>
+        </form>
+    </section>
+
+    <div class="admin-gallery-heading">
+        <div>
+            <span class="section-label">ОПУБЛИКОВАНО</span>
+            <h2>Изображения галереи</h2>
+        </div>
+        <a asp-controller="Home" asp-action="Gallery" target="_blank" rel="noopener noreferrer">Посмотреть публичную страницу</a>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <section class="empty-state-panel admin-gallery-empty">
+            <h2>Пока нет скриншотов</h2>
+            <p>Добавь первое изображение выше. Оно автоматически появится на публичной странице галереи.</p>
+        </section>
+    }
+    else
+    {
+        <div class="admin-gallery-grid">
+            @foreach (var file in Model)
+            {
+                var title = System.IO.Path.GetFileNameWithoutExtension(file);
+                var titleSeparator = title.LastIndexOf("--", StringComparison.Ordinal);
+                if (titleSeparator > 0)
+                    title = title[..titleSeparator];
+                title = title.Replace('-', ' ').Replace('_', ' ');
+                var imageUrl = Url.Content("~/images/gallery/" + Uri.EscapeDataString(file));
+                <article class="admin-gallery-card">
+                    <a href="@imageUrl" target="_blank" rel="noopener noreferrer">
+                        <img src="@imageUrl" alt="@title" loading="lazy" />
+                    </a>
+                    <div class="admin-gallery-card-details">
+                        <strong>@title</strong>
+                        <small>@file</small>
+                        <form asp-controller="Admin" asp-action="DeleteGalleryImage" method="post" onsubmit="return confirm('Удалить это изображение из галереи?');">
+                            <input type="hidden" name="fileName" value="@file" />
+                            <button class="tc-btn tc-btn-secondary tc-btn-danger" type="submit">Удалить</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

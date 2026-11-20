@@ -90,7 +90,7 @@ test('login remains available while registration is disabled without Microsoft O
 });
 
 test('connection page and status endpoints are private', async ({ request }) => {
-  const routes = ['/Home/Play', '/Home/Vanilla', '/Home/Create', '/Home/Server', '/Admin', '/Admin/Users', '/api/minecraft/servers', '/api/minecraft/status', '/api/metrics'];
+  const routes = ['/Home/Play', '/Home/Vanilla', '/Home/Create', '/Home/Server', '/Admin', '/Admin/Users', '/Admin/Gallery', '/api/minecraft/servers', '/api/minecraft/status', '/api/metrics'];
   for (const route of routes) {
     const response = await request.get(route, { maxRedirects: 0 });
     expect(response.status(), route + ' must not be public').toBe(302);
@@ -181,4 +181,57 @@ test('final TogetherCraft artwork and game icons are local and replace placehold
   for (const glyph of ['→', '↗', '◆']) {
     expect(bodyText).not.toContain(glyph);
   }
+});
+
+
+test('administrator can upload, publish and delete a gallery image', async ({ page }) => {
+  const username = process.env.CI_ADMIN_USERNAME;
+  const password = process.env.CI_ADMIN_PASSWORD;
+  expect(username).toBeTruthy();
+  expect(password).toBeTruthy();
+
+  await page.goto('/Account/Login');
+  await page.locator('input[name="Username"]').fill(username);
+  await page.locator('input[name="Password"]').fill(password);
+  await page.locator('form').first().getByRole('button', { name: 'Войти' }).click();
+  await expect(page).toHaveURL(/Admin/);
+
+  await page.goto('/Admin/Gallery');
+  await expect(page.getByRole('heading', { name: 'Галерея сообщества' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Пока нет скриншотов' })).toBeVisible();
+
+  await page.locator('input[name="title"]').fill('Invalid upload');
+  await page.locator('input[name="image"]').setInputFiles({
+    name: 'not-really-a-png.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('This is not a PNG image')
+  });
+  await page.getByRole('button', { name: 'Загрузить в галерею' }).click();
+  await expect(page.getByRole('alert')).toContainText('Содержимое файла не соответствует формату');
+  await expect(page.getByRole('heading', { name: 'Пока нет скриншотов' })).toBeVisible();
+
+  const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+  await page.locator('input[name="title"]').fill('CI Gallery Test');
+  await page.locator('input[name="image"]').setInputFiles({
+    name: 'ci-gallery.gif',
+    mimeType: 'image/gif',
+    buffer: gif
+  });
+  await page.getByRole('button', { name: 'Загрузить в галерею' }).click();
+  await expect(page.getByText('ci gallery test', { exact: true })).toBeVisible();
+
+  await page.goto('/Home/Gallery');
+  await expect(page.locator('.gallery-photo')).toHaveCount(1);
+  const uploadedImage = page.locator('.gallery-photo img').first();
+  await expect(uploadedImage).toHaveAttribute('alt', 'ci gallery test');
+  await expect.poll(() => uploadedImage.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+
+  await page.goto('/Admin/Gallery');
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Удалить' }).click();
+  await expect(page.getByRole('heading', { name: 'Пока нет скриншотов' })).toBeVisible();
+
+  await page.goto('/Home/Gallery');
+  await expect(page.locator('.gallery-photo')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Галерея пока наполняется' })).toBeVisible();
 });

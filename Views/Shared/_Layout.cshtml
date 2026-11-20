@@ -42,6 +42,7 @@
                 @if (User.IsInRole("Admin"))
                 {
                     <a asp-controller="Admin" asp-action="Index">Админка</a>
+                    <a asp-controller="Admin" asp-action="Gallery">Галерея</a>
                     <a asp-controller="Home" asp-action="Server">Мониторинг</a>
                 }
             </nav>
@@ -85,7 +86,7 @@
         <div class="wrap">
             <div class="footer-main">
                 <div class="footer-brand footer-brand-line">
-                    <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/88/FoxFace.png/revision/latest?cb=20190213180659" alt="" />
+                    <img src="/img/icon-meteor.svg" alt="" />
                     <div>
                         <strong>TogetherCraft</strong>
                         <span>Вместе играем. Вместе строим.</span>
