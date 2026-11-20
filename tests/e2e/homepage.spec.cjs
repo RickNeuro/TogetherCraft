@@ -326,35 +326,51 @@ test('CTA labels are vertically and horizontally centered without link underline
   for (const selector of selectors) {
     const style = await page.locator(selector).evaluate(element => {
       const css = getComputedStyle(element);
+      const buttonRect = element.getBoundingClientRect();
+      const textRange = document.createRange();
+      textRange.selectNodeContents(element);
+      const textRect = textRange.getBoundingClientRect();
       return {
         display: css.display,
         alignItems: css.alignItems,
         justifyContent: css.justifyContent,
         textAlign: css.textAlign,
-        textDecoration: css.textDecorationLine
+        textDecoration: css.textDecorationLine,
+        textCenterX: Math.abs((textRect.left + textRect.right) / 2 - (buttonRect.left + buttonRect.right) / 2),
+        textCenterY: Math.abs((textRect.top + textRect.bottom) / 2 - (buttonRect.top + buttonRect.bottom) / 2)
       };
     });
-    expect(style.display).toBe('inline-flex');
+    expect(['flex', 'inline-flex']).toContain(style.display);
     expect(style.alignItems).toBe('center');
     expect(style.justifyContent).toBe('center');
     expect(style.textAlign).toBe('center');
     expect(style.textDecoration).toBe('none');
+    expect(style.textCenterX).toBeLessThan(4);
+    expect(style.textCenterY).toBeLessThan(4);
   }
 
   await page.goto('/Home/Worlds');
   const worldAction = await page.locator('.world-action').first().evaluate(element => {
     const css = getComputedStyle(element);
+    const buttonRect = element.getBoundingClientRect();
+    const textRange = document.createRange();
+    textRange.selectNodeContents(element);
+    const textRect = textRange.getBoundingClientRect();
     return {
       display: css.display,
       alignItems: css.alignItems,
       justifyContent: css.justifyContent,
       textAlign: css.textAlign,
-      textDecoration: css.textDecorationLine
+      textDecoration: css.textDecorationLine,
+      textCenterX: Math.abs((textRect.left + textRect.right) / 2 - (buttonRect.left + buttonRect.right) / 2),
+      textCenterY: Math.abs((textRect.top + textRect.bottom) / 2 - (buttonRect.top + buttonRect.bottom) / 2)
     };
   });
-  expect(worldAction.display).toBe('inline-flex');
+  expect(['flex', 'inline-flex']).toContain(worldAction.display);
   expect(worldAction.alignItems).toBe('center');
   expect(worldAction.justifyContent).toBe('center');
   expect(worldAction.textAlign).toBe('center');
   expect(worldAction.textDecoration).toBe('none');
+  expect(worldAction.textCenterX).toBeLessThan(4);
+  expect(worldAction.textCenterY).toBeLessThan(4);
 });
