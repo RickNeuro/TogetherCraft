@@ -199,6 +199,12 @@ test('administrator can upload, publish and delete a gallery image', async ({ pa
   await page.locator('form').first().getByRole('button', { name: 'Войти' }).click();
   await expect(page).toHaveURL(/Admin/);
 
+  await page.goto('/Home/Play');
+  await expect(page.locator('.server-choice-placeholder')).toHaveCount(2);
+  await expect(page.locator('.server-choice-art img')).toHaveCount(0);
+  await expect(page.locator('.server-choice-placeholder strong').nth(0)).toHaveText('VANILLA');
+  await expect(page.locator('.server-choice-placeholder strong').nth(1)).toHaveText('CREATE');
+
   await page.goto('/Admin/Gallery');
   await expect(page.getByRole('heading', { name: 'Галерея сообщества' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Пока нет скриншотов' })).toBeVisible();

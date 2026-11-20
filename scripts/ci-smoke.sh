@@ -21,6 +21,7 @@ for route in "/" "/Account/Login" "/Account/Register"; do
     [[ "$status" == "200" ]] || fail "$route returned HTTP $status"
     if [[ "$route" == "/" ]]; then
         grep -q "TogetherCraft" "$TMP_HTML" || fail "homepage does not contain TogetherCraft"
+        grep -q 'src="/img/togethercraft-mark.webp"' "$TMP_HTML" || fail "homepage does not use the owner-provided TogetherCraft logo"
         grep -q 'src="/img/hero-fox.jpg"' "$TMP_HTML" || fail "homepage does not render the local hero artwork"
         grep -q 'site-final.css' "$TMP_HTML" || fail "the final TogetherCraft stylesheet is missing"
         grep -qi "Minecraft · Vanilla" "$TMP_HTML" || fail "homepage does not render the Vanilla direction"
@@ -129,8 +130,12 @@ with opener.open(base_url.rstrip("/") + "/Home/Play", timeout=10) as response:
         raise SystemExit("The connection selector did not show both independent Minecraft worlds")
     if "/Home/Vanilla" not in page or "/Home/Create" not in page:
         raise SystemExit("The selector does not link to separate Vanilla and Create pages")
-    if "/img/icon-minecraft.svg" not in page or "/img/game-assets/create-large-cogwheel.png" not in page:
-        raise SystemExit("The selector does not use the original Vanilla and Create artwork")
+    if 'class="server-choice-art server-choice-art-vanilla"' not in page or 'class="server-choice-art server-choice-art-create"' not in page:
+        raise SystemExit("The selector does not render the neutral Vanilla and Create cover panels")
+    if page.count('class="server-choice-placeholder"') != 2 or "СКРИНШОТ МИРА" not in page:
+        raise SystemExit("The selector does not show both owner-screenshot placeholders")
+    if "/img/icon-minecraft.svg" in page or "/img/game-assets/create-large-cogwheel.png" in page:
+        raise SystemExit("The selector still uses the removed floating cover icons")
     if any(symbol in page for symbol in ("◆", "⚙", "→")):
         raise SystemExit("The selector still contains placeholder symbols")
     if "vanilla-ci.example.invalid" in page or "create-ci.example.invalid" in page:
