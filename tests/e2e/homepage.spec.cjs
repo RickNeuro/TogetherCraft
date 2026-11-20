@@ -69,7 +69,7 @@ test('gallery has a real empty state when no images have been uploaded', async (
 });
 
 test('homepage has no horizontal overflow on desktop and mobile widths', async ({ page }) => {
-  for (const width of [1440, 900, 390, 360]) {
+  for (const width of [2048, 1440, 1280, 1024, 900, 760, 390, 360]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
     const dimensions = await page.evaluate(() => ({
@@ -236,4 +236,76 @@ test('administrator can upload, publish and delete a gallery image', async ({ pa
   await page.goto('/Home/Gallery');
   await expect(page.locator('.gallery-photo')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Галерея пока наполняется' })).toBeVisible();
+});
+
+
+test('wide page rails are centered and use the available desktop width', async ({ page }) => {
+  for (const width of [2048, 1440, 1280, 1024, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const layout = await page.evaluate(() => {
+      const measure = selector => {
+        const element = document.querySelector(selector);
+        const rect = element.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, width: rect.width };
+      };
+      return {
+        viewport: document.documentElement.clientWidth,
+        home: measure('.home-page'),
+        header: measure('header.topbar .wrap.nav'),
+        footer: measure('footer .wrap'),
+        heroColumns: getComputedStyle(document.querySelector('.home-page .hero')).gridTemplateColumns
+      };
+    });
+
+    if (width > 680) {
+      expect(layout.heroColumns.trim().split(' ').filter(Boolean)).toHaveLength(2);
+    }
+
+    for (const name of ['home', 'header', 'footer']) {
+      const rail = layout[name];
+      expect(Math.abs((rail.left + rail.right) / 2 - layout.viewport / 2),
+        name + ' rail should be centered at ' + width + 'px').toBeLessThanOrEqual(2);
+      expect(rail.width).toBeGreaterThan(layout.viewport * 0.6);
+    }
+  }
+});
+
+test('light and dark themes switch, style controls and persist between pages', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const toggle = page.getByRole('button', { name: 'Переключить на светлую тему' });
+  await expect(toggle).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  const dark = await page.evaluate(() => ({
+    background: getComputedStyle(document.body).backgroundColor,
+    buttonBackground: getComputedStyle(document.querySelector('.tc-btn-primary')).backgroundColor,
+    buttonText: getComputedStyle(document.querySelector('.tc-btn-primary')).color
+  }));
+  expect(dark.background).toBe('rgb(33, 26, 23)');
+  expect(dark.buttonBackground).toBe('rgb(193, 135, 107)');
+  expect(dark.buttonText).toBe('rgb(42, 30, 25)');
+
+  await toggle.click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.getByRole('button', { name: 'Переключить на тёмную тему' })).toHaveAttribute('aria-pressed', 'true');
+
+  const light = await page.evaluate(() => ({
+    background: getComputedStyle(document.body).backgroundColor,
+    buttonBackground: getComputedStyle(document.querySelector('.tc-btn-primary')).backgroundColor,
+    buttonText: getComputedStyle(document.querySelector('.tc-btn-primary')).color
+  }));
+  expect(light.background).toBe('rgb(246, 239, 234)');
+  expect(light.buttonBackground).toBe('rgb(193, 135, 107)');
+  expect(light.buttonText).toBe('rgb(42, 30, 25)');
+
+  await page.goto('/Home/Worlds');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+
+  await page.getByRole('button', { name: 'Переключить на тёмную тему' }).click();
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });

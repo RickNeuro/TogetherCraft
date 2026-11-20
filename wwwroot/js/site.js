@@ -1,4 +1,40 @@
 (() => {
+    const themeToggle = document.querySelector('#theme-toggle');
+    const root = document.documentElement;
+
+    function applyTheme(theme, saveChoice) {
+        const nextTheme = theme === 'light' ? 'light' : 'dark';
+        root.dataset.theme = nextTheme;
+        document.body?.setAttribute('data-bs-theme', nextTheme);
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) themeColor.content = nextTheme === 'dark' ? '#211A17' : '#F6EFEA';
+
+        if (themeToggle) {
+            const nextLabel = nextTheme === 'dark'
+                ? 'Переключить на светлую тему'
+                : 'Переключить на тёмную тему';
+            themeToggle.setAttribute('aria-label', nextLabel);
+            themeToggle.setAttribute('title', nextLabel);
+            themeToggle.setAttribute('aria-pressed', String(nextTheme === 'light'));
+        }
+
+        if (saveChoice) {
+            try {
+                localStorage.setItem('tc-theme', nextTheme);
+            } catch {
+                // The selected theme still applies for this page if storage is unavailable.
+            }
+        }
+    }
+
+    const savedTheme = root.dataset.theme === 'light' ? 'light' : 'dark';
+    applyTheme(savedTheme, false);
+
+    themeToggle?.addEventListener('click', () => {
+        const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(nextTheme, true);
+    });
+
     const toast = document.querySelector('[data-toast]');
     let toastTimer;
 
