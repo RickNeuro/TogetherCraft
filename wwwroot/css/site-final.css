@@ -294,25 +294,25 @@ body.app-shell .field-validation-error{color:#ffb5a8}
 }
 html[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #24180F;
-    --bg2: #302014;
-    --panel: #3A2719;
-    --panel2: #593315;
-    --line: rgba(244, 221, 199, .18);
-    --text: #F7EFE7;
-    --muted: #D0BDAA;
-    --soft: #AD927B;
+    --bg: #593315;
+    --bg2: #4A2A17;
+    --panel: #6A452B;
+    --panel2: #795238;
+    --line: rgba(255, 235, 218, .2);
+    --text: #FFF5EC;
+    --muted: #E5CEBC;
+    --soft: #C7A88F;
     --orange: #C1876B;
-    --orange2: #D7A58D;
+    --orange2: #E1B29B;
     --rust: #98543C;
-    --green: #91A68A;
-    --tc-button-hover: #D19A7E;
-    --tc-header: rgba(36, 24, 15, .96);
-    --tc-footer: #1B120D;
-    --tc-input: #2B1C11;
-    --tc-card: linear-gradient(145deg, #3A2719, #2D1D12);
-    --tc-card-soft: #593315;
-    --tc-button-outline: rgba(247, 239, 231, .38);
+    --green: #A8B89D;
+    --tc-button-hover: #D49A7E;
+    --tc-header: rgba(74, 42, 23, .97);
+    --tc-footer: #432612;
+    --tc-input: #4D2C17;
+    --tc-card: linear-gradient(145deg, #6A452B, #54331E);
+    --tc-card-soft: #704A30;
+    --tc-button-outline: rgba(255, 245, 236, .44);
 }
 html[data-theme="light"] {
     color-scheme: light;
@@ -975,3 +975,98 @@ html[data-theme="dark"] .server-choice {
 .server-choice.server-choice-create .server-choice-art { background: #3D3023; }
 html[data-theme="light"] .server-choice.server-choice-vanilla .server-choice-art { background: #DCE5DB; }
 html[data-theme="light"] .server-choice.server-choice-create .server-choice-art { background: #E8DCCF; }
+
+
+/* Owner's final dark theme: the page background itself is #593315. */
+html[data-theme="dark"] body.app-shell,
+html[data-theme="dark"] .site-main {
+    background: #593315 !important;
+    color: #FFF5EC;
+}
+html[data-theme="dark"] header.topbar {
+    background: rgba(74, 42, 23, .97) !important;
+}
+html[data-theme="dark"] footer.footer {
+    background: #432612 !important;
+}
+html[data-theme="dark"] .home-worlds-strip > div,
+html[data-theme="dark"] .home-gallery-preview,
+html[data-theme="dark"] .world-card,
+html[data-theme="dark"] .team-page-panel,
+html[data-theme="dark"] .server-choice,
+html[data-theme="dark"] .admin-gallery-upload-panel,
+html[data-theme="dark"] .gallery-empty-state {
+    background: #6A452B !important;
+    border-color: rgba(255,235,218,.2);
+}
+html[data-theme="dark"] .world-art.world-art-vanilla,
+html[data-theme="dark"] .server-choice.server-choice-vanilla .server-choice-art {
+    background: #795238 !important;
+}
+html[data-theme="dark"] .world-art.world-art-create,
+html[data-theme="dark"] .server-choice.server-choice-create .server-choice-art {
+    background: #885E40 !important;
+}
+html[data-theme="dark"] .world-art.world-art-factorio {
+    background: #68452B !important;
+}
+html[data-theme="light"] .world-art.world-art-vanilla,
+html[data-theme="light"] .server-choice.server-choice-vanilla .server-choice-art {
+    background: #E9D8CC !important;
+}
+html[data-theme="light"] .world-art.world-art-create,
+html[data-theme="light"] .server-choice.server-choice-create .server-choice-art {
+    background: #EBD2C3 !important;
+}
+html[data-theme="light"] .world-art.world-art-factorio {
+    background: #E2C9B9 !important;
+}
+
+/* Clean centered CTA typography across public pages. */
+.home-page .hero-actions .tc-btn,
+.home-page .home-gallery-preview .world-action,
+.world-card .world-action,
+.team-page-panel .world-action,
+.section-more-link,
+.back-to-worlds,
+.server-choice .server-choice-link {
+    text-decoration: none !important;
+    font-family: Manrope, "Segoe UI", Arial, sans-serif;
+    font-weight: 800;
+    line-height: 1.25;
+}
+.home-page .hero-actions .tc-btn,
+.home-page .home-gallery-preview .world-action,
+.world-card .world-action,
+.team-page-panel .world-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.home-page .hero-actions .tc-btn {
+    min-width: 154px;
+    min-height: 48px;
+    padding: 0 20px;
+    letter-spacing: .045em;
+}
+.home-page .hero-actions .tc-btn-secondary {
+    border-color: var(--tc-button-outline);
+    background: transparent;
+    color: var(--text);
+}
+.home-page .hero-actions .tc-btn-secondary:hover {
+    border-color: var(--orange);
+    background: color-mix(in srgb, var(--orange) 12%, transparent);
+    color: var(--text);
+}
+.world-card .world-action,
+.team-page-panel .world-action {
+    width: 100%;
+}
+.home-page .hero h1,
+.internal-page-header h1,
+.world-content h2,
+.team-page-panel h2 {
+    text-wrap: balance;
+}

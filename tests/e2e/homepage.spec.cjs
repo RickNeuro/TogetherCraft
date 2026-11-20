@@ -153,11 +153,11 @@ test('TogetherCraft uses the owner logo and world covers remain neutral until sc
   const hero = page.locator('.hero-image');
   await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
   await expect.poll(() => hero.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
-  await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp');
+  await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
   await expect.poll(() => page.locator('header.topbar .brand img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
-  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/img/togethercraft-mark.webp');
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/img/togethercraft-mark.webp?v=3');
   await expect(page.locator('.home-world-icon img')).toHaveCount(3);
-  await expect(page.locator('footer .footer-brand-line img')).toHaveAttribute('src', '/img/togethercraft-mark.webp');
+  await expect(page.locator('footer .footer-brand-line img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
   await expect.poll(() => page.locator('footer .footer-brand-line img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.footer-social img')).toHaveCount(2);
 
@@ -171,7 +171,7 @@ test('TogetherCraft uses the owner logo and world covers remain neutral until sc
   }
 
   await page.goto('/Home/Team');
-  await expect(page.locator('.team-mark img')).toHaveAttribute('src', '/img/togethercraft-mark.webp');
+  await expect(page.locator('.team-mark img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
   await expect.poll(() => page.locator('.team-mark img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.team-discord-link img')).toHaveAttribute('src', '/img/icon-discord.svg');
   await expect(page.locator('.team-mark span')).toHaveCount(0);
@@ -290,11 +290,11 @@ test('light and dark themes switch, style controls and persist between pages', a
     buttonBackground: getComputedStyle(document.querySelector('.tc-btn-primary')).backgroundColor,
     buttonText: getComputedStyle(document.querySelector('.tc-btn-primary')).color
   }));
-  expect(dark.background).toBe('rgb(36, 24, 15)');
+  expect(dark.background).toBe('rgb(89, 51, 21)');
   expect(dark.buttonBackground).toBe('rgb(193, 135, 107)');
   expect(dark.buttonText).toBe('rgb(42, 30, 25)');
   const darkSurface = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--panel2').trim().toLowerCase());
-  expect(darkSurface).toBe('#593315');
+  expect(darkSurface).toBe('#795238');
 
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
@@ -373,4 +373,37 @@ test('CTA labels are vertically and horizontally centered without link underline
   expect(worldAction.textDecoration).toBe('none');
   expect(worldAction.textCenterX).toBeLessThan(4);
   expect(worldAction.textCenterY).toBeLessThan(4);
+});
+
+
+test('brand covers in world cards and CTA controls use the warm theme colors', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/Home/Worlds');
+  const darkColors = await page.locator('.world-art').evaluateAll(items =>
+    items.map(item => getComputedStyle(item).backgroundColor));
+  expect(darkColors).toEqual([
+    'rgb(121, 82, 56)',
+    'rgb(136, 94, 64)',
+    'rgb(104, 69, 43)'
+  ]);
+
+  const worldButton = page.locator('.world-card .world-action').first();
+  const worldButtonStyle = await worldButton.evaluate(item => {
+    const s = getComputedStyle(item);
+    return { background: s.backgroundColor, color: s.color, align: s.alignItems, justify: s.justifyContent, decoration: s.textDecorationLine };
+  });
+  expect(worldButtonStyle.background).toBe('rgb(193, 135, 107)');
+  expect(worldButtonStyle.color).toBe('rgb(42, 30, 25)');
+  expect(worldButtonStyle.align).toBe('center');
+  expect(worldButtonStyle.justify).toBe('center');
+  expect(worldButtonStyle.decoration).toBe('none');
+
+  await page.getByRole('button', { name: 'Переключить на светлую тему' }).click();
+  const lightColors = await page.locator('.world-art').evaluateAll(items =>
+    items.map(item => getComputedStyle(item).backgroundColor));
+  expect(lightColors).toEqual([
+    'rgb(233, 216, 204)',
+    'rgb(235, 210, 195)',
+    'rgb(226, 201, 185)'
+  ]);
 });
