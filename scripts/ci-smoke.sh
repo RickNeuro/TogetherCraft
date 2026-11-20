@@ -154,8 +154,8 @@ with opener.open(base_url.rstrip("/") + "/Admin/Users", timeout=10) as response:
 
 with opener.open(base_url.rstrip("/") + "/Admin/Gallery", timeout=10) as response:
     page = response.read().decode("utf-8", errors="replace")
-    if response.status != 200 or "Управление галереей" not in page or "UploadGalleryImage" not in page:
-        raise SystemExit("/Admin/Gallery did not render the upload form for the administrator")
+    if response.status != 200 or "Галерея сообщества" not in page or 'type="file"' not in page:
+        raise SystemExit("/Admin/Gallery did not render the administrator upload page and file input")
 
 # The private status API remains available to administrators.
 with opener.open(base_url.rstrip("/") + "/api/minecraft/servers", timeout=10) as response:
