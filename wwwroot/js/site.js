@@ -7,7 +7,7 @@
         root.dataset.theme = nextTheme;
         document.body?.setAttribute('data-bs-theme', nextTheme);
         const themeColor = document.querySelector('meta[name="theme-color"]');
-        if (themeColor) themeColor.content = nextTheme === 'dark' ? '#24180F' : '#F6EFEA';
+        if (themeColor) themeColor.content = nextTheme === 'dark' ? '#593315' : '#F6EFEA';
 
         if (themeToggle) {
             const nextLabel = nextTheme === 'dark'
@@ -33,6 +33,25 @@
     themeToggle?.addEventListener('click', () => {
         const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
         applyTheme(nextTheme, true);
+    });
+
+    // Fade between local pages. Keep native navigation for modified clicks,
+    // downloads, new tabs and external destinations.
+    document.addEventListener('click', event => {
+        const link = event.target.closest('a[href]');
+        if (!link || event.defaultPrevented || event.button !== 0 ||
+            event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
+            link.target === '_blank' || link.hasAttribute('download')) return;
+
+        const destination = new URL(link.href, window.location.href);
+        if (destination.origin !== window.location.origin ||
+            destination.pathname === window.location.pathname && destination.search === window.location.search ||
+            destination.hash && destination.pathname === window.location.pathname ||
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        event.preventDefault();
+        document.body.classList.add('page-leaving');
+        window.setTimeout(() => window.location.assign(destination.href), 170);
     });
 
     const toast = document.querySelector('[data-toast]');

@@ -44,7 +44,7 @@ download_png \
     "$OUTPUT_DIR/create-large-cogwheel.png"
 
 download_png \
-    "https://wiki.factorio.com/images/Factorio-logo.png" \
-    "$OUTPUT_DIR/factorio-logo.png"
+    "https://wiki.factorio.com/images/Big_biter.png" \
+    "$OUTPUT_DIR/big-biter.png"
 
 echo "All original game artwork is ready."
