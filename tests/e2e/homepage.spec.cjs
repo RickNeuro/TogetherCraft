@@ -148,7 +148,7 @@ test('the internal application shell fills the viewport', async ({ page }) => {
   expect(body.display).toBe('flex');
 });
 
-test('TogetherCraft uses the owner's logo and world covers remain neutral until screenshots arrive', async ({ page }) => {
+test('TogetherCraft uses the owner logo and world covers remain neutral until screenshots arrive', async ({ page }) => {
   await page.goto('/');
   const hero = page.locator('.hero-image');
   await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
