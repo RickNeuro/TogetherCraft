@@ -1,5 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
+test.describe.configure({ mode: 'serial' });
+
 test('homepage shows the agreed public introduction and keeps private addresses hidden', async ({ page }) => {
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
