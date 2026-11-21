@@ -39,9 +39,11 @@ download_png \
     "https://blockrender.dev/render/block/mossy_cobblestone.png?size=512" \
     "$OUTPUT_DIR/mossy-cobblestone.png"
 
-download_png \
-    "https://raw.githubusercontent.com/Creators-of-Create/Create/4148fd8d5b05c85d88947edc00fb495a5074f57d/src/main/resources/assets/create/textures/block/large_cogwheel.png" \
-    "$OUTPUT_DIR/create-large-cogwheel.png"
+# The Create icon is provided by the project owner and committed to the repository.
+if [[ ! -s "$OUTPUT_DIR/create-large-cogwheel.webp" ]]; then
+    echo "Missing owner-provided Create icon: $OUTPUT_DIR/create-large-cogwheel.webp" >&2
+    exit 1
+fi
 
 download_png \
     "https://wiki.factorio.com/images/Big_biter.png" \

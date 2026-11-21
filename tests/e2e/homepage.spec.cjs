@@ -46,7 +46,7 @@ test('world cover cards use neutral placeholders until the owner supplies real s
   await expect(page.locator('.world-art-placeholder')).toHaveCount(3);
   await expect(page.locator('.world-art img')).toHaveCount(3);
   await expect(page.locator('.world-symbol-block img')).toHaveAttribute('src', '/img/game-assets/mossy-cobblestone.png');
-  await expect(page.locator('.world-symbol-gear img')).toHaveAttribute('src', '/img/game-assets/create-large-cogwheel.png');
+  await expect(page.locator('.world-symbol-gear img')).toHaveAttribute('src', '/img/game-assets/create-large-cogwheel.webp');
   await expect(page.locator('.world-symbol-biter img')).toHaveAttribute('src', '/img/game-assets/big-biter.png');
   await expect(page.locator('.world-art-placeholder strong').nth(0)).toHaveText('VANILLA');
   await expect(page.locator('.world-art-placeholder strong').nth(1)).toHaveText('CREATE');
@@ -161,7 +161,7 @@ test('TogetherCraft uses the owner logo and world covers remain neutral until sc
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/img/togethercraft-mark.webp?v=3');
   await expect(page.locator('.home-world-icon img')).toHaveCount(3);
   await expect(page.locator('.home-world-icon img').nth(0)).toHaveAttribute('src', '/img/game-assets/mossy-cobblestone.png');
-  await expect(page.locator('.home-world-icon img').nth(1)).toHaveAttribute('src', '/img/game-assets/create-large-cogwheel.png');
+  await expect(page.locator('.home-world-icon img').nth(1)).toHaveAttribute('src', '/img/game-assets/create-large-cogwheel.webp');
   await expect(page.locator('.home-world-icon img').nth(2)).toHaveAttribute('src', '/img/game-assets/big-biter.png');
   await expect(page.locator('footer .footer-brand-line img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
   await expect.poll(() => page.locator('footer .footer-brand-line img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
