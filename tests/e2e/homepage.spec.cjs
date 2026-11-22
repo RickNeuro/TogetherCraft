@@ -153,7 +153,7 @@ test('the internal application shell fills the viewport', async ({ page }) => {
 
 test('TogetherCraft uses the owner logo and world covers remain neutral until screenshots arrive', async ({ page }) => {
   await page.goto('/');
-  const hero = page.locator('.hero-image');
+  const hero = page.locator('.hero-image-light');
   await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
   await expect.poll(() => hero.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
   await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
