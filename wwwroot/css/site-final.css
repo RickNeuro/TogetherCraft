@@ -1452,3 +1452,37 @@ html[data-theme="light"] .home-page .hero-image-caption {
         transition: none;
     }
 }
+
+
+/* Theme-specific CTA colors override legacy warm-theme rules. */
+html[data-theme="dark"] .home-page .tc-btn-primary,
+html[data-theme="dark"] .world-action,
+html[data-theme="dark"] body.app-shell .btn-warning,
+html[data-theme="dark"] header.topbar .nav-actions .cta {
+    background: #AFC5DE !important;
+    border-color: #AFC5DE !important;
+    color: #101925 !important;
+}
+html[data-theme="light"] .home-page .tc-btn-primary,
+html[data-theme="light"] .world-action,
+html[data-theme="light"] body.app-shell .btn-warning,
+html[data-theme="light"] header.topbar .nav-actions .cta {
+    background: #B96F35 !important;
+    border-color: #B96F35 !important;
+    color: #FFF9EF !important;
+}
+html[data-theme="dark"] .home-page .tc-btn-primary:hover,
+html[data-theme="dark"] .world-action:hover,
+html[data-theme="dark"] body.app-shell .btn-warning:hover,
+html[data-theme="dark"] header.topbar .nav-actions .cta:hover {
+    background: #D7E4F2 !important;
+    border-color: #D7E4F2 !important;
+}
+html[data-theme="light"] .home-page .tc-btn-primary:hover,
+html[data-theme="light"] .world-action:hover,
+html[data-theme="light"] body.app-shell .btn-warning:hover,
+html[data-theme="light"] header.topbar .nav-actions .cta:hover {
+    background: #D6A34A !important;
+    border-color: #D6A34A !important;
+    color: #29372C !important;
+}

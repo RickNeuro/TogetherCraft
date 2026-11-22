@@ -336,6 +336,8 @@ test('light and dark themes switch, style controls and persist between pages', a
     buttonText: getComputedStyle(document.querySelector('.tc-btn-primary')).color
   }));
   expect(light.background).toBe('rgb(243, 240, 230)');
+  const lightAccent = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--orange').trim());
+  expect(lightAccent).toBe('#B96F35');
   expect(light.buttonBackground).toBe('rgb(185, 111, 53)');
   expect(light.buttonText).toBe('rgb(255, 249, 239)');
 
