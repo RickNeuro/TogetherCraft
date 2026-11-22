@@ -156,14 +156,14 @@ test('TogetherCraft uses the owner logo and world covers remain neutral until sc
   const hero = page.locator('.hero-image-light');
   await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
   await expect.poll(() => hero.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
-  await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
+  await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=4');
   await expect.poll(() => page.locator('header.topbar .brand img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
-  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/img/togethercraft-mark.webp?v=3');
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/img/togethercraft-mark.webp?v=4');
   await expect(page.locator('.home-world-icon img')).toHaveCount(3);
   await expect(page.locator('.home-world-icon img').nth(0)).toHaveAttribute('src', '/img/game-assets/mossy-cobblestone.png');
   await expect(page.locator('.home-world-icon img').nth(1)).toHaveAttribute('src', '/img/game-assets/create-large-cogwheel.webp');
   await expect(page.locator('.home-world-icon img').nth(2)).toHaveAttribute('src', '/img/game-assets/big-biter.png');
-  await expect(page.locator('footer .footer-brand-line img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
+  await expect(page.locator('footer .footer-brand-line img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=4');
   await expect.poll(() => page.locator('footer .footer-brand-line img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.footer-social img')).toHaveCount(2);
 
@@ -177,7 +177,7 @@ test('TogetherCraft uses the owner logo and world covers remain neutral until sc
   }
 
   await page.goto('/Home/Team');
-  await expect(page.locator('.team-mark img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
+  await expect(page.locator('.team-mark img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=4');
   await expect.poll(() => page.locator('.team-mark img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.team-discord-link img')).toHaveAttribute('src', '/img/icon-discord.svg');
   await expect(page.locator('.team-mark span')).toHaveCount(0);
@@ -290,7 +290,7 @@ test('the homepage hero switches between the supplied night image and fox', asyn
 
   const night = page.locator('.hero-image-dark');
   const fox = page.locator('.hero-image-light');
-  await expect(night).toHaveAttribute('src', '/img/hero-night.webp');
+  await expect(night).toHaveAttribute('src', '/img/hero-night.webp?v=2');
   await expect(fox).toHaveAttribute('src', '/img/hero-fox.jpg');
   await expect(night).toBeVisible();
   await expect(fox).toHaveCSS('display', 'none');
@@ -301,7 +301,7 @@ test('the homepage hero switches between the supplied night image and fox', asyn
   await expect(night).toHaveCSS('display', 'none');
   await expect.poll(() => fox.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
 
-  await expect(page.locator('.brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
+  await expect(page.locator('.brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=4');
   await expect(page.locator('.brand span')).toContainText('TogetherCraft');
 });
 
@@ -410,7 +410,7 @@ test('CTA labels are vertically and horizontally centered without link underline
 });
 
 
-test('brand covers in world cards and CTA controls use the warm theme colors', async ({ page }) => {
+test('world covers and CTA controls use the selected theme colors', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/Home/Worlds');
   const darkColors = await page.locator('.world-art').evaluateAll(items =>
@@ -432,6 +432,19 @@ test('brand covers in world cards and CTA controls use the warm theme colors', a
   expect(worldButtonStyle.justify).toBe('center');
   expect(worldButtonStyle.decoration).toBe('none');
 
+  const darkServerCover = await page.evaluate(() => {
+    const card = document.createElement('a');
+    card.className = 'server-choice server-choice-vanilla';
+    const cover = document.createElement('div');
+    cover.className = 'server-choice-art server-choice-art-vanilla';
+    card.append(cover);
+    document.body.append(card);
+    const color = getComputedStyle(cover).backgroundColor;
+    card.remove();
+    return color;
+  });
+  expect(darkServerCover).toBe('rgb(29, 42, 58)');
+
   await page.getByRole('button', { name: 'Переключить на светлую тему' }).click();
   const lightColors = await page.locator('.world-art').evaluateAll(items =>
     items.map(item => getComputedStyle(item).backgroundColor));
@@ -440,4 +453,20 @@ test('brand covers in world cards and CTA controls use the warm theme colors', a
     'rgb(231, 232, 218)',
     'rgb(237, 235, 221)'
   ]);
+
+  const lightWorldButton = page.locator('.world-card .world-action').first();
+  await expect.poll(() => lightWorldButton.evaluate(item => getComputedStyle(item).backgroundColor))
+    .toBe('rgb(185, 111, 53)');
+  const lightServerCover = await page.evaluate(() => {
+    const card = document.createElement('a');
+    card.className = 'server-choice server-choice-vanilla';
+    const cover = document.createElement('div');
+    cover.className = 'server-choice-art server-choice-art-vanilla';
+    card.append(cover);
+    document.body.append(card);
+    const color = getComputedStyle(cover).backgroundColor;
+    card.remove();
+    return color;
+  });
+  expect(lightServerCover).toBe('rgb(222, 226, 209)');
 });

@@ -147,9 +147,9 @@ header.topbar .nav-link-button{border:0;background:none;cursor:pointer}
 
 /* FAQ, sign-in, registration and connection pages */
 .faq-page .faq-list{max-width:940px;border-top:1px solid var(--line)}
-.faq-page .faq details{border-bottom:1px solid var(--line)}
-.faq-page .faq summary{padding:19px 4px;color:var(--text);font:700 14px "Space Grotesk",sans-serif}
-.faq-page .faq summary:after{color:var(--orange)}
+.faq-page .faq-list details{border-bottom:1px solid var(--line)}
+.faq-page .faq-list summary{padding:19px 4px;color:var(--text);font:700 14px "Space Grotesk",sans-serif}
+.faq-page .faq-list summary:after{color:var(--orange)}
 .faq-page .faq-answer{padding:0 30px 19px 4px;color:var(--muted);font-size:13px;line-height:1.8}
 .back-to-worlds{display:inline-flex;margin-bottom:25px;color:var(--orange2);font-size:12px;text-decoration:none}
 .back-to-worlds:hover{color:#ffd09a}
@@ -287,16 +287,13 @@ body.app-shell .field-validation-error{color:#ffb5a8}
 }
 
 
-/* ==========================================================
-   TogetherCraft responsive frame + beige/red light and dark themes
-   Accent sampled from the owner's reference image: #C1876B.
-   ========================================================== */
+/* Theme palette fallbacks; page themes are selected by html[data-theme]. */
 :root {
-    --tc-accent: #C1876B;
-    --tc-accent-strong: #A96E58;
-    --tc-accent-ink: #2A1E19;
-    --tc-link: #925844;
-    --tc-focus: #A96E58;
+    --tc-accent: #AFC5DE;
+    --tc-accent-strong: #D7E4F2;
+    --tc-accent-ink: #101925;
+    --tc-link: #AFC5DE;
+    --tc-focus: #D7E4F2;
 }
 html[data-theme="dark"] {
     color-scheme: dark;
@@ -621,8 +618,8 @@ html[data-theme="dark"] .world-platform { color: var(--orange2); }
     color: var(--text);
 }
 
-.faq-page .faq details { border-bottom-color: var(--line); }
-.faq-page .faq summary { color: var(--text); }
+.faq-page .faq-list details { border-bottom-color: var(--line); }
+.faq-page .faq-list summary { color: var(--text); }
 .faq-page .faq-answer { color: var(--muted); }
 .connection-address-panel,
 .server-choice {
@@ -980,8 +977,9 @@ html[data-theme="light"] .server-choice-art-create { background: #E8DCCF; }
 html[data-theme="light"] .server-choice-placeholder strong { color: #3A2A20; }
 html[data-theme="light"] .server-choice-placeholder small { color: #776458; }
 
-/* Keep the dark surfaces in the warm brown palette selected by the owner. */
-html[data-theme="dark"] body.app-shell {
+/* Existing page surfaces and world covers use the selected theme tokens. */
+html[data-theme="dark"] body.app-shell,
+html[data-theme="light"] body.app-shell {
     background: var(--bg);
     color: var(--text);
 }
@@ -989,61 +987,109 @@ html[data-theme="dark"] .team-page-panel,
 html[data-theme="dark"] .home-gallery-preview,
 html[data-theme="dark"] .home-worlds-strip > div,
 html[data-theme="dark"] .world-card,
-html[data-theme="dark"] .server-choice {
-    border-color: var(--line);
-}
-
-
-/* Explicit selector specificity: these cover surfaces override the old per-card gradients. */
-.server-choice.server-choice-vanilla .server-choice-art { background: #27372E; }
-.server-choice.server-choice-create .server-choice-art { background: #3D3023; }
-html[data-theme="light"] .server-choice.server-choice-vanilla .server-choice-art { background: #DCE5DB; }
-html[data-theme="light"] .server-choice.server-choice-create .server-choice-art { background: #E8DCCF; }
-
-
-/* Owner's final dark theme: the page background itself is #593315. */
-html[data-theme="dark"] body.app-shell,
-html[data-theme="dark"] .site-main {
-    background: #593315 !important;
-    color: #FFF5EC;
-}
-html[data-theme="dark"] header.topbar {
-    background: rgba(74, 42, 23, .97) !important;
-}
-html[data-theme="dark"] footer.footer {
-    background: #432612 !important;
-}
-html[data-theme="dark"] .home-worlds-strip > div,
-html[data-theme="dark"] .home-gallery-preview,
-html[data-theme="dark"] .world-card,
-html[data-theme="dark"] .team-page-panel,
 html[data-theme="dark"] .server-choice,
 html[data-theme="dark"] .admin-gallery-upload-panel,
-html[data-theme="dark"] .gallery-empty-state {
-    background: #6A452B !important;
-    border-color: rgba(255,235,218,.2);
+html[data-theme="dark"] .gallery-empty-state,
+html[data-theme="light"] .team-page-panel,
+html[data-theme="light"] .home-gallery-preview,
+html[data-theme="light"] .home-worlds-strip > div,
+html[data-theme="light"] .world-card,
+html[data-theme="light"] .server-choice,
+html[data-theme="light"] .admin-gallery-upload-panel,
+html[data-theme="light"] .gallery-empty-state {
+    border-color: var(--line);
+    background: var(--tc-card);
+    color: var(--text);
 }
 html[data-theme="dark"] .world-art.world-art-vanilla,
 html[data-theme="dark"] .server-choice.server-choice-vanilla .server-choice-art {
-    background: #795238 !important;
+    background: var(--tc-world-vanilla) !important;
 }
 html[data-theme="dark"] .world-art.world-art-create,
 html[data-theme="dark"] .server-choice.server-choice-create .server-choice-art {
-    background: #885E40 !important;
+    background: var(--tc-world-create) !important;
 }
 html[data-theme="dark"] .world-art.world-art-factorio {
-    background: #68452B !important;
+    background: var(--tc-world-factorio) !important;
 }
 html[data-theme="light"] .world-art.world-art-vanilla,
 html[data-theme="light"] .server-choice.server-choice-vanilla .server-choice-art {
-    background: #E9D8CC !important;
+    background: var(--tc-world-vanilla) !important;
 }
 html[data-theme="light"] .world-art.world-art-create,
 html[data-theme="light"] .server-choice.server-choice-create .server-choice-art {
-    background: #EBD2C3 !important;
+    background: var(--tc-world-create) !important;
 }
 html[data-theme="light"] .world-art.world-art-factorio {
-    background: #E2C9B9 !important;
+    background: var(--tc-world-factorio) !important;
+}
+html[data-theme="dark"] .world-art-placeholder strong,
+html[data-theme="dark"] .server-choice-placeholder strong {
+    color: var(--text);
+}
+html[data-theme="dark"] .world-art-placeholder-kicker,
+html[data-theme="dark"] .world-art-placeholder-note,
+html[data-theme="dark"] .server-choice-placeholder small,
+html[data-theme="dark"] .server-choice-server-label {
+    color: var(--muted);
+}
+html[data-theme="light"] .world-art-placeholder {
+    border-color: var(--line);
+    background: color-mix(in srgb, var(--panel) 88%, transparent);
+}
+html[data-theme="light"] .world-art-placeholder-kicker,
+html[data-theme="light"] .world-art-placeholder-note,
+html[data-theme="light"] .server-choice-placeholder small,
+html[data-theme="light"] .server-choice-server-label {
+    color: var(--muted);
+}
+html[data-theme="light"] .world-art-placeholder strong,
+html[data-theme="light"] .server-choice-placeholder strong {
+    color: var(--text);
+}
+html[data-theme="light"] .world-art-placeholder-note {
+    border-color: var(--line);
+}
+html[data-theme="dark"] .world-art-placeholder {
+    border-color: var(--line);
+    background: color-mix(in srgb, var(--panel) 78%, transparent);
+}
+html[data-theme="dark"] .world-art-placeholder-note {
+    border-color: var(--line);
+}
+
+/* Shared Bootstrap components follow the page theme as well. */
+body.app-shell .alert.alert-secondary {
+    border-color: var(--line);
+    background: var(--panel2);
+    color: var(--text);
+}
+body.app-shell .progress {
+    background: var(--panel2);
+}
+body.app-shell .progress-bar.bg-warning,
+body.app-shell .progress-bar.bg-info {
+    background-color: var(--orange) !important;
+}
+body.app-shell .form-check-input {
+    border-color: var(--line);
+    background-color: var(--panel2);
+    accent-color: var(--orange);
+}
+body.app-shell .form-check-label {
+    color: var(--text);
+}
+body.app-shell .btn-outline-light {
+    border-color: var(--line);
+    color: var(--text);
+}
+body.app-shell .btn-outline-light:hover {
+    border-color: var(--orange);
+    background: var(--panel2);
+    color: var(--text);
+}
+body.app-shell .text-warning {
+    color: var(--orange2) !important;
 }
 
 /* Clean centered CTA typography across public pages. */
@@ -1348,10 +1394,10 @@ html[data-theme="light"] .server-choice-placeholder strong {
 html[data-theme="light"] .world-art-placeholder-note {
     border-color: var(--line);
 }
-.faq-page .faq details {
+.faq-page .faq-list details {
     border-bottom-color: var(--line);
 }
-.faq-page .faq summary {
+.faq-page .faq-list summary {
     color: var(--text);
 }
 .faq-page .faq-answer {
