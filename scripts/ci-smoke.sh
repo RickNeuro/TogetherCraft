@@ -23,7 +23,9 @@ for route in "/" "/Account/Login" "/Account/Register"; do
         grep -q "TogetherCraft" "$TMP_HTML" || fail "homepage does not contain TogetherCraft"
         grep -q 'src="/img/togethercraft-mark.webp?v=4"' "$TMP_HTML" || fail "homepage does not use the current owner-provided TogetherCraft logo"
         grep -q 'src="/img/hero-fox.jpg"' "$TMP_HTML" || fail "homepage does not render the local fox artwork"
-        grep -q 'src="/img/hero-night.webp?v=2"' "$TMP_HTML" || fail "homepage does not render the local night artwork"
+        for unwanted in "Совместные постройки" "Свои игровые истории" "Люди, а не рейтинги" "TOGETHERCRAFT / WORLDS" "BUILD · EXPLORE · CREATE"; do
+            ! grep -Fq "$unwanted" "$TMP_HTML" || fail "homepage still renders unrequested copy: $unwanted"
+        done
         grep -q 'site-final.css' "$TMP_HTML" || fail "the final TogetherCraft stylesheet is missing"
         grep -qi "Minecraft · Vanilla" "$TMP_HTML" || fail "homepage does not render the Vanilla direction"
         grep -qi "Minecraft · Create" "$TMP_HTML" || fail "homepage does not render the Create direction"
@@ -53,6 +55,8 @@ class Assets(HTMLParser):
         if tag == "link" and "stylesheet" in attrs.get("rel", "").lower().split():
             value = attrs.get("href")
         elif tag == "script":
+            value = attrs.get("src")
+        elif tag == "img":
             value = attrs.get("src")
         else:
             value = None
