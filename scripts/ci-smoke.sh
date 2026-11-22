@@ -22,7 +22,8 @@ for route in "/" "/Account/Login" "/Account/Register"; do
     if [[ "$route" == "/" ]]; then
         grep -q "TogetherCraft" "$TMP_HTML" || fail "homepage does not contain TogetherCraft"
         grep -q 'src="/img/togethercraft-mark.webp?v=3"' "$TMP_HTML" || fail "homepage does not use the current owner-provided TogetherCraft logo"
-        grep -q 'src="/img/hero-fox.jpg"' "$TMP_HTML" || fail "homepage does not render the local hero artwork"
+        grep -q 'src="/img/hero-fox.jpg"' "$TMP_HTML" || fail "homepage does not render the local fox artwork"
+        grep -q 'src="/img/hero-night.webp"' "$TMP_HTML" || fail "homepage does not render the local night artwork"
         grep -q 'site-final.css' "$TMP_HTML" || fail "the final TogetherCraft stylesheet is missing"
         grep -qi "Minecraft · Vanilla" "$TMP_HTML" || fail "homepage does not render the Vanilla direction"
         grep -qi "Minecraft · Create" "$TMP_HTML" || fail "homepage does not render the Create direction"

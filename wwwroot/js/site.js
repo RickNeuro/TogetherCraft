@@ -7,7 +7,7 @@
         root.dataset.theme = nextTheme;
         document.body?.setAttribute('data-bs-theme', nextTheme);
         const themeColor = document.querySelector('meta[name="theme-color"]');
-        if (themeColor) themeColor.content = nextTheme === 'dark' ? '#593315' : '#F6EFEA';
+        if (themeColor) themeColor.content = nextTheme === 'dark' ? '#0B111A' : '#F3F0E6';
 
         if (themeToggle) {
             const nextLabel = nextTheme === 'dark'

@@ -284,6 +284,27 @@ test('wide page rails are centered and use the available desktop width', async (
   }
 });
 
+test('the homepage hero switches between the supplied night image and fox', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const night = page.locator('.hero-image-dark');
+  const fox = page.locator('.hero-image-light');
+  await expect(night).toHaveAttribute('src', '/img/hero-night.webp');
+  await expect(fox).toHaveAttribute('src', '/img/hero-fox.jpg');
+  await expect(night).toBeVisible();
+  await expect(fox).toHaveCSS('display', 'none');
+  await expect.poll(() => night.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+
+  await page.getByRole('button', { name: 'Переключить на светлую тему' }).click();
+  await expect(fox).toBeVisible();
+  await expect(night).toHaveCSS('display', 'none');
+  await expect.poll(() => fox.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+
+  await expect(page.locator('.brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=3');
+  await expect(page.locator('.brand span')).toContainText('TogetherCraft');
+});
+
 test('light and dark themes switch, style controls and persist between pages', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
@@ -296,11 +317,11 @@ test('light and dark themes switch, style controls and persist between pages', a
     buttonBackground: getComputedStyle(document.querySelector('.tc-btn-primary')).backgroundColor,
     buttonText: getComputedStyle(document.querySelector('.tc-btn-primary')).color
   }));
-  expect(dark.background).toBe('rgb(89, 51, 21)');
-  expect(dark.buttonBackground).toBe('rgb(193, 135, 107)');
-  expect(dark.buttonText).toBe('rgb(42, 30, 25)');
+  expect(dark.background).toBe('rgb(11, 17, 26)');
+  expect(dark.buttonBackground).toBe('rgb(175, 197, 222)');
+  expect(dark.buttonText).toBe('rgb(16, 25, 37)');
   const darkSurface = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--panel2').trim().toLowerCase());
-  expect(darkSurface).toBe('#795238');
+  expect(darkSurface).toBe('#1d2a3a');
 
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
@@ -311,9 +332,9 @@ test('light and dark themes switch, style controls and persist between pages', a
     buttonBackground: getComputedStyle(document.querySelector('.tc-btn-primary')).backgroundColor,
     buttonText: getComputedStyle(document.querySelector('.tc-btn-primary')).color
   }));
-  expect(light.background).toBe('rgb(246, 239, 234)');
-  expect(light.buttonBackground).toBe('rgb(193, 135, 107)');
-  expect(light.buttonText).toBe('rgb(42, 30, 25)');
+  expect(light.background).toBe('rgb(243, 240, 230)');
+  expect(light.buttonBackground).toBe('rgb(185, 111, 53)');
+  expect(light.buttonText).toBe('rgb(255, 249, 239)');
 
   await page.goto('/Home/Worlds');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
@@ -388,9 +409,9 @@ test('brand covers in world cards and CTA controls use the warm theme colors', a
   const darkColors = await page.locator('.world-art').evaluateAll(items =>
     items.map(item => getComputedStyle(item).backgroundColor));
   expect(darkColors).toEqual([
-    'rgb(121, 82, 56)',
-    'rgb(136, 94, 64)',
-    'rgb(104, 69, 43)'
+    'rgb(29, 42, 58)',
+    'rgb(34, 50, 71)',
+    'rgb(20, 31, 45)'
   ]);
 
   const worldButton = page.locator('.world-card .world-action').first();
@@ -398,8 +419,8 @@ test('brand covers in world cards and CTA controls use the warm theme colors', a
     const s = getComputedStyle(item);
     return { background: s.backgroundColor, color: s.color, align: s.alignItems, justify: s.justifyContent, decoration: s.textDecorationLine };
   });
-  expect(worldButtonStyle.background).toBe('rgb(193, 135, 107)');
-  expect(worldButtonStyle.color).toBe('rgb(42, 30, 25)');
+  expect(worldButtonStyle.background).toBe('rgb(175, 197, 222)');
+  expect(worldButtonStyle.color).toBe('rgb(16, 25, 37)');
   expect(worldButtonStyle.align).toBe('center');
   expect(worldButtonStyle.justify).toBe('center');
   expect(worldButtonStyle.decoration).toBe('none');
@@ -408,8 +429,8 @@ test('brand covers in world cards and CTA controls use the warm theme colors', a
   const lightColors = await page.locator('.world-art').evaluateAll(items =>
     items.map(item => getComputedStyle(item).backgroundColor));
   expect(lightColors).toEqual([
-    'rgb(233, 216, 204)',
-    'rgb(235, 210, 195)',
-    'rgb(226, 201, 185)'
+    'rgb(222, 226, 209)',
+    'rgb(231, 232, 218)',
+    'rgb(237, 235, 221)'
   ]);
 });
