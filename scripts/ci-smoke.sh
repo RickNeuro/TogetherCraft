@@ -21,7 +21,7 @@ for route in "/" "/Account/Login" "/Account/Register"; do
     [[ "$status" == "200" ]] || fail "$route returned HTTP $status"
     if [[ "$route" == "/" ]]; then
         grep -q "TogetherCraft" "$TMP_HTML" || fail "homepage does not contain TogetherCraft"
-        grep -q 'src="/img/togethercraft-mark.webp?v=3"' "$TMP_HTML" || fail "homepage does not use the current owner-provided TogetherCraft logo"
+        grep -q 'src="/img/togethercraft-mark.webp?v=4"' "$TMP_HTML" || fail "homepage does not use the current owner-provided TogetherCraft logo"
         grep -q 'src="/img/hero-fox.jpg"' "$TMP_HTML" || fail "homepage does not render the local fox artwork"
         grep -q 'src="/img/hero-night.webp?v=2"' "$TMP_HTML" || fail "homepage does not render the local night artwork"
         grep -q 'site-final.css' "$TMP_HTML" || fail "the final TogetherCraft stylesheet is missing"
