@@ -1169,7 +1169,7 @@ header.topbar .brand img,
 html[data-theme="light"] header.topbar .brand img,
 html[data-theme="light"] .footer-brand-line img,
 html[data-theme="light"] .team-mark img {
-    filter: invert(1) drop-shadow(0 0 1px var(--accent)) drop-shadow(0 0 2px var(--accent));
+    filter: invert(1) drop-shadow(0 0 1px var(--orange)) drop-shadow(0 0 2px var(--orange));
 }
 header.topbar .brand,
 header.topbar .brand span,

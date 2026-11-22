@@ -309,6 +309,9 @@ test('light and dark themes switch, style controls and persist between pages', a
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   const toggle = page.getByRole('button', { name: 'Переключить на светлую тему' });
+  await expect(page.locator('.theme-toggle-label')).toHaveCount(0);
+  await expect(page.locator('.theme-icon-sun')).toBeVisible();
+  await expect(page.locator('.theme-icon-moon')).toHaveCSS('display', 'none');
   await expect(toggle).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
