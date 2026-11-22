@@ -329,6 +329,8 @@ test('light and dark themes switch, style controls and persist between pages', a
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.getByRole('button', { name: 'Переключить на тёмную тему' })).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => page.locator('.tc-btn-primary').evaluate(element => getComputedStyle(element).backgroundColor))
+    .toBe('rgb(185, 111, 53)');
 
   const light = await page.evaluate(() => ({
     background: getComputedStyle(document.body).backgroundColor,
