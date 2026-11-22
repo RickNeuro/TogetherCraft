@@ -1532,3 +1532,30 @@ html[data-theme="light"] header.topbar .nav-actions .cta:hover {
     border-color: #D6A34A !important;
     color: #29372C !important;
 }
+
+/* Homepage hero: render the source image itself, without a decorative frame. */
+.home-page .hero > .hero-image {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    max-height: none;
+    aspect-ratio: auto;
+    object-fit: contain;
+    object-position: center;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    filter: none;
+    transform: none;
+    transition: none;
+}
+
+@media (max-width: 680px) {
+    .home-page .hero > .hero-image {
+        order: -1;
+    }
+}

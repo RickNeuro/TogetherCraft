@@ -10,7 +10,8 @@ test('homepage shows the agreed public introduction and keeps private addresses 
 
   await expect(page.locator('.brand')).toContainText('TogetherCraft');
   await expect(page.locator('.hero h1')).toContainText('Выбирай своё');
-  await expect(page.locator('.hero-visual')).toBeVisible();
+  await expect(page.locator('.hero > .hero-image')).toBeVisible();
+  await expect(page.locator('.hero-visual')).toHaveCount(0);
   await expect(page.locator('.home-worlds-strip > div')).toHaveCount(3);
   await expect(page.getByRole('link', { name: /Все игровые миры/ })).toHaveAttribute('href', '/Home/Worlds');
   await expect(page.getByRole('link', { name: /Открыть галерею/ })).toHaveAttribute('href', '/Home/Gallery');
@@ -292,6 +293,24 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
   await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
   await expect(hero).toBeVisible();
   await expect.poll(() => hero.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  const heroGeometry = await hero.evaluate(image => {
+    const rect = image.getBoundingClientRect();
+    const style = getComputedStyle(image);
+    return {
+      ratio: rect.width / rect.height,
+      sourceRatio: image.naturalWidth / image.naturalHeight,
+      position: style.position,
+      border: style.borderTopWidth,
+      shadow: style.boxShadow,
+      parentClass: image.parentElement.className
+    };
+  });
+  expect(heroGeometry.ratio).toBeCloseTo(heroGeometry.sourceRatio, 1);
+  expect(heroGeometry.position).toBe('relative');
+  expect(heroGeometry.border).toBe('0px');
+  expect(heroGeometry.shadow).toBe('none');
+  expect(heroGeometry.parentClass).toContain('hero');
+  expect(heroGeometry.parentClass).not.toContain('hero-visual');
 
   await expect(page.locator('.hero-image-light, .hero-image-dark, .hero-image-index, .hero-image-caption, .hero-proof')).toHaveCount(0);
 
