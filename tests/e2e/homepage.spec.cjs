@@ -153,7 +153,7 @@ test('the internal application shell fills the viewport', async ({ page }) => {
 
 test('TogetherCraft uses the owner logo and world covers remain neutral until screenshots arrive', async ({ page }) => {
   await page.goto('/');
-  const hero = page.locator('.hero-image-light');
+  const hero = page.locator('.hero-image');
   await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
   await expect.poll(() => hero.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
   await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=4');
@@ -284,22 +284,30 @@ test('wide page rails are centered and use the available desktop width', async (
   }
 });
 
-test('the homepage hero switches between the supplied night image and fox', async ({ page }) => {
+test('homepage hero uses a loaded image and has no unrequested decorative copy', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
 
-  const night = page.locator('.hero-image-dark');
-  const fox = page.locator('.hero-image-light');
-  await expect(night).toHaveAttribute('src', '/img/hero-night.webp?v=2');
-  await expect(fox).toHaveAttribute('src', '/img/hero-fox.jpg');
-  await expect(night).toBeVisible();
-  await expect(fox).toHaveCSS('display', 'none');
-  await expect.poll(() => night.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  const hero = page.locator('.hero-image');
+  await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
+  await expect(hero).toBeVisible();
+  await expect.poll(() => hero.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+
+  await expect(page.locator('.hero-image-light, .hero-image-dark, .hero-image-index, .hero-image-caption, .hero-proof')).toHaveCount(0);
+
+  const heroText = await page.locator('.hero').innerText();
+  for (const phrase of [
+    'Совместные постройки',
+    'Свои игровые истории',
+    'Люди, а не рейтинги',
+    'TOGETHERCRAFT / WORLDS',
+    'BUILD · EXPLORE · CREATE'
+  ]) {
+    expect(heroText).not.toContain(phrase);
+  }
 
   await page.getByRole('button', { name: 'Переключить на светлую тему' }).click();
-  await expect(fox).toBeVisible();
-  await expect(night).toHaveCSS('display', 'none');
-  await expect.poll(() => fox.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  await expect.poll(() => hero.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
 
   await expect(page.locator('.brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=4');
   await expect(page.locator('.brand span')).toContainText('TogetherCraft');
