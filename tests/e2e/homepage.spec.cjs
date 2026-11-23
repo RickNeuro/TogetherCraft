@@ -298,7 +298,7 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
   const heroLight = page.locator('.hero-image-light');
   const heroDark = page.locator('.hero-image-dark');
   await expect(heroLight).toHaveAttribute('src', '/img/hero-fox.jpg');
-  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=1');
+  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=2');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(heroDark).toBeVisible();
   await expect(heroDark).not.toHaveAttribute('hidden', '');
