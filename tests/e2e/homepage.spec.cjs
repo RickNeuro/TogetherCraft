@@ -159,7 +159,7 @@ test('TogetherCraft uses the owner logo and world covers remain neutral until sc
   const heroLight = page.locator('.hero-image-light');
   const heroDark = page.locator('.hero-image-dark');
   await expect(heroLight).toHaveAttribute('src', '/img/hero-fox.jpg');
-  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=1');
+  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=2');
   for (const image of [heroLight, heroDark]) {
     await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
   }
