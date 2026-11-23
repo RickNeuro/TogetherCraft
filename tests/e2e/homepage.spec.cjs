@@ -316,9 +316,21 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
       position: style.position,
       border: style.borderTopWidth,
       shadow: style.boxShadow,
-      parentClass: image.parentElement.className
+      cssWidth: style.width,
+      cssHeight: style.height,
+      aspectRatio: style.aspectRatio,
+      alignSelf: style.alignSelf,
+      justifySelf: style.justifySelf,
+      gridRow: style.gridRow,
+      gridColumn: style.gridColumn,
+      parentClass: image.parentElement.className,
+      parentRect: (() => { const r = image.parentElement.getBoundingClientRect(); return { width: r.width, height: r.height }; })(),
+      parentDisplay: getComputedStyle(image.parentElement).display,
+      parentColumns: getComputedStyle(image.parentElement).gridTemplateColumns,
+      parentRows: getComputedStyle(image.parentElement).gridTemplateRows
     };
   });
+  console.log('HERO_GEOMETRY_DEBUG', JSON.stringify(heroGeometry));
   expect(heroGeometry.ratio).toBeCloseTo(heroGeometry.sourceRatio, 1);
   expect(heroGeometry.sourceRatio).toBeCloseTo(16 / 9, 2);
   expect(heroGeometry.position).toBe('relative');
