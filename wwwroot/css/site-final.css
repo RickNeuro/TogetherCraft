@@ -81,7 +81,7 @@ header.topbar .nav-link-button{border:0;background:none;cursor:pointer}
 .home-worlds-strip strong{display:block;color:var(--text);font:700 14px "Space Grotesk",sans-serif}
 .home-worlds-strip small{display:block;margin-top:4px;color:var(--muted);font-size:10px}
 .home-gallery-preview{display:flex;align-items:center;justify-content:space-between;gap:25px;min-height:190px;padding:34px 38px;border:1px solid var(--line);background:linear-gradient(110deg,#24241e,#181a17)}
-.home-gallery-preview .world-action{width:auto;min-width:205px;margin:0}
+.home-gallery-preview .world-action{display:inline-flex;align-items:center;justify-content:center;width:auto;min-width:205px;margin:0;text-align:center;text-decoration:none}
 
 /* Shared internal page frame */
 .internal-page{width:min(1180px,calc(100% - 64px));margin:0 auto;padding:58px 0 76px}
