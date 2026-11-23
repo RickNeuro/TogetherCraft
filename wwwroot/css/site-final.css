@@ -774,7 +774,7 @@ html[data-theme="light"] header.topbar .nav-actions .cta:hover {
 .home-page .hero > .hero-image {
     position: relative;
     inset: auto;
-    display: none;
+    display: none !important;
     width: 100%;
     height: auto;
     min-width: 0;
@@ -791,8 +791,10 @@ html[data-theme="light"] header.topbar .nav-actions .cta:hover {
     transition: none;
 }
 
-html[data-theme="light"] .home-page .hero > .hero-image-light { display: block; }
-html[data-theme="dark"] .home-page .hero > .hero-image-dark { display: block; }
+html[data-theme="dark"] .home-page .hero > .hero-image-light { display: none !important; }
+html[data-theme="dark"] .home-page .hero > .hero-image-dark { display: block !important; }
+html[data-theme="light"] .home-page .hero > .hero-image-light { display: block !important; }
+html[data-theme="light"] .home-page .hero > .hero-image-dark { display: none !important; }
 
 @media (max-width: 680px) {
     .home-page .hero > .hero-image { order: -1; }

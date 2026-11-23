@@ -299,6 +299,7 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
   const heroDark = page.locator('.hero-image-dark');
   await expect(heroLight).toHaveAttribute('src', '/img/hero-fox.jpg');
   await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=1');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(heroDark).toBeVisible();
   await expect(heroLight).toBeHidden();
   for (const image of [heroLight, heroDark]) {
@@ -337,6 +338,7 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
   }
 
   await page.getByRole('button', { name: 'Переключить на светлую тему' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(heroLight).toBeVisible();
   await expect(heroDark).toBeHidden();
 
