@@ -820,3 +820,9 @@ html[data-theme="dark"] .world-card-factorio .world-art { background-color: #141
 html[data-theme="light"] .world-card-fabric .world-art { background-color: #dee2d1; }
 html[data-theme="light"] .world-card-create .world-art { background-color: #e7e8da; }
 html[data-theme="light"] .world-card-factorio .world-art { background-color: #edebdd; }
+
+/* Theme base colors for server selection covers. */
+html[data-theme="dark"] .server-choice-art-vanilla { background-color: #1d2a3a; }
+html[data-theme="light"] .server-choice-art-vanilla { background-color: #dee2d1; }
+html[data-theme="dark"] .server-choice-art-create { background-color: #223247; }
+html[data-theme="light"] .server-choice-art-create { background-color: #e7e8da; }
