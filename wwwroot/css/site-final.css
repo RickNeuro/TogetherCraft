@@ -737,6 +737,7 @@ html[data-theme="dark"] body.app-shell .field-validation-error { color: #F0B4A4;
         padding: 38px 0 48px;
         gap: 26px;
     }
+}
     /* Theme-specific CTA colors override legacy warm-theme rules. */
 html[data-theme="dark"] .home-page .tc-btn-primary,
 html[data-theme="dark"] .world-action,
