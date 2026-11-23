@@ -22,7 +22,7 @@ for route in "/" "/Account/Login" "/Account/Register"; do
     if [[ "$route" == "/" ]]; then
         grep -q "TogetherCraft" "$TMP_HTML" || fail "homepage does not contain TogetherCraft"
         grep -q 'src="/img/togethercraft-mark.webp?v=4"' "$TMP_HTML" || fail "homepage does not use the current owner-provided TogetherCraft logo"
-        grep -q 'src="/img/hero-fox.jpg"' "$TMP_HTML" || fail "homepage does not render the local fox artwork"
+        grep -q 'src="/img/hero-meteor.webp?v=1"' "$TMP_HTML" || fail "homepage does not render the local voxel meteor artwork"
         for unwanted in "Совместные постройки" "Свои игровые истории" "Люди, а не рейтинги" "TOGETHERCRAFT / WORLDS" "BUILD · EXPLORE · CREATE"; do
             ! grep -Fq "$unwanted" "$TMP_HTML" || fail "homepage still renders unrequested copy: $unwanted"
         done
