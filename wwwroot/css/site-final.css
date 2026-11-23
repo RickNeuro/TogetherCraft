@@ -776,12 +776,14 @@ html[data-theme="light"] header.topbar .nav-actions .cta:hover {
     inset: auto;
     display: block !important;
     align-self: center;
-    width: 100%;
+    justify-self: center;
+    width: auto !important;
+    max-width: 100%;
     height: auto !important;
     min-width: 0;
     min-height: 0;
     max-height: none;
-    aspect-ratio: 16 / 9 !important;
+    aspect-ratio: auto !important;
     object-fit: contain;
     object-position: center;
     border: 0;
