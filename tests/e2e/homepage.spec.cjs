@@ -154,9 +154,13 @@ test('the internal application shell fills the viewport', async ({ page }) => {
 
 test('TogetherCraft uses the owner logo and world covers remain neutral until screenshots arrive', async ({ page }) => {
   await page.goto('/');
-  const hero = page.locator('.hero-image');
-  await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
-  await expect.poll(() => hero.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+  const heroLight = page.locator('.hero-image-light');
+  const heroDark = page.locator('.hero-image-dark');
+  await expect(heroLight).toHaveAttribute('src', '/img/hero-fox.jpg');
+  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=1');
+  for (const image of [heroLight, heroDark]) {
+    await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+  }
   await expect(page.locator('header.topbar .brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=4');
   await expect.poll(() => page.locator('header.topbar .brand img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/img/togethercraft-mark.webp?v=4');
@@ -289,11 +293,16 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
 
-  const hero = page.locator('.hero-image');
-  await expect(hero).toHaveAttribute('src', '/img/hero-fox.jpg');
-  await expect(hero).toBeVisible();
-  await expect.poll(() => hero.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
-  const heroGeometry = await hero.evaluate(image => {
+  const heroLight = page.locator('.hero-image-light');
+  const heroDark = page.locator('.hero-image-dark');
+  await expect(heroLight).toHaveAttribute('src', '/img/hero-fox.jpg');
+  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=1');
+  await expect(heroDark).toBeVisible();
+  await expect(heroLight).toBeHidden();
+  for (const image of [heroLight, heroDark]) {
+    await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+  }
+  const heroGeometry = await heroDark.evaluate(image => {
     const rect = image.getBoundingClientRect();
     const style = getComputedStyle(image);
     return {
@@ -312,7 +321,7 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
   expect(heroGeometry.parentClass).toContain('hero');
   expect(heroGeometry.parentClass).not.toContain('hero-visual');
 
-  await expect(page.locator('.hero-image-light, .hero-image-dark, .hero-image-index, .hero-image-caption, .hero-proof')).toHaveCount(0);
+  await expect(page.locator('.hero-image-index, .hero-image-caption, .hero-proof')).toHaveCount(0);
 
   const heroText = await page.locator('.hero').innerText();
   for (const phrase of [
@@ -326,7 +335,8 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
   }
 
   await page.getByRole('button', { name: 'Переключить на светлую тему' }).click();
-  await expect.poll(() => hero.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  await expect(heroLight).toBeVisible();
+  await expect(heroDark).toBeHidden();
 
   await expect(page.locator('.brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=4');
   await expect(page.locator('.brand span')).toContainText('TogetherCraft');
