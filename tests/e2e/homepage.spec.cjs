@@ -320,6 +320,7 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
     };
   });
   expect(heroGeometry.ratio).toBeCloseTo(heroGeometry.sourceRatio, 1);
+  expect(heroGeometry.sourceRatio).toBeCloseTo(16 / 9, 2);
   expect(heroGeometry.position).toBe('relative');
   expect(heroGeometry.border).toBe('0px');
   expect(heroGeometry.shadow).toBe('none');
