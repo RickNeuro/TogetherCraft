@@ -10,7 +10,9 @@ test('homepage shows the agreed public introduction and keeps private addresses 
 
   await expect(page.locator('.brand')).toContainText('TogetherCraft');
   await expect(page.locator('.hero h1')).toContainText('Выбирай своё');
-  await expect(page.locator('.hero > .hero-image')).toBeVisible();
+  await expect(page.locator('.hero > .hero-image-light')).toHaveCount(1);
+  await expect(page.locator('.hero > .hero-image-dark')).toHaveCount(1);
+  await expect(page.locator('.hero > .hero-image-dark')).toBeVisible();
   await expect(page.locator('.hero-visual')).toHaveCount(0);
   await expect(page.locator('.home-worlds-strip > div')).toHaveCount(3);
   await expect(page.getByRole('link', { name: /Все игровые миры/ })).toHaveAttribute('href', '/Home/Worlds');
