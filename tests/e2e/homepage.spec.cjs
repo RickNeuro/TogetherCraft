@@ -158,8 +158,8 @@ test('TogetherCraft uses the owner logo and world covers remain neutral until sc
   await page.goto('/');
   const heroLight = page.locator('.hero-image-light');
   const heroDark = page.locator('.hero-image-dark');
-  await expect(heroLight).toHaveAttribute('src', '/img/hero-fox.jpg');
-  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=3');
+  await expect(heroLight).toHaveAttribute('src', '/img/hero-night.webp?v=4');
+  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=4');
   for (const image of [heroLight, heroDark]) {
     await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
   }
@@ -297,8 +297,8 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
 
   const heroLight = page.locator('.hero-image-light');
   const heroDark = page.locator('.hero-image-dark');
-  await expect(heroLight).toHaveAttribute('src', '/img/hero-fox.jpg');
-  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=3');
+  await expect(heroLight).toHaveAttribute('src', '/img/hero-night.webp?v=4');
+  await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=4');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(heroDark).toBeVisible();
   await expect(heroDark).not.toHaveAttribute('hidden', '');
