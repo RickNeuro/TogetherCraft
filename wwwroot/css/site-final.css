@@ -802,3 +802,13 @@ html[data-theme="light"] header.topbar .nav-actions .cta:hover {
 @media (max-width: 680px) {
     .home-page .hero > .hero-image { order: -1; }
 }
+
+/* Keep all homepage call-to-action links as centered flex controls. */
+.home-page .hero-actions .tc-btn,
+.home-page .home-gallery-preview .world-action {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+}
