@@ -812,3 +812,11 @@ html[data-theme="light"] header.topbar .nav-actions .cta:hover {
     text-align: center;
     text-decoration: none;
 }
+
+/* Theme base colors for the three world artwork panels. */
+html[data-theme="dark"] .world-card-fabric .world-art { background-color: #1d2a3a; }
+html[data-theme="dark"] .world-card-create .world-art { background-color: #223247; }
+html[data-theme="dark"] .world-card-factorio .world-art { background-color: #141f2d; }
+html[data-theme="light"] .world-card-fabric .world-art { background-color: #dee2d1; }
+html[data-theme="light"] .world-card-create .world-art { background-color: #e7e8da; }
+html[data-theme="light"] .world-card-factorio .world-art { background-color: #edebdd; }
