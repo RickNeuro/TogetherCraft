@@ -301,7 +301,9 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
   await expect(heroDark).toHaveAttribute('src', '/img/hero-night.webp?v=1');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(heroDark).toBeVisible();
+  await expect(heroDark).not.toHaveAttribute('hidden', '');
   await expect(heroLight).toBeHidden();
+  await expect(heroLight).toHaveAttribute('hidden', '');
   for (const image of [heroLight, heroDark]) {
     await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
   }
@@ -340,7 +342,9 @@ test('homepage hero uses a loaded image and has no unrequested decorative copy',
   await page.getByRole('button', { name: 'Переключить на светлую тему' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(heroLight).toBeVisible();
+  await expect(heroLight).not.toHaveAttribute('hidden', '');
   await expect(heroDark).toBeHidden();
+  await expect(heroDark).toHaveAttribute('hidden', '');
 
   await expect(page.locator('.brand img')).toHaveAttribute('src', '/img/togethercraft-mark.webp?v=4');
   await expect(page.locator('.brand span')).toContainText('TogetherCraft');

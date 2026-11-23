@@ -5,6 +5,10 @@
     function applyTheme(theme, saveChoice) {
         const nextTheme = theme === 'light' ? 'light' : 'dark';
         root.dataset.theme = nextTheme;
+        const heroLight = document.querySelector('.hero-image-light');
+        const heroDark = document.querySelector('.hero-image-dark');
+        if (heroLight) heroLight.hidden = nextTheme !== 'light';
+        if (heroDark) heroDark.hidden = nextTheme !== 'dark';
         document.body?.setAttribute('data-bs-theme', nextTheme);
         const themeColor = document.querySelector('meta[name="theme-color"]');
         if (themeColor) themeColor.content = nextTheme === 'dark' ? '#0B111A' : '#F3F0E6';
